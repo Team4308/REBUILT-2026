@@ -34,12 +34,17 @@ import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
 
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.Trajectory.State;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.BooleanSubscriber;
+import edu.wpi.first.networktables.DoubleArraySubscriber;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -50,6 +55,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import frc.robot.Constants;
+import frc.robot.Robot;
 import frc.robot.subsystems.vision.PoseCamera;
 import swervelib.SwerveController;
 import swervelib.SwerveDrive;
@@ -58,6 +64,8 @@ import swervelib.math.SwerveMath;
 import swervelib.parser.SwerveControllerConfiguration;
 import swervelib.parser.SwerveDriveConfiguration;
 import swervelib.parser.SwerveParser;
+import swervelib.simulation.ironmaple.simulation.SimulatedArena;
+import swervelib.simulation.ironmaple.simulation.seasonspecific.rebuilt2026.Arena2026Rebuilt;
 import swervelib.telemetry.SwerveDriveTelemetry;
 import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
 
@@ -77,17 +85,28 @@ public class SwerveSubsystem extends SubsystemBase {
 
   private Field2d driverStationField = new Field2d();
 
+  private final DoubleArraySubscriber pathPointsSub = NetworkTableInstance.getDefault()
+      .getTable("AdvantageKit/LocalADStarAK")
+      .getDoubleArrayTopic("CurrentPathPoints").subscribe(new double[] {});
+
+  private final BooleanSubscriber newPathSub = NetworkTableInstance.getDefault()
+      .getTable("AdvantageKit/LocalADStarAK")
+      .getBooleanTopic("IsNewPathAvailable")
+      .subscribe(false);
+
   public SwerveSubsystem(File directory) {
+    if (Robot.isSimulation())
+      SimulatedArena.overrideInstance(new Arena2026Rebuilt(false));
+
     // Configure the Telemetry before creating the SwerveDrive to avoid unnecessary
     // objects being created.
     SwerveDriveTelemetry.verbosity = TelemetryVerbosity.NONE;
     try {
-      swerveDrive =
-          new SwerveParser(directory)
-              .createSwerveDrive(
-                  Constants.MAX_SPEED,
-                  new Pose2d(
-                      new Translation2d(Meter.of(1), Meter.of(4)), Rotation2d.fromDegrees(0)));
+      swerveDrive = new SwerveParser(directory)
+          .createSwerveDrive(
+              Constants.MAX_SPEED,
+              new Pose2d(
+                  new Translation2d(Meter.of(2), Meter.of(4)), Rotation2d.fromDegrees(0)));
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -108,21 +127,19 @@ public class SwerveSubsystem extends SubsystemBase {
     ANGLE_CONTROLLER = Constants.Swerve.Heading.HEADING_PID;
     TRANSLATION_CONTROLLER = Constants.Swerve.Translation.TRANSLATION_PID;
 
-    ALIGN_CONTROLLER =
-        new PPHolonomicDriveController(
-            Constants.Swerve.Translation.TRANSLATION_PID, Constants.Swerve.Heading.HEADING_PID);
+    ALIGN_CONTROLLER = new PPHolonomicDriveController(
+        Constants.Swerve.Translation.TRANSLATION_PID, Constants.Swerve.Heading.HEADING_PID);
 
     setupPathPlanner();
   }
 
   public SwerveSubsystem(
       SwerveDriveConfiguration driveCfg, SwerveControllerConfiguration controllerCfg) {
-    swerveDrive =
-        new SwerveDrive(
-            driveCfg,
-            controllerCfg,
-            Constants.MAX_SPEED,
-            new Pose2d(new Translation2d(Meter.of(1), Meter.of(4)), Rotation2d.fromDegrees(0)));
+    swerveDrive = new SwerveDrive(
+        driveCfg,
+        controllerCfg,
+        Constants.MAX_SPEED,
+        new Pose2d(new Translation2d(Meter.of(1), Meter.of(4)), Rotation2d.fromDegrees(0)));
   }
 
   public void setupPhotonVision() {
@@ -138,6 +155,27 @@ public class SwerveSubsystem extends SubsystemBase {
       poseCameras.updateVisionField();
     }
 
+    if (newPathSub.get()) {
+      double[] pointArray = pathPointsSub.get();
+      int numPoses = pointArray.length / 2;
+      Pose2d[] poses = new Pose2d[numPoses];
+
+      for (int i = 0; i < numPoses; i++) {
+        poses[i] = new Pose2d(
+            pointArray[i * 2],
+            pointArray[i * 2 + 1],
+            new Rotation2d());
+      }
+
+      Logger.recordOutput("Swerve/Path", poses);
+      driverStationField.getObject("Path").setPoses(poses);
+    }
+
+    if (isAligned()) {
+      Logger.recordOutput("Swerve/Path", new Pose2d[0]);
+      driverStationField.getObject("Path").setPoses(new ArrayList<>());
+    }
+
     driverStationField.setRobotPose(getPose());
     SmartDashboard.putData("driverStationField", driverStationField);
 
@@ -147,11 +185,13 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   @Override
-  public void simulationPeriodic() {}
+  public void simulationPeriodic() {
+  }
 
   // Setup AutoBuilder for PathPlanner.
   public void setupPathPlanner() {
-    // Load the RobotConfig from the GUI settings. You should probably store this in your Constants
+    // Load the RobotConfig from the GUI settings. You should probably store this in
+    // your Constants
     // file
     RobotConfig config;
     try {
@@ -193,22 +233,20 @@ public class SwerveSubsystem extends SubsystemBase {
             }
             return false;
           },
-          this
-          // Reference to this subsystem to set requirements
-          );
+          this);
     } catch (Exception e) {
-      // Handle exception as needed
-      e.printStackTrace();
+      e.printStackTrace(); // Handle exception as needed
+
     }
-    // Preload PathPlanner Path finding. IF USING CUSTOM PATHFINDER ADD BEFORE THIS LINE
+    // Preload PathPlanner Path finding. IF USING CUSTOM PATHFINDER ADD BEFORE THIS
+    // LINE
     CommandScheduler.getInstance().schedule(PathfindingCommand.warmupCommand());
   }
 
   public boolean isTranslationAligned() {
     Translation2d currentTranslation2d = getPose().getTranslation();
     Translation2d targetTranslation2d = targetPose.getTranslation();
-    return currentTranslation2d.getDistance(targetTranslation2d)
-        < Constants.Swerve.Translation.TOLERANCE;
+    return currentTranslation2d.getDistance(targetTranslation2d) < Constants.Swerve.Translation.TOLERANCE;
   }
 
   public boolean isHeadingAligned() {
@@ -233,36 +271,34 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   public Command driveToPoseObjAvoid(Pose2d pose) {
-    // Since we are using a holonomic drivetrain, the rotation component of this pose
+    // Since we are using a holonomic drivetrain, the rotation component of this
+    // pose
     // represents the goal holonomic rotation
     targetPose = pose;
 
     // Create the constraints to use while pathfinding
     PathConstraints constraints = new PathConstraints(
-            3.0, 4.0,
-            Units.degreesToRadians(540), Units.degreesToRadians(720));
+        3.0, 4.0,
+        Units.degreesToRadians(540), Units.degreesToRadians(720));
 
     // Since AutoBuilder is configured, we can use it to build pathfinding commands
     Command pathfindingCommand = AutoBuilder.pathfindToPose(
-            targetPose,
-            constraints,
-            0.0 // Goal end velocity in meters/sec
+        targetPose,
+        constraints,
+        0.0 // Goal end velocity in meters/sec
     );
-    
-    driverStationField.getObject("Path").setPose(new Pose2d(-5, -5, new Rotation2d(0)));
+
     PathPlannerTrajectoryState goalState = new PathPlannerTrajectoryState();
     goalState.pose = pose;
     Logger.recordOutput("Swerve/Path Goal", pose);
     Logger.recordOutput(
         "Swerve/PID output", ALIGN_CONTROLLER.calculateRobotRelativeSpeeds(getPose(), goalState));
 
-
-    return pathfindingCommand.until(() -> pose.getTranslation().getDistance(getPose().getTranslation()) < Units.inchesToMeters(10))
-        .andThen(
-            run(
-                () ->
-                    swerveDrive.drive(
-                        ALIGN_CONTROLLER.calculateRobotRelativeSpeeds(getPose(), goalState))));
+    return pathfindingCommand.until(() -> pose.getTranslation()
+        .getDistance(getPose().getTranslation()) < Constants.Swerve.PIDTolerance).andThen(
+            run(() -> swerveDrive.drive(
+                ALIGN_CONTROLLER.calculateRobotRelativeSpeeds(
+                    getPose(), goalState))));
   }
 
   public Command driveToPose(Supplier<Pose2d> pose) {
@@ -274,12 +310,11 @@ public class SwerveSubsystem extends SubsystemBase {
     targetPose = pose;
 
     // Create the constraints to use while pathfinding
-    PathConstraints constraints =
-        new PathConstraints(
-            swerveDrive.getMaximumChassisVelocity(),
-            3.0,
-            swerveDrive.getMaximumChassisAngularVelocity(),
-            Units.degreesToRadians(360));
+    PathConstraints constraints = new PathConstraints(
+        swerveDrive.getMaximumChassisVelocity(),
+        3.0,
+        swerveDrive.getMaximumChassisAngularVelocity(),
+        Units.degreesToRadians(360));
 
     // Create the goal state
     PathPlannerTrajectoryState goalState = new PathPlannerTrajectoryState();
@@ -289,25 +324,23 @@ public class SwerveSubsystem extends SubsystemBase {
     Logger.recordOutput(
         "Swerve/PID output", ALIGN_CONTROLLER.calculateRobotRelativeSpeeds(getPose(), goalState));
 
-    List<Waypoint> waypoints =
-        PathPlannerPath.waypointsFromPoses(
-            new Pose2d(
-                swerveDrive.getPose().getTranslation(),
-                new Rotation2d(
-                    getFieldVelocity().vxMetersPerSecond, getFieldVelocity().vyMetersPerSecond)),
-            pose);
-    PathPlannerPath path =
-        new PathPlannerPath(
-            waypoints,
-            constraints,
-            new IdealStartingState(
-                MetersPerSecond.of(
-                    new Translation2d(
-                            getFieldVelocity().vxMetersPerSecond,
-                            getFieldVelocity().vyMetersPerSecond)
-                        .getNorm()),
-                getHeading()),
-            new GoalEndState(0.0, pose.getRotation()));
+    List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(
+        new Pose2d(
+            swerveDrive.getPose().getTranslation(),
+            new Rotation2d(
+                getFieldVelocity().vxMetersPerSecond, getFieldVelocity().vyMetersPerSecond)),
+        pose);
+    PathPlannerPath path = new PathPlannerPath(
+        waypoints,
+        constraints,
+        new IdealStartingState(
+            MetersPerSecond.of(
+                new Translation2d(
+                    getFieldVelocity().vxMetersPerSecond,
+                    getFieldVelocity().vyMetersPerSecond)
+                    .getNorm()),
+            getHeading()),
+        new GoalEndState(0.0, pose.getRotation()));
     path.preventFlipping = true;
 
     Logger.recordOutput("Swerve/Path Goal", pose);
@@ -321,63 +354,61 @@ public class SwerveSubsystem extends SubsystemBase {
     }
 
     driverStationField.getObject("Path").setPoses(points);
+    Logger.recordOutput("Swerve/Path", points.toArray(new Pose2d[0]));
 
     // Runs until ~10 inches to target, then switches to pid
-    return AutoBuilder.followPath(path).until(() -> pose.getTranslation().getDistance(getPose().getTranslation()) < Units.inchesToMeters(10))
+    return AutoBuilder.followPath(path)
+        .until(() -> pose.getTranslation().getDistance(getPose().getTranslation()) < Constants.Swerve.PIDTolerance)
         .andThen(
             run(
-                () ->
-                    swerveDrive.drive(
-                        ALIGN_CONTROLLER.calculateRobotRelativeSpeeds(getPose(), goalState))));
+                () -> swerveDrive.drive(
+                    ALIGN_CONTROLLER.calculateRobotRelativeSpeeds(getPose(), goalState))));
   }
 
   public Command driveToDistanceCommand(double distanceInMeters, double speedInMetersPerSecond) {
     return run(() -> drive(new ChassisSpeeds(speedInMetersPerSecond, 0, 0)))
         .until(
-            () ->
-                swerveDrive.getPose().getTranslation().getDistance(new Translation2d(0, 0))
-                    > distanceInMeters);
+            () -> swerveDrive.getPose().getTranslation().getDistance(new Translation2d(0, 0)) > distanceInMeters);
   }
 
-  /* //TODO: IMPLEMENT OBJECT CAMERA
-  public Command aimAtTarget(Cameras camera) {
-    return run(() -> {
-      Optional<PhotonPipelineResult> resultO = camera.getBestResult();
-      if (resultO.isPresent()) {
-        var result = resultO.get();
-        if (result.hasTargets()) {
-          drive(getTargetSpeeds(0,
-              0,
-              Rotation2d.fromDegrees(result.getBestTarget()
-                  .getYaw()))); // Not sure if this will work, more math may be required.
-        }
-      }
-    });
-  }*/
+  /*
+   * //TODO: IMPLEMENT OBJECT CAMERA
+   * public Command aimAtTarget(Cameras camera) {
+   * return run(() -> {
+   * Optional<PhotonPipelineResult> resultO = camera.getBestResult();
+   * if (resultO.isPresent()) {
+   * var result = resultO.get();
+   * if (result.hasTargets()) {
+   * drive(getTargetSpeeds(0,
+   * 0,
+   * Rotation2d.fromDegrees(result.getBestTarget()
+   * .getYaw()))); // Not sure if this will work, more math may be required.
+   * }
+   * }
+   * });
+   * }
+   */
 
   // Swerve drive with Setpoint Generator from 254, implemented by PathPlanner
   private Command driveWithSetpointGenerator(Supplier<ChassisSpeeds> robotRelativeChassisSpeed)
       throws IOException, ParseException {
-    SwerveSetpointGenerator setpointGenerator =
-        new SwerveSetpointGenerator(
-            RobotConfig.fromGUISettings(), swerveDrive.getMaximumChassisAngularVelocity());
-    AtomicReference<SwerveSetpoint> prevSetpoint =
-        new AtomicReference<>(
-            new SwerveSetpoint(
-                swerveDrive.getRobotVelocity(),
-                swerveDrive.getStates(),
-                DriveFeedforwards.zeros(swerveDrive.getModules().length)));
+    SwerveSetpointGenerator setpointGenerator = new SwerveSetpointGenerator(
+        RobotConfig.fromGUISettings(), swerveDrive.getMaximumChassisAngularVelocity());
+    AtomicReference<SwerveSetpoint> prevSetpoint = new AtomicReference<>(
+        new SwerveSetpoint(
+            swerveDrive.getRobotVelocity(),
+            swerveDrive.getStates(),
+            DriveFeedforwards.zeros(swerveDrive.getModules().length)));
     AtomicReference<Double> previousTime = new AtomicReference<>();
 
     return startRun(
         () -> previousTime.set(Timer.getFPGATimestamp()),
         () -> {
           double newTime = Timer.getFPGATimestamp();
-          SwerveSetpoint newSetpoint =
-              setpointGenerator.generateSetpoint(
-                  prevSetpoint.get(),
-                  robotRelativeChassisSpeed.get(),
-                  newTime - previousTime.get());
+          SwerveSetpoint newSetpoint = setpointGenerator.generateSetpoint(
+              prevSetpoint.get(),
+              robotRelativeChassisSpeed.get(),
+              newTime - previousTime.get());
           swerveDrive.drive(
               newSetpoint.robotRelativeSpeeds(),
               newSetpoint.moduleStates(),
@@ -455,9 +486,8 @@ public class SwerveSubsystem extends SubsystemBase {
     // correction for this kind of control.
     return run(
         () -> {
-          Translation2d scaledInputs =
-              SwerveMath.scaleTranslation(
-                  new Translation2d(translationX.getAsDouble(), translationY.getAsDouble()), 0.8);
+          Translation2d scaledInputs = SwerveMath.scaleTranslation(
+              new Translation2d(translationX.getAsDouble(), translationY.getAsDouble()), 0.8);
 
           // Make the robot move
           driveFieldOriented(
@@ -549,11 +579,12 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   /**
-   * Get the chassis speeds based on controller input of 2 joysticks. One for speeds in which
+   * Get the chassis speeds based on controller input of 2 joysticks. One for
+   * speeds in which
    * direction. The other for the angle of the robot.
    *
-   * @param xInput X joystick input for the robot to move in the X direction.
-   * @param yInput Y joystick input for the robot to move in the Y direction.
+   * @param xInput   X joystick input for the robot to move in the X direction.
+   * @param yInput   Y joystick input for the robot to move in the Y direction.
    * @param headingX X joystick which controls the angle of the robot.
    * @param headingY Y joystick which controls the angle of the robot.
    * @return {@link ChassisSpeeds} which can be sent to the Swerve Drive.
@@ -571,12 +602,13 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   /**
-   * Get the chassis speeds based on controller input of 1 joystick and one angle. Control the robot
+   * Get the chassis speeds based on controller input of 1 joystick and one angle.
+   * Control the robot
    * at an offset of 90deg.
    *
    * @param xInput X joystick input for the robot to move in the X direction.
    * @param yInput Y joystick input for the robot to move in the Y direction.
-   * @param angle The angle in as a {@link Rotation2d}.
+   * @param angle  The angle in as a {@link Rotation2d}.
    * @return {@link ChassisSpeeds} which can be sent to the Swerve Drive.
    */
   public ChassisSpeeds getTargetSpeeds(double xInput, double yInput, Rotation2d angle) {
