@@ -202,14 +202,14 @@ public class PoseCamera {
       }
     }
 
-    List<Pose2d> poses = new ArrayList<>();
+    List<Pose3d> poses = new ArrayList<>();
     for (PhotonTrackedTarget target : targets) {
       if (fieldLayout.getTagPose(target.getFiducialId()).isPresent()) {
-        Pose2d targetPose = fieldLayout.getTagPose(target.getFiducialId()).get().toPose2d();
+        Pose3d targetPose = fieldLayout.getTagPose(target.getFiducialId()).get();
         poses.add(targetPose);
       }
     }
-    Logger.recordOutput("Vision Targets", poses.toArray(new Pose2d[0]));
+    Logger.recordOutput("Vision Targets", poses.toArray(new Pose3d[0]));
 
     SmartDashboard.putData("Tracked Field", field2d);
   }
@@ -384,11 +384,8 @@ public class PoseCamera {
       resultsList = Robot.isReal() ? camera.getAllUnreadResults() : cameraSim.getCamera().getAllUnreadResults();
 
       lastReadTimestamp = currentTimestamp;
-      resultsList.sort((PhotonPipelineResult a, PhotonPipelineResult b) -> {
-        return a.getTimestampSeconds() >= b.getTimestampSeconds() ? 1 : -1;
-      });
 
-      filter(); // Filter results
+      // filter(); // Filter results
 
       if (!resultsList.isEmpty()) {
         updateEstimatedGlobalPose();
@@ -413,7 +410,10 @@ public class PoseCamera {
     private void updateEstimatedGlobalPose() {
       Optional<EstimatedRobotPose> visionEst = Optional.empty();
       for (var change : resultsList) {
-        visionEst = poseEstimator.update(change);
+        visionEst = poseEstimator.estimateCoprocMultiTagPose(change);
+        if (visionEst.isEmpty()) {
+          visionEst = poseEstimator.estimateLowestAmbiguityPose(change);
+        }
         updateEstimationStdDevs(visionEst, change.getTargets());
       }
       estimatedRobotPose = visionEst;
@@ -476,10 +476,12 @@ public class PoseCamera {
     }
 
     private void filter() {
+      double maximumAmbiguity = 1;
       for (Iterator<PhotonPipelineResult> it = resultsList.iterator(); it.hasNext();) {
         PhotonPipelineResult result = it.next();
         boolean remove = false;
         for (PhotonTrackedTarget target : result.getTargets()) {
+          maximumAmbiguity = Math.min(maximumAmbiguity, target.getPoseAmbiguity());
           if (target.getPoseAmbiguity() > maximumAmbiguity) {
             remove = true;
             break;
@@ -489,6 +491,7 @@ public class PoseCamera {
           it.remove();
         }
       }
+      Logger.recordOutput("MAXAMBUIGUITY", maximumAmbiguity);
     }
 
   }
