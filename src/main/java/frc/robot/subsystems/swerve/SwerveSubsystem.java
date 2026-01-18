@@ -4,15 +4,12 @@ import static edu.wpi.first.units.Units.Meter;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
-import org.json.simple.parser.ParseException;
 import org.littletonrobotics.junction.Logger;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -23,25 +20,18 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.IdealStartingState;
-import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.path.PathPoint;
 import com.pathplanner.lib.path.Waypoint;
 import com.pathplanner.lib.trajectory.PathPlannerTrajectoryState;
-import com.pathplanner.lib.util.DriveFeedforwards;
-import com.pathplanner.lib.util.swerve.SwerveSetpoint;
-import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
 
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.Trajectory;
-import edu.wpi.first.math.trajectory.Trajectory.State;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.BooleanSubscriber;
 import edu.wpi.first.networktables.DoubleArraySubscriber;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -51,7 +41,6 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import frc.robot.Constants;
@@ -61,7 +50,6 @@ import swervelib.SwerveController;
 import swervelib.SwerveDrive;
 import swervelib.SwerveDriveTest;
 import swervelib.math.SwerveMath;
-import swervelib.parser.SwerveControllerConfiguration;
 import swervelib.parser.SwerveDriveConfiguration;
 import swervelib.parser.SwerveParser;
 import swervelib.simulation.ironmaple.simulation.SimulatedArena;
@@ -78,12 +66,23 @@ public class SwerveSubsystem extends SubsystemBase {
 
   private final SwerveDrive swerveDrive;
 
-  private final boolean usingVision = false;
+  private final boolean usingVision = true;
   private PoseCamera poseCameras;
 
   private Pose2d targetPose = new Pose2d();
 
-  private Field2d driverStationField = new Field2d();
+  private Field2d m_driverStationField = new Field2d();
+
+  private double resetTime = Timer.getFPGATimestamp() + 2; // clear DS field
+
+  {
+    new Thread(() -> {
+      while (Timer.getFPGATimestamp() < resetTime) {
+        Thread.yield();
+      }
+      clearDriverField();
+    }).start();
+  }
 
   private final DoubleArraySubscriber pathPointsSub = NetworkTableInstance.getDefault()
       .getTable("AdvantageKit/LocalADStarAK")
@@ -133,15 +132,6 @@ public class SwerveSubsystem extends SubsystemBase {
     setupPathPlanner();
   }
 
-  public SwerveSubsystem(
-      SwerveDriveConfiguration driveCfg, SwerveControllerConfiguration controllerCfg) {
-    swerveDrive = new SwerveDrive(
-        driveCfg,
-        controllerCfg,
-        Constants.MAX_SPEED,
-        new Pose2d(new Translation2d(Meter.of(1), Meter.of(4)), Rotation2d.fromDegrees(0)));
-  }
-
   public void setupPhotonVision() {
     poseCameras = new PoseCamera(swerveDrive::getPose, swerveDrive.field);
   }
@@ -168,27 +158,25 @@ public class SwerveSubsystem extends SubsystemBase {
       }
 
       Logger.recordOutput("Swerve/Path", poses);
-      driverStationField.getObject("Path").setPoses(poses);
+      m_driverStationField.getObject("Path").setPoses(poses);
     }
 
-    if (isAligned()) {
-      Logger.recordOutput("Swerve/Path", new Pose2d[0]);
-      driverStationField.getObject("Path").setPoses(new ArrayList<>());
-    }
+    if (isAligned())
+      clearDriverField();
 
-    driverStationField.setRobotPose(getPose());
-    SmartDashboard.putData("driverStationField", driverStationField);
+    m_driverStationField.setRobotPose(getPose());
+    SmartDashboard.putData("DriverStationField", m_driverStationField);
 
     Logger.recordOutput("Swerve/Is Aligned?", isAligned());
     Logger.recordOutput("Swerve/Pose", getPose());
     Logger.recordOutput("Swerve/Velocity", getRobotVelocity());
   }
 
-  @Override
-  public void simulationPeriodic() {
+  private void clearDriverField() {
+    Logger.recordOutput("Swerve/Path", new Pose2d[0]);
+    m_driverStationField.getObject("Path").setPoses(new ArrayList<>());
   }
 
-  // Setup AutoBuilder for PathPlanner.
   public void setupPathPlanner() {
     // Load the RobotConfig from the GUI settings. You should probably store this in
     // your Constants
@@ -277,14 +265,11 @@ public class SwerveSubsystem extends SubsystemBase {
     targetPose = pose;
 
     // Create the constraints to use while pathfinding
-    PathConstraints constraints = new PathConstraints(
-        3.0, 4.0,
-        Units.degreesToRadians(540), Units.degreesToRadians(720));
 
     // Since AutoBuilder is configured, we can use it to build pathfinding commands
     Command pathfindingCommand = AutoBuilder.pathfindToPose(
         targetPose,
-        constraints,
+        Constants.Swerve.PathFinding.constraints,
         0.0 // Goal end velocity in meters/sec
     );
 
@@ -295,10 +280,13 @@ public class SwerveSubsystem extends SubsystemBase {
         "Swerve/PID output", ALIGN_CONTROLLER.calculateRobotRelativeSpeeds(getPose(), goalState));
 
     return pathfindingCommand.until(() -> pose.getTranslation()
-        .getDistance(getPose().getTranslation()) < Constants.Swerve.PIDTolerance).andThen(
+        .getDistance(getPose().getTranslation()) < Constants.Swerve.PathFinding.PIDTolerance).andThen(
             run(() -> swerveDrive.drive(
                 ALIGN_CONTROLLER.calculateRobotRelativeSpeeds(
-                    getPose(), goalState))));
+                    getPose(), goalState))))
+        .finallyDo(interrupted -> {
+          clearDriverField();
+        });
   }
 
   public Command driveToPose(Supplier<Pose2d> pose) {
@@ -309,20 +297,9 @@ public class SwerveSubsystem extends SubsystemBase {
     // Change target pose
     targetPose = pose;
 
-    // Create the constraints to use while pathfinding
-    PathConstraints constraints = new PathConstraints(
-        swerveDrive.getMaximumChassisVelocity(),
-        3.0,
-        swerveDrive.getMaximumChassisAngularVelocity(),
-        Units.degreesToRadians(360));
-
     // Create the goal state
     PathPlannerTrajectoryState goalState = new PathPlannerTrajectoryState();
     goalState.pose = pose;
-
-    Logger.recordOutput("Swerve/Path Goal", pose);
-    Logger.recordOutput(
-        "Swerve/PID output", ALIGN_CONTROLLER.calculateRobotRelativeSpeeds(getPose(), goalState));
 
     List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(
         new Pose2d(
@@ -332,7 +309,7 @@ public class SwerveSubsystem extends SubsystemBase {
         pose);
     PathPlannerPath path = new PathPlannerPath(
         waypoints,
-        constraints,
+        Constants.Swerve.PathFinding.constraints,
         new IdealStartingState(
             MetersPerSecond.of(
                 new Translation2d(
@@ -353,16 +330,20 @@ public class SwerveSubsystem extends SubsystemBase {
       points.add(new Pose2d(state.position, new Rotation2d(0)));
     }
 
-    driverStationField.getObject("Path").setPoses(points);
+    m_driverStationField.getObject("Path").setPoses(points);
     Logger.recordOutput("Swerve/Path", points.toArray(new Pose2d[0]));
 
     // Runs until ~10 inches to target, then switches to pid
     return AutoBuilder.followPath(path)
-        .until(() -> pose.getTranslation().getDistance(getPose().getTranslation()) < Constants.Swerve.PIDTolerance)
+        .until(() -> pose.getTranslation()
+            .getDistance(getPose().getTranslation()) < Constants.Swerve.PathFinding.PIDTolerance)
         .andThen(
             run(
                 () -> swerveDrive.drive(
-                    ALIGN_CONTROLLER.calculateRobotRelativeSpeeds(getPose(), goalState))));
+                    ALIGN_CONTROLLER.calculateRobotRelativeSpeeds(getPose(), goalState))))
+        .finallyDo(interrupted -> {
+          clearDriverField();
+        });
   }
 
   public Command driveToDistanceCommand(double distanceInMeters, double speedInMetersPerSecond) {
@@ -388,49 +369,6 @@ public class SwerveSubsystem extends SubsystemBase {
    * });
    * }
    */
-
-  // Swerve drive with Setpoint Generator from 254, implemented by PathPlanner
-  private Command driveWithSetpointGenerator(Supplier<ChassisSpeeds> robotRelativeChassisSpeed)
-      throws IOException, ParseException {
-    SwerveSetpointGenerator setpointGenerator = new SwerveSetpointGenerator(
-        RobotConfig.fromGUISettings(), swerveDrive.getMaximumChassisAngularVelocity());
-    AtomicReference<SwerveSetpoint> prevSetpoint = new AtomicReference<>(
-        new SwerveSetpoint(
-            swerveDrive.getRobotVelocity(),
-            swerveDrive.getStates(),
-            DriveFeedforwards.zeros(swerveDrive.getModules().length)));
-    AtomicReference<Double> previousTime = new AtomicReference<>();
-
-    return startRun(
-        () -> previousTime.set(Timer.getFPGATimestamp()),
-        () -> {
-          double newTime = Timer.getFPGATimestamp();
-          SwerveSetpoint newSetpoint = setpointGenerator.generateSetpoint(
-              prevSetpoint.get(),
-              robotRelativeChassisSpeed.get(),
-              newTime - previousTime.get());
-          swerveDrive.drive(
-              newSetpoint.robotRelativeSpeeds(),
-              newSetpoint.moduleStates(),
-              newSetpoint.feedforwards().linearForces());
-          prevSetpoint.set(newSetpoint);
-          previousTime.set(newTime);
-        });
-  }
-
-  // Field Relative Drive with Setpoint Generator
-  public Command driveWithSetpointGeneratorFieldRelative(
-      Supplier<ChassisSpeeds> fieldRelativeSpeeds) {
-    try {
-      return driveWithSetpointGenerator(
-          () -> {
-            return ChassisSpeeds.fromFieldRelativeSpeeds(fieldRelativeSpeeds.get(), getHeading());
-          });
-    } catch (Exception e) {
-      DriverStation.reportError(e.toString(), true);
-    }
-    return Commands.none();
-  }
 
   // SysID Drive Motors Characterization
   public Command sysIdDriveMotorCommand() {
@@ -648,11 +586,6 @@ public class SwerveSubsystem extends SubsystemBase {
   // Gets the current pitch angle of the robot, as reported by the imu.
   public Rotation2d getPitch() {
     return swerveDrive.getPitch();
-  }
-
-  public void addFakeVisionReading() {
-    swerveDrive.addVisionMeasurement(
-        new Pose2d(3, 3, Rotation2d.fromDegrees(65)), Timer.getFPGATimestamp());
   }
 
   public SwerveDrive getSwerveDrive() {

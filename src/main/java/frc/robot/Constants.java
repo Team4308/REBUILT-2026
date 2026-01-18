@@ -1,8 +1,8 @@
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Radian;
-
 import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.path.PathConstraints;
+
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -35,21 +35,26 @@ public final class Constants {
       public static final PIDConstants TRANSLATION_PID = new PIDConstants(4, 0, 0);
     }
 
-    public static final double PIDTolerance = Units.inchesToMeters(10); // How close the bot is when it switches to PID
-                                                                        // for align
+    public static final class PathFinding {
+      public static final double PIDTolerance = Units.inchesToMeters(10); // How close the bot is when it switches to
+                                                                          // PID or align
+      public static final PathConstraints constraints = new PathConstraints(
+          3.0, 4.0,
+          Units.degreesToRadians(540), Units.degreesToRadians(720));
+    }
   }
 
   public static class Vision {
     public static class CAMERA_PLACEHOLDER {
-      public static Rotation3d ORIENTATION = new Rotation3d(0, Math.toRadians(20), 0);
-      public static Translation3d TRANSLATION = new Translation3d(0, 0, 0);
+      public static Rotation3d ORIENTATION = new Rotation3d(0, Math.toRadians(-30), Math.toRadians(-180));
+      public static Translation3d TRANSLATION = new Translation3d(0, 0, 0.5);
       public static Matrix<N3, N1> SINGLE_TAG_STD_DEVS = VecBuilder.fill(1, 1, 4);
       public static Matrix<N3, N1> MULTI_TAG_STD_DEVS = VecBuilder.fill(0.5, 0.5, 2);
     }
 
     public static class CAMERA_PLACEHOLDER2 {
-      public static Rotation3d ORIENTATION = new Rotation3d(0, Math.toRadians(20), Math.toRadians(180));
-      public static Translation3d TRANSLATION = new Translation3d(0, 0, 0);
+      public static Rotation3d ORIENTATION = new Rotation3d(0, Math.toRadians(-30), 0);
+      public static Translation3d TRANSLATION = new Translation3d(0, 0, 0.5);
       public static Matrix<N3, N1> SINGLE_TAG_STD_DEVS = VecBuilder.fill(1, 1, 4);
       public static Matrix<N3, N1> MULTI_TAG_STD_DEVS = VecBuilder.fill(0.5, 0.5, 2);
     }
