@@ -11,7 +11,6 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.Logger;
-import org.opencv.photo.AlignExposures;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.PathPlannerAuto;
@@ -43,7 +42,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import frc.robot.Constants;
@@ -76,9 +74,9 @@ public class SwerveSubsystem extends SubsystemBase {
 
   private Field2d m_driverStationField = new Field2d();
 
-  private double resetTime = Timer.getFPGATimestamp() + 2; // clear DS field
+  private double resetTime = Timer.getFPGATimestamp() + 2; // To clear DS field 2 seconds after boot. Why? Idk
 
-  {
+  { // To clear DS field 2 seconds after boot. Why? Idk
     new Thread(() -> {
       while (Timer.getFPGATimestamp() < resetTime) {
         Thread.yield();
@@ -87,6 +85,7 @@ public class SwerveSubsystem extends SubsystemBase {
     }).start();
   }
 
+  // Puts the pathing onto DS
   private final DoubleArraySubscriber pathPointsSub = NetworkTableInstance.getDefault()
       .getTable("AdvantageKit/LocalADStarAK")
       .getDoubleArrayTopic("CurrentPathPoints").subscribe(new double[] {});
@@ -96,8 +95,10 @@ public class SwerveSubsystem extends SubsystemBase {
       .getBooleanTopic("IsNewPathAvailable")
       .subscribe(false);
 
+  private double alignedStartTime = -1; // Tracks how long the bot has been aligned for
+
   public SwerveSubsystem(File directory) {
-    if (Robot.isSimulation())
+    if (Robot.isSimulation()) // Removes Ramp so we can just drive over it in sim
       SimulatedArena.overrideInstance(new Arena2026Rebuilt(false));
 
     // Configure the Telemetry before creating the SwerveDrive to avoid unnecessary
@@ -108,23 +109,22 @@ public class SwerveSubsystem extends SubsystemBase {
           .createSwerveDrive(
               Constants.MAX_SPEED,
               new Pose2d(
-                  new Translation2d(Meter.of(2), Meter.of(4)), Rotation2d.fromDegrees(0)));
+                  new Translation2d(Meter.of(2), Meter.of(4)), Rotation2d.fromDegrees(0))); // TODO: Set starting pose
+                                                                                            // correctly
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
     swerveDrive.setHeadingCorrection(false); // Only set to true if controlling the robot via angle.
     swerveDrive.setCosineCompensator(
-        false); // Correct for skew that gets worse as angular velocity increases. Start
-    // with a coefficient of 0.1. Could be negative
+        false); // Correct for skew that gets worse as angular velocity increases. Start with a
+                // coefficient of 0.1. Could be negative
     swerveDrive.setAngularVelocityCompensation(
-        false, false, 0.1); // Resync absolute encoders and motor encoders
-    // periodically when they are not moving.
+        false, false, 0.1); // Resync absolute encoders and motor encoders periodically when they are not
+                            // moving.
     swerveDrive.setModuleEncoderAutoSynchronize(false, 1);
     if (usingVision) {
       setupPhotonVision();
-      swerveDrive
-          .stopOdometryThread(); // Stop the odometry thread while running vision to synchronize
-      // updates better.
+      swerveDrive.stopOdometryThread(); // Stop the odometry thread while running vision to synchronize updates better.
     }
     ANGLE_CONTROLLER = Constants.Swerve.Heading.HEADING_PID;
     TRANSLATION_CONTROLLER = Constants.Swerve.Translation.TRANSLATION_PID;
@@ -148,6 +148,7 @@ public class SwerveSubsystem extends SubsystemBase {
       poseCameras.updateVisionField();
     }
 
+    // Puts the pathing onto DS
     if (newPathSub.get()) {
       double[] pointArray = pathPointsSub.get();
       int numPoses = pointArray.length / 2;
@@ -164,9 +165,6 @@ public class SwerveSubsystem extends SubsystemBase {
       m_driverStationField.getObject("Path").setPoses(poses);
     }
 
-    if (isAligned())
-      clearDriverField();
-
     m_driverStationField.setRobotPose(getPose());
     SmartDashboard.putData("DriverStationField", m_driverStationField);
 
@@ -182,8 +180,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
   public void setupPathPlanner() {
     // Load the RobotConfig from the GUI settings. You should probably store this in
-    // your Constants
-    // file
+    // your Constants file
     RobotConfig config;
     try {
       config = RobotConfig.fromGUISettings();
@@ -226,41 +223,55 @@ public class SwerveSubsystem extends SubsystemBase {
           },
           this);
     } catch (Exception e) {
-      e.printStackTrace(); // Handle exception as needed
+      e.printStackTrace();
 
     }
-    // Preload PathPlanner Path finding. IF USING CUSTOM PATHFINDER ADD BEFORE THIS
-    // LINE
     CommandScheduler.getInstance().schedule(PathfindingCommand.warmupCommand());
   }
 
+  /**
+   * Checks if the bot is aligned translation-wise
+   * 
+   * @return boolean aligned
+   */
   public boolean isTranslationAligned() {
     Translation2d currentTranslation2d = getPose().getTranslation();
     Translation2d targetTranslation2d = targetPose.getTranslation();
-    Logger.recordOutput("Swerve/Is Translation Aligned?",
-        currentTranslation2d.getDistance(targetTranslation2d) < Constants.Swerve.Translation.TOLERANCE);
+
     return currentTranslation2d.getDistance(targetTranslation2d) < Constants.Swerve.Translation.TOLERANCE;
   }
 
+  /**
+   * Checks if the bot is aligned heading-wise
+   * 
+   * @return boolean aligned
+   */
   public boolean isHeadingAligned() {
     Rotation2d currentHeading = getPose().getRotation();
     Rotation2d targetHeading = targetPose.getRotation();
 
     double angleDelta = currentHeading.minus(targetHeading).getDegrees();
 
-    Logger.recordOutput("Swerve/angledelta", angleDelta);
     boolean headingAligned = angleDelta < Constants.Swerve.Heading.TOLERANCE;
 
-    Logger.recordOutput("Swerve/Is Heading Aligned?", headingAligned);
     return headingAligned;
   }
 
+  /**
+   * Checks if the bot is aligned heading-wise and translation-wise
+   * 
+   * @return
+   */
   public boolean isAligned() {
     return isTranslationAligned() && isHeadingAligned();
   }
 
-  private double alignedStartTime = -1;
-
+  /**
+   * Checks if the bot is aligned for a period of time
+   * 
+   * @param holdTimeMillis How long the bot must stay aligned for
+   * @return boolean aligned
+   */
   public boolean isAligned(double holdTimeMillis) {
     if (isTranslationAligned() && isHeadingAligned()) {
       if (alignedStartTime == -1) {
@@ -285,17 +296,12 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   public Command driveToPoseObjAvoid(Pose2d pose) {
-    // Since we are using a holonomic drivetrain, the rotation component of this
-    // pose
-    // represents the goal holonomic rotation
     targetPose = pose; // Sets the global target pose
 
-    // Since AutoBuilder is configured, we can use it to build pathfinding commands
     Command pathfindingCommand = AutoBuilder.pathfindToPose(
         targetPose,
         Constants.Swerve.PathFinding.constraints,
-        0.0 // Goal end velocity in meters/sec
-    );
+        0.0);
 
     PathPlannerTrajectoryState goalState = new PathPlannerTrajectoryState();
     goalState.pose = targetPose;
@@ -303,6 +309,7 @@ public class SwerveSubsystem extends SubsystemBase {
     Logger.recordOutput(
         "Swerve/PID output", ALIGN_CONTROLLER.calculateRobotRelativeSpeeds(getPose(), goalState));
 
+    // Switches to PID once it is close enough
     return Commands.sequence(
         pathfindingCommand.until(() -> targetPose.getTranslation()
             .getDistance(getPose().getTranslation()) < Constants.Swerve.PathFinding.PIDTolerance),
@@ -321,14 +328,15 @@ public class SwerveSubsystem extends SubsystemBase {
     return defer(() -> driveToPose(pose.get()));
   }
 
-  public Command driveToPose(Pose2d pose) { // Tried and tested AutoAlign we used in 2025
-    // Change target pose
+  public Command driveToPose(Pose2d pose) { // Tried and tested Auto Align we used in 2025
+    // Change global target pose
     targetPose = pose;
 
     // Create the goal state
     PathPlannerTrajectoryState goalState = new PathPlannerTrajectoryState();
     goalState.pose = pose;
 
+    // Generates a list of waypoints to follow
     List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(
         new Pose2d(
             swerveDrive.getPose().getTranslation(),
@@ -348,8 +356,6 @@ public class SwerveSubsystem extends SubsystemBase {
     path.preventFlipping = true;
 
     Logger.recordOutput("Swerve/Path Goal", pose);
-    Logger.recordOutput(
-        "Swerve/PID output", ALIGN_CONTROLLER.calculateRobotRelativeSpeeds(getPose(), goalState));
 
     // Visualize Path on driver station
     ArrayList<Pose2d> points = new ArrayList<>();
@@ -366,13 +372,20 @@ public class SwerveSubsystem extends SubsystemBase {
             .getDistance(getPose().getTranslation()) < Constants.Swerve.PathFinding.PIDTolerance)
         .andThen(
             run(
-                () -> swerveDrive.drive(
-                    ALIGN_CONTROLLER.calculateRobotRelativeSpeeds(getPose(), goalState))))
+                () -> {
+                  swerveDrive.drive(
+                      ALIGN_CONTROLLER.calculateRobotRelativeSpeeds(getPose(), goalState));
+                  Logger.recordOutput(
+                      "Swerve/PID output", ALIGN_CONTROLLER.calculateRobotRelativeSpeeds(getPose(), goalState));
+                }))
         .finallyDo(interrupted -> {
           clearDriverField();
         }).until(() -> isAligned(500));
   }
 
+  /**
+   * Drives a certain distance at a certain speed
+   */
   public Command driveToDistanceCommand(double distanceInMeters, double speedInMetersPerSecond) {
     return run(() -> drive(new ChassisSpeeds(speedInMetersPerSecond, 0, 0)))
         .until(
