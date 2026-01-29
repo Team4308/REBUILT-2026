@@ -11,6 +11,7 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.Logger;
+import org.opencv.photo.AlignExposures;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.PathPlannerAuto;
@@ -41,6 +42,8 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import frc.robot.Constants;
@@ -66,7 +69,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
   private final SwerveDrive swerveDrive;
 
-  private final boolean usingVision = true;
+  private final boolean usingVision = false;
   private PoseCamera poseCameras;
 
   private Pose2d targetPose = new Pose2d();
@@ -234,18 +237,41 @@ public class SwerveSubsystem extends SubsystemBase {
   public boolean isTranslationAligned() {
     Translation2d currentTranslation2d = getPose().getTranslation();
     Translation2d targetTranslation2d = targetPose.getTranslation();
+    Logger.recordOutput("Swerve/Is Translation Aligned?",
+        currentTranslation2d.getDistance(targetTranslation2d) < Constants.Swerve.Translation.TOLERANCE);
     return currentTranslation2d.getDistance(targetTranslation2d) < Constants.Swerve.Translation.TOLERANCE;
   }
 
   public boolean isHeadingAligned() {
-    double currentHeading = getPose().getRotation().getDegrees();
-    double targetHeading = targetPose.getRotation().getDegrees();
-    return (Math.abs(currentHeading - targetHeading) < Constants.Swerve.Heading.TOLERANCE)
-        || (Math.abs(currentHeading + targetHeading) % 360 < Constants.Swerve.Heading.TOLERANCE);
+    Rotation2d currentHeading = getPose().getRotation();
+    Rotation2d targetHeading = targetPose.getRotation();
+
+    double angleDelta = currentHeading.minus(targetHeading).getDegrees();
+
+    Logger.recordOutput("Swerve/angledelta", angleDelta);
+    boolean headingAligned = angleDelta < Constants.Swerve.Heading.TOLERANCE;
+
+    Logger.recordOutput("Swerve/Is Heading Aligned?", headingAligned);
+    return headingAligned;
   }
 
   public boolean isAligned() {
     return isTranslationAligned() && isHeadingAligned();
+  }
+
+  private double alignedStartTime = -1;
+
+  public boolean isAligned(double holdTimeMillis) {
+    if (isTranslationAligned() && isHeadingAligned()) {
+      if (alignedStartTime == -1) {
+        alignedStartTime = System.currentTimeMillis();
+      } else if (System.currentTimeMillis() - alignedStartTime >= holdTimeMillis) {
+        return true;
+      }
+    } else {
+      alignedStartTime = -1;
+    }
+    return false;
   }
 
   public Command getAutonomousCommand(String pathName) {
@@ -262,9 +288,7 @@ public class SwerveSubsystem extends SubsystemBase {
     // Since we are using a holonomic drivetrain, the rotation component of this
     // pose
     // represents the goal holonomic rotation
-    targetPose = pose;
-
-    // Create the constraints to use while pathfinding
+    targetPose = pose; // Sets the global target pose
 
     // Since AutoBuilder is configured, we can use it to build pathfinding commands
     Command pathfindingCommand = AutoBuilder.pathfindToPose(
@@ -274,19 +298,23 @@ public class SwerveSubsystem extends SubsystemBase {
     );
 
     PathPlannerTrajectoryState goalState = new PathPlannerTrajectoryState();
-    goalState.pose = pose;
-    Logger.recordOutput("Swerve/Path Goal", pose);
+    goalState.pose = targetPose;
+    Logger.recordOutput("Swerve/Path Goal", targetPose);
     Logger.recordOutput(
         "Swerve/PID output", ALIGN_CONTROLLER.calculateRobotRelativeSpeeds(getPose(), goalState));
 
-    return pathfindingCommand.until(() -> pose.getTranslation()
-        .getDistance(getPose().getTranslation()) < Constants.Swerve.PathFinding.PIDTolerance).andThen(
-            run(() -> swerveDrive.drive(
-                ALIGN_CONTROLLER.calculateRobotRelativeSpeeds(
-                    getPose(), goalState))))
-        .finallyDo(interrupted -> {
-          clearDriverField();
-        });
+    return Commands.sequence(
+        pathfindingCommand.until(() -> targetPose.getTranslation()
+            .getDistance(getPose().getTranslation()) < Constants.Swerve.PathFinding.PIDTolerance),
+        run(() -> {
+          swerveDrive.drive(
+              ALIGN_CONTROLLER.calculateRobotRelativeSpeeds(
+                  getPose(), goalState));
+          Logger.recordOutput(
+              "Swerve/PID output", ALIGN_CONTROLLER.calculateRobotRelativeSpeeds(getPose(), goalState));
+        }).until(() -> isAligned(200)))
+        .finallyDo(() -> clearDriverField());
+
   }
 
   public Command driveToPose(Supplier<Pose2d> pose) {
@@ -304,8 +332,7 @@ public class SwerveSubsystem extends SubsystemBase {
     List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(
         new Pose2d(
             swerveDrive.getPose().getTranslation(),
-            new Rotation2d(
-                getFieldVelocity().vxMetersPerSecond, getFieldVelocity().vyMetersPerSecond)),
+            new Rotation2d()),
         pose);
     PathPlannerPath path = new PathPlannerPath(
         waypoints,
@@ -343,7 +370,7 @@ public class SwerveSubsystem extends SubsystemBase {
                     ALIGN_CONTROLLER.calculateRobotRelativeSpeeds(getPose(), goalState))))
         .finallyDo(interrupted -> {
           clearDriverField();
-        });
+        }).until(() -> isAligned(500));
   }
 
   public Command driveToDistanceCommand(double distanceInMeters, double speedInMetersPerSecond) {
@@ -391,6 +418,10 @@ public class SwerveSubsystem extends SubsystemBase {
 
   public void replaceSwerveModuleFeedforward(double kS, double kV, double kA) {
     swerveDrive.replaceSwerveModuleFeedforward(new SimpleMotorFeedforward(kS, kV, kA));
+  }
+
+  public void setRobotPose(Pose2d pose) {
+    swerveDrive.resetOdometry(pose);
   }
 
   // Command to drive the robot using translative values and heading as angular

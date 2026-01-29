@@ -7,8 +7,10 @@ package frc.robot;
 import ca.team4308.absolutelib.control.RazerWrapper;
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -16,6 +18,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.subsystems.swerve.SwerveSubsystem;
 import java.io.File;
 import swervelib.SwerveInputStream;
@@ -105,7 +108,17 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return autoChooser.getSelected();
+    return Commands.sequence(
+        new InstantCommand(() -> drivebase.setRobotPose(new Pose2d(2, 2, new Rotation2d()))),
+        drivebase.driveToPoseObjAvoid(() -> new Pose2d(2, 6, new Rotation2d(0))),
+        drivebase.driveToPoseObjAvoid(() -> new Pose2d(2, 2, new Rotation2d(Units.degreesToRadians(90)))),
+        drivebase.driveToPoseObjAvoid(() -> new Pose2d(2, 4, new Rotation2d(0))),
+        drivebase.driveToPoseObjAvoid(() -> new Pose2d(7, 7.2, new Rotation2d(Units.degreesToRadians(180)))),
+        drivebase.driveToPoseObjAvoid(() -> new Pose2d(7.5, 3, new Rotation2d(0))),
+        drivebase.driveToPoseObjAvoid(() -> new Pose2d(2.6, 1, new Rotation2d(Units.degreesToRadians(270)))),
+        drivebase.driveToPoseObjAvoid(() -> new Pose2d(14, 4, new Rotation2d(Units.degreesToRadians(67)))),
+        drivebase.driveToPoseObjAvoid(() -> new Pose2d(10, 4, new Rotation2d(0))));
+    // return autoChooser.getSelected();
   }
 
   public void setMotorBrake(boolean brake) {

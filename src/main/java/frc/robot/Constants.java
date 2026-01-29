@@ -24,15 +24,15 @@ public final class Constants {
 
   public static final class Swerve {
     public static final class Heading {
-      public static final double TOLERANCE = 3; // In degrees
+      public static final double TOLERANCE = 10; // In degrees
 
-      public static final PIDConstants HEADING_PID = new PIDConstants(4, 0, 0);
+      public static final PIDConstants HEADING_PID = new PIDConstants(2, 0, 0);
     }
 
     public static final class Translation {
-      public static final double TOLERANCE = Units.inchesToMeters(1.0);
+      public static final double TOLERANCE = 0.05;
 
-      public static final PIDConstants TRANSLATION_PID = new PIDConstants(4, 0, 0);
+      public static final PIDConstants TRANSLATION_PID = new PIDConstants(2, 0, 0);
     }
 
     public static final class PathFinding {
