@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import frc.robot.Util.FuelSim;
 import frc.robot.subsystems.swerve.SwerveSubsystem;
 import java.io.File;
 import swervelib.SwerveInputStream;
@@ -74,6 +75,7 @@ public class RobotContainer {
     // Configure the trigger bindings
     configureNamedCommands();
     configureBindings();
+    initFuelSim();
 
     DriverStation.silenceJoystickConnectionWarning(true);
     autoChooser = AutoBuilder.buildAutoChooser();
@@ -121,7 +123,20 @@ public class RobotContainer {
     // return autoChooser.getSelected();
   }
 
-  public void setMotorBrake(boolean brake) {
-    drivebase.setMotorBrake(brake);
+  private void initFuelSim() {
+    FuelSim.getInstance(); // gets singleton instance of FuelSim
+    FuelSim.getInstance().spawnStartingFuel(); // spawns fuel in the depots and neutral zone
+
+    // Register a robot for collision with fuel
+    FuelSim.getInstance().registerRobot(
+        Units.inchesToMeters(34), // from left to right
+        Units.inchesToMeters(34), // from front to back
+        Units.inchesToMeters(6), // from floor to top of bumpers
+        drivebase::getPose, // Supplier<Pose2d> of robot pose
+        drivebase::getFieldVelocity); // Supplier<ChassisSpeeds> of field-centric chassis speeds
+
+    FuelSim.getInstance().setSubticks(5); // sets the number of physics iterations to perform per 20ms loop. Default = 5
+
+    FuelSim.getInstance().start();
   }
 }
