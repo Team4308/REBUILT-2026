@@ -4,17 +4,28 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.Subsystems.turretSubsystem;
 
 public class RobotContainer {
+  public turretSubsystem m_turret = new turretSubsystem();
+
+
   public RobotContainer() {
     configureBindings();
+    
   }
 
   private void configureBindings() {} 
 
   public Command getAutonomousCommand() {
     return Commands.print("No autonomous command configured");
+  }
+
+  
+  public void robotPeriodic() {
+    m_turret.setTarget(720.00);
   }
 }
