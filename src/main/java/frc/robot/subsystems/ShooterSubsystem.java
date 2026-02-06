@@ -43,7 +43,7 @@ public class ShooterSubsystem extends LogSubsystem{
         rightConfiguration = new TalonFXConfiguration();
         leftConfiguration = new TalonFXConfiguration();
 
-                
+        // ask if this is necessary
         // rightConfiguration.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         rightConfiguration.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         // leftConfiguration.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
@@ -51,6 +51,11 @@ public class ShooterSubsystem extends LogSubsystem{
         
         rightMotor.getConfigurator().apply(rightConfiguration);
         leftMotor.getConfigurator().apply(leftConfiguration);
+
+        maxSpeed = 100;
+        topMultiplier = 1;
+        bottomMultiplier = 1;
+
     }
 }
 
