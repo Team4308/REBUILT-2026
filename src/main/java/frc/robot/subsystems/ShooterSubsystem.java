@@ -7,6 +7,7 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import co m.ctre.phoenix6.signals.NeutralModeValue;
+import absolutelib;
 
 import ca.team4308.absolutelib.wrapper.LogSubsystem;
 import edu.wpi.first.util.sendable.Sendable;
@@ -31,6 +32,9 @@ public class ShooterSubsystem extends LogSubsystem{
     public double maxrpm;
     public double rpm;
 
+    public String state;
+    public boolean using;
+
     public ShooterSubsystem() {
         rightMotor = new TalonFX(Constants.Mapping.ShooterMotor.kMotor1);
         leftMotor = new TalonFX(Constants.Mapping.ShooterMotor.kMotor2);
@@ -44,6 +48,9 @@ public class ShooterSubsystem extends LogSubsystem{
         rightConfiguration = new TalonFXConfiguration();
         leftConfiguration = new TalonFXConfiguration();
 
+        state = "none";
+        using = false;
+
         // ask if this is necessary
         // rightConfiguration.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         rightConfiguration.MotorOutput.NeutralMode = NeutralModeValue.Coast;
@@ -54,15 +61,12 @@ public class ShooterSubsystem extends LogSubsystem{
         leftMotor.getConfigurator().apply(leftConfiguration);
 
         rpm = 0;
-        maxrpm = 100;
-        topMultiplier = 1;
-        bottomMultiplier = 1;
 
     }
     void setTargetSpeed(double rpm) {
         this.rpm = rpm;
-        rightVelocity.Velocity = rpm * topMultiplier;
-        leftVelocity.Velocity = rpm * bottomMultiplier;
+        rightVelocity.Velocity = rpm * Constants.Shooter.topMultiplier;
+        leftVelocity.Velocity = rpm * Constants.Shooter.bottomMultiplier;
         rightMotor.setControl(rightVelocity);
         leftMotor.setControl(leftVelocity);
     }
@@ -111,9 +115,9 @@ void setShooterSpeedHub() {} // sets the shooter’s speed to the correct speed 
 Command setShooterSpeedHub() {} // same as previous, but it runs until interrupted.
 
 void setShooterSpeedPass() {} // sets the shooter’s speed to the correct speed to pass to our zone. Specific location will be in strategy
-Command setShooterSpeedPass() {} // same as previous, but it runs until interrupted.
+Command setShooterSpeedPass() {} // same as previous, but it runs until interrupted. lingfeng said 50%
 
-void setState(String state) {} // sets the current state
+void setState(String state) {} // sets the current state 
 
-void setStateBased(boolean using) {} // turns on/off the state manager
+void setStateBased(boolean using) {} // turns on/off the state manager 
 */
