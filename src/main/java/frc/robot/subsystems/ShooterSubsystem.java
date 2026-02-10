@@ -28,7 +28,8 @@ public class ShooterSubsystem extends LogSubsystem{
     public double bottomMultiplier;
     public double topMultiplier;
 
-    public double maxSpeed;
+    public double maxrpm;
+    public double rpm;
 
     public ShooterSubsystem() {
         rightMotor = new TalonFX(Constants.Mapping.ShooterMotor.kMotor1);
@@ -52,26 +53,55 @@ public class ShooterSubsystem extends LogSubsystem{
         rightMotor.getConfigurator().apply(rightConfiguration);
         leftMotor.getConfigurator().apply(leftConfiguration);
 
-        maxSpeed = 100;
+        rpm = 0;
+        maxrpm = 100;
         topMultiplier = 1;
         bottomMultiplier = 1;
 
     }
-}
+    void setTargetSpeed(double rpm) {
+        this.rpm = rpm;
+        rightVelocity.Velocity = rpm * topMultiplier;
+        leftVelocity.Velocity = rpm * bottomMultiplier;
+        rightMotor.setControl(rightVelocity);
+        leftMotor.setControl(leftVelocity);
+    }
+
+     boolean isAtTargetSpeed() {
+        double rightError = Math.abs(rightMotor.getVelocity() - rightVelocity.Velocity);
+        double leftError = Math.abs(leftMotor.getVelocity() - leftVelocity.Velocity);
+        return rightError < Constants.Shooter.kRPMTolerance && leftError < Constants.Shooter.kRPMTolerance;
+     }
+
+     void stopMotors() {
+        setTargetSpeed(0);
+     }
+
+    public Command setShooterSpeed(Supplier<Double> rpm) {      
+                setTargetSpeed(rpm.get());
+                
+
+     } // sets the speed to rpm, and runs until it has reached the target
+
+
+     
+
+    }
+
 
 
 
 
 /* Necessary functions
-void setTargetSpeed(double rpm) {} // sets the target speed of the motors to rpm
+void setTargetSpeed(double rpm) {} // sets the target speed of the motors to rpm DONE
 
-boolean isAtTargetSpeed() {} // returns whether the target speed is within x rpm of the target (x in Constants.java)
+boolean isAtTargetSpeed() {} // returns whether the target speed is within x rpm of the target (x in Constants.java) DONE
 
 Command setShooterSpeed(Supplier<Double> rpm) {} // sets the speed to rpm, and runs until it has reached the target
 
 Command setShooterSpeed(Supplier<Double>, double timeoutMs) {} // same as setshooterspeed but if the timeout runs out first, it will finish anyways
 
-void stopMotors() {} // sets target to 0, and stops motors
+void stopMotors() {} // sets target to 0, and stops motors DONE
 
 void setShooterSpeedHub() {} // sets the shooter’s speed to the correct speed to target to the hub. Ask nicholas for how to do this
 Command setShooterSpeedHub() {} // same as previous, but it runs until interrupted.
