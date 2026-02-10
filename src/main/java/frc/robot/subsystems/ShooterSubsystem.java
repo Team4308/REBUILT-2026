@@ -88,15 +88,25 @@ public class ShooterSubsystem extends LogSubsystem{
         ).until(this::isAtTargetSpeed);
      } // sets the speed to rpm, and runs until it has reached the target
 
-
-    }
-
-    public Command setShooterSpeed(Supplier<Double> rpm, double timeoutMs) {
+         public Command setShooterSpeed(Supplier<Double> rpm, double timeoutMs) {
            return Commands.run(
                 () -> setTargetSpeed(rpm.get()),
                this
            ).until(() -> isAtTargetSpeed() || Timer.getFPGATimestamp() >= timeoutMs);
      } // same as setshooterspeed but if the timeout runs out first, it will finish anyways
+
+     void setState(String state) {
+        this.state = state;
+     } // sets the current state
+
+     void setStateBased(boolean using) {
+        this.using = using;
+     } // turns on/off the state manager
+
+
+    }
+
+
 
 
 
