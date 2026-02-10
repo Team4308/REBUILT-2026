@@ -78,17 +78,21 @@ public class ShooterSubsystem extends LogSubsystem{
      }
 
     public Command setShooterSpeed(Supplier<Double> rpm) {      
-                setTargetSpeed(rpm.get());
-                
-
+        return Commands.run(
+            () -> setTargetSpeed(rpm.get()),
+            this
+        ).until(this::isAtTargetSpeed);
      } // sets the speed to rpm, and runs until it has reached the target
 
 
-     
-
     }
 
-
+    public Command setShooterSpeed(Supplier<Double> rpm, double timeoutMs) {
+           return Commands.run(
+                () -> setTargetSpeed(rpm.get()),
+               this
+           ).until(() -> isAtTargetSpeed() || Timer.getFPGATimestamp() >= timeoutMs);
+     } // same as setshooterspeed but if the timeout runs out first, it will finish anyways
 
 
 
@@ -97,9 +101,9 @@ void setTargetSpeed(double rpm) {} // sets the target speed of the motors to rpm
 
 boolean isAtTargetSpeed() {} // returns whether the target speed is within x rpm of the target (x in Constants.java) DONE
 
-Command setShooterSpeed(Supplier<Double> rpm) {} // sets the speed to rpm, and runs until it has reached the target
+Command setShooterSpeed(Supplier<Double> rpm) {} // sets the speed to rpm, and runs until it has reached the target DONE
 
-Command setShooterSpeed(Supplier<Double>, double timeoutMs) {} // same as setshooterspeed but if the timeout runs out first, it will finish anyways
+Command setShooterSpeed(Supplier<Double>, double timeoutMs) {} // same as setshooterspeed but if the timeout runs out first, it will finish anyways DONE
 
 void stopMotors() {} // sets target to 0, and stops motors DONE
 
