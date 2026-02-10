@@ -2,32 +2,35 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.HoodSubsystem;
+import java.util.function.Supplier;
 
 public class HoodCommand extends Command {
-    private final HoodSubsystem m_HoodSubsystem; 
-    private final double m_angle;
+    private final HoodSubsystem m_hood; 
+    private final Supplier<Double> m_angleSupplier;
 
-    public HoodCommand(HoodSubsystem hood, double angle) {
-        this.m_HoodSubsystem = hood;
-        this.m_angle = angle;
-        
-        // Tells the robot that this command uses the Hood
-        addRequirements(m_HoodSubsystem);
+    public HoodCommand(HoodSubsystem hood, Supplier<Double> angleSupplier) {
+        this.m_hood = hood;
+        this.m_angleSupplier = angleSupplier;
+        addRequirements(m_hood);
     }
 
     @Override
     public void initialize() {
-        // Set the target on the subsystem
-        m_hood.targetAngle = m_angle;
-        
-        // We reset the PID controller inside the Subsystem 
-        // because the Controller itself is (and should be) private.
-        m_hood.resetController(); 
+        m_hood.setState("Moving");
+    }
+
+    @Override
+    public void execute() {
+        m_hood.setHoodAngle(m_angleSupplier.get());
     }
 
     @Override
     public boolean isFinished() {
-        // Returns true when the hood is within the 3-degree tolerance
-        return m_hood.atPosition();
+        return m_hood.isAtPosition();
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+        m_hood.setState("Idle");
     }
 }
