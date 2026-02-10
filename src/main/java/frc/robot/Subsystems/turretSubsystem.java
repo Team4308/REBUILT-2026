@@ -8,12 +8,13 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class turretSubsystem extends SubsystemBase {
 
-
-    //double getTurretAngle() {} // returns rotation in degrees from 0-360
-
     public turretSubsystem() {
 
     }
+
+    double getTurretAngle() {
+        TalonFX 
+    } // returns rotation in degrees from 0-360
 
     public void setTarget(double degrees) {
         double targetAngle  = 0;
