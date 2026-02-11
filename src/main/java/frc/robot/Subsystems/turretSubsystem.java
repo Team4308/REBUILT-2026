@@ -38,7 +38,7 @@ public class turretSubsystem extends SubsystemBase {
     }
 
     public double getTurretAngle() {
-        //Chinease remainder theorm
+        //Chinese remainder theorm
         long a1 = 1;
         long m1 = 2;
 
