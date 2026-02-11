@@ -16,10 +16,13 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+import ca.team4308.absolutelib.math.trajectories.solver.ChineseRemainderSolver;
+import ca.team4308.absolutelib.math.trajectories.solver.ChineseRemainderSolver.ModularConstraint;
+import ca.team4308.absolutelib.math.trajectories.solver.ChineseRemainderSolver.CRTSolution;
+
+
 public class turretSubsystem extends SubsystemBase {
 
-<<<<<<< HEAD
-=======
     private final TalonFX turretMotor;
 
     private final double CANCODER1_GEAR_RATIO = 85/31;
@@ -29,32 +32,33 @@ public class turretSubsystem extends SubsystemBase {
     public double targetAngle = 0.0;
     private boolean isAtTarget = false;
 
->>>>>>> d53cf76179f43f6353d34300898f2b1ba6244af9
     public turretSubsystem() {
         turretMotor = new TalonFX(0);
 
     }
 
-<<<<<<< HEAD
-    double getTurretAngle() {
-        TalonFX 
-    } // returns rotation in degrees from 0-360
-=======
     public double getTurretAngle() {
-        return 0.0;
+        //Chinease remainder theorm
+        long a1 = 1;
+        long m1 = 2;
+
+        long a2 = 2;
+        long m2 = 3;
+        
+        long [] result = ChineseRemainderSolver.solveTwoCongruences(a1, m1, a2, m2);
+        return result[0];
     }
 
     public boolean isAtTarget(double degrees) {
         return Math.abs(MathUtil.inputModulus(degrees - getTurretAngle(), -180, 180)) < 1.0;
     }
->>>>>>> d53cf76179f43f6353d34300898f2b1ba6244af9
 
     public void setTarget(double degrees) {
         double targetAngle  = 0;
         if (degrees > 360) {
             targetAngle = degrees - (360 * Math.floor(degrees / 360));
-            System.out.println(targetAngle);//should be return targetAngle, no?
-        } 
+            System.out.println(targetAngle); // Doesn't return values back
+        
     }
 
     public Command moveToTarget(Supplier<Double> degrees) {
@@ -82,4 +86,6 @@ public class turretSubsystem extends SubsystemBase {
 
     public void setStateBased(boolean using) {}
     */
+}
+
 }
