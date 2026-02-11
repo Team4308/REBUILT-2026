@@ -12,19 +12,14 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Util.trajCalc;
+
 import java.util.function.Supplier;
 
 public class HoodSubsystem extends SubsystemBase {
     private final TalonFX m_hoodMotor = new TalonFX(Constants.Hood.HoodMotor);
 
-    private final double TOTAL_GEAR_RATIO = 50.0 * (42.0 / 12.0); 
-    private final double FORWARD_SOFT_LIMIT_ANGLE = 120.0;
-    private final double REVERSE_SOFT_LIMIT_ANGLE = 0.0;
-    private final ArmFeedforward feedforward = new ArmFeedforward(0, 0.28, 0.0155, 0.01);
-    private final ProfiledPIDController pidController = new ProfiledPIDController(
-        0.06, 0.0, 0.0, 
-        new TrapezoidProfile.Constraints(500, 1000)
-    );
+    
 
     private double targetAngle = 0;
     private String currentState = "Idle";
@@ -35,9 +30,9 @@ public class HoodSubsystem extends SubsystemBase {
         talonFXConfigs.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         
         // Software Limits
-        talonFXConfigs.SoftwareLimitSwitch.ForwardSoftLimitThreshold = (FORWARD_SOFT_LIMIT_ANGLE / 360.0) * TOTAL_GEAR_RATIO;
+        talonFXConfigs.SoftwareLimitSwitch.ForwardSoftLimitThreshold = (Constants.Hood.FORWARD_SOFT_LIMIT_ANGLE / 360.0) * Constants.Hood.TOTAL_GEAR_RATIO;
         talonFXConfigs.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
-        talonFXConfigs.SoftwareLimitSwitch.ReverseSoftLimitThreshold = (REVERSE_SOFT_LIMIT_ANGLE / 360.0) * TOTAL_GEAR_RATIO;
+        talonFXConfigs.SoftwareLimitSwitch.ReverseSoftLimitThreshold = (Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE / 360.0) * Constants.Hood.TOTAL_GEAR_RATIO;
         talonFXConfigs.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
 
         m_hoodMotor.getConfigurator().apply(talonFXConfigs);
@@ -45,11 +40,11 @@ public class HoodSubsystem extends SubsystemBase {
     }
 
     public double getHoodAngle() {
-        return (m_hoodMotor.getPosition().getValueAsDouble() / TOTAL_GEAR_RATIO) * 360.0;
+        return (m_hoodMotor.getPosition().getValueAsDouble() / Constants.Hood.TOTAL_GEAR_RATIO) * 360.0;
     }
 
     public void setHoodAngle(double angle) {
-        this.targetAngle = Math.min(Math.max(angle, REVERSE_SOFT_LIMIT_ANGLE), FORWARD_SOFT_LIMIT_ANGLE);
+        this.targetAngle = Math.min(Math.max(angle, Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE), Constants.Hood.FORWARD_SOFT_LIMIT_ANGLE);
     }
 
     public boolean isAtPosition() {
@@ -62,13 +57,13 @@ public class HoodSubsystem extends SubsystemBase {
         return run(() -> setHoodAngle(angleSupplier.get())).until(this::isAtPosition);
     }
 
-    //Move to angle with Timeout
+    // Move to angle with Timeout
     public Command moveHood(Supplier<Double> angleSupplier, double timeoutSeconds) {
         return moveHood(angleSupplier).withTimeout(timeoutSeconds);
     }
 
     public void resetHood() {
-        if (m_hoodMotor.getSupplyCurrent().getValueAsDouble() < 20.0) { // 20A threshold
+        if (m_hoodMotor.getSupplyCurrent().getValueAsDouble() < Constants.Hood.ampThreshold) {
             m_hoodMotor.setVoltage(-2.0); 
         } else {
             m_hoodMotor.setVoltage(0);
@@ -84,7 +79,7 @@ public class HoodSubsystem extends SubsystemBase {
     public void setStateBased(boolean using) { this.isStateManaged = using; }
 
     // Placeholder for Vision/Strategy Logic
-    public void aimAtHub() { setHoodAngle( 0 ); }
+    public void aimAtHub() { setHoodAngle( new trajCalc().getNeededPitch()); }
     public Command aimAtHubCommand() { return run(this::aimAtHub); }
 
     public void aimAtPassingZone() { setHoodAngle( Constants.Hood.kPassingAngle ); }
@@ -93,8 +88,8 @@ public class HoodSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         double currentAngle = getHoodAngle();
-        double pidOutput = pidController.calculate(currentAngle, targetAngle);
-        double ffVolts = feedforward.calculate(Units.degreesToRadians(currentAngle), pidController.getSetpoint().velocity);
+        double pidOutput = Constants.Hood.pidController.calculate(currentAngle, targetAngle);
+        double ffVolts = Constants.Hood.feedforward.calculate(Units.degreesToRadians(currentAngle), Constants.Hood.pidController.getSetpoint().velocity);
 
         m_hoodMotor.setVoltage(pidOutput + ffVolts);
 
