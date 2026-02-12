@@ -130,4 +130,6 @@ Command setShooterSpeedPass() {} // same as previous, but it runs until interrup
 void setState(String state) {} // sets the current state 
 
 void setStateBased(boolean using) {} // turns on/off the state manager 
+
+make function to turn RPM to percent 0-1, krakens have 3000 max rpm.
 */
