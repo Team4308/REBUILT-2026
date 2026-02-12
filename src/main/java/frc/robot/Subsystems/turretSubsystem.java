@@ -77,7 +77,6 @@ public class turretSubsystem extends SubsystemBase {
 
     long a1 = Math.round(e1 * 200) % m1;
     long a2 = Math.round(e2 * 200) % m2;
-
     long[] result = ChineseRemainderSolver.solveTwoCongruences(a1, m1, a2, m2);
 
     if (result == null) {
@@ -85,9 +84,7 @@ public class turretSubsystem extends SubsystemBase {
     }
 
     long turretScaled = result[0];
-
     double turretRotations = turretScaled / 200.0;
-
     double turretDegrees = turretRotations * 360.0;
 
     return MathUtil.inputModulus(turretDegrees, -180, 180);
