@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj.motorcontrol.Talon;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Util.TrajectoryCalculations;
 import swervelib.encoders.CANCoderSwerve;
 
 import ca.team4308.absolutelib.math.trajectories.solver.ChineseRemainderSolver;
@@ -34,12 +35,9 @@ public class turretSubsystem extends SubsystemBase {
     private final CANcoder canCoder1;
     private final CANcoder canCoder2;
 
-
-    //(85/17)(40/31):1
-    //(85/17)(40/33):1
-    private final double CANCODER1_GEAR_RATIO = ((85.0/17.0)*(40.0/31.0))/1.0;
-    private final double CANCODER2_GEAR_RATIO = ((85.0/17.0)*(40.0/33.0))/1.0;
-    private final double DRIVE_MOTOR_GEAR_RATIO = (12.0/85.0);
+    //(85/17)(40/31):1 for cancoder 1
+    //(85/17)(40/33):1 for cancoder 2
+    //(12/85):1 for drive motor
 
     public double targetAngle = 0.0;
     
@@ -121,11 +119,10 @@ public class turretSubsystem extends SubsystemBase {
             driveMotor.set(error * 0.01);
         }).until(() -> isAtTarget(targetAngle)).withTimeout(2000);
     }
-    
+
     public Command aimAtHub(double degrees) {
 
-        //find hub degrees using vision and then do it
-        double hubDegrees = degrees;
+        double hubDegrees = TrajectoryCalculations.getNeededYaw(double degrees);
 
         return run(() -> {
             targetAngle = hubDegrees;
