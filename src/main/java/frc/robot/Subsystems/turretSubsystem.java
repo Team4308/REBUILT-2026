@@ -35,12 +35,13 @@ public class turretSubsystem extends SubsystemBase {
     private final CANcoder canCoder1;
     private final CANcoder canCoder2;
 
-    //(85/17)(40/31):1 for cancoder 1
-    //(85/17)(40/33):1 for cancoder 2
-    //(12/85):1 for drive motor
+    //(85/17)(40/31):1
+    //(85/17)(40/33):1
+    private final double CANCODER1_GEAR_RATIO = ((85.0/17.0)*(40.0/31.0))/1.0;
+    private final double CANCODER2_GEAR_RATIO = ((85.0/17.0)*(40.0/33.0))/1.0;
+    private final double DRIVE_MOTOR_GEAR_RATIO = (12.0/85.0);
 
     public double targetAngle = 0.0;
-    
     public double degrees = 0.0;
 
     public turretSubsystem() {
@@ -49,18 +50,16 @@ public class turretSubsystem extends SubsystemBase {
         canCoder1 = new CANcoder(1);
         canCoder2 = new CANcoder(2);
 
-        
         //uhh the deviceids are placeholders but we can change them later, just wanted to get the code down
-
         //Drive Motor Config
+
         TalonFXConfiguration driveConfig = new TalonFXConfiguration();
+
         driveConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         driveConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
         driveMotor.getConfigurator().apply(driveConfig);
-        
         var ccConfig = new CANcoderConfiguration();
-
         ccConfig.MagnetSensor.MagnetOffset = 0.0;
         
         canCoder1.getConfigurator().apply(ccConfig);
@@ -79,7 +78,6 @@ public class turretSubsystem extends SubsystemBase {
 
     long a1 = Math.round(e1 * 200) % m1;
     long a2 = Math.round(e2 * 200) % m2;
-
     long[] result = ChineseRemainderSolver.solveTwoCongruences(a1, m1, a2, m2);
 
     if (result == null) {
@@ -87,9 +85,7 @@ public class turretSubsystem extends SubsystemBase {
     }
 
     long turretScaled = result[0];
-
     double turretRotations = turretScaled / 200.0;
-
     double turretDegrees = turretRotations * 360.0;
 
     return MathUtil.inputModulus(turretDegrees, -180, 180);
@@ -121,8 +117,8 @@ public class turretSubsystem extends SubsystemBase {
     }
 
     public Command aimAtHub(double degrees) {
-
-        double hubDegrees = TrajectoryCalculations.getNeededYaw(double degrees);
+        //find hub degrees using vision and then do it
+        double hubDegrees = degrees;
 
         return run(() -> {
             targetAngle = hubDegrees;
