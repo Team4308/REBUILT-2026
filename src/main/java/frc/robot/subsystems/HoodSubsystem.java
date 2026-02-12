@@ -87,6 +87,7 @@ public class HoodSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
+
         double currentAngle = getHoodAngle();
         double pidOutput = Constants.Hood.pidController.calculate(currentAngle, targetAngle);
         double ffVolts = Constants.Hood.feedforward.calculate(Units.degreesToRadians(currentAngle), Constants.Hood.pidController.getSetpoint().velocity);
@@ -96,5 +97,9 @@ public class HoodSubsystem extends SubsystemBase {
         Logger.recordOutput("Subsystems/Hood/TargetAngle", targetAngle);
         Logger.recordOutput("Subsystems/Hood/CurrentAngle", currentAngle);
         Logger.recordOutput("Subsystems/Hood/State", currentState);
+    }
+    public void stopMotors() {
+        m_hoodMotor.setVoltage(0);
+        m_hoodMotor.setPosition(0); 
     }
 }
