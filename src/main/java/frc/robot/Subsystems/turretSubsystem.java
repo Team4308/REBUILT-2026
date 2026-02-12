@@ -23,6 +23,11 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import swervelib.encoders.CANCoderSwerve;
 
+import ca.team4308.absolutelib.math.trajectories.solver.ChineseRemainderSolver;
+import ca.team4308.absolutelib.math.trajectories.solver.ChineseRemainderSolver.ModularConstraint;
+import ca.team4308.absolutelib.math.trajectories.solver.ChineseRemainderSolver.CRTSolution;
+
+
 public class turretSubsystem extends SubsystemBase {
 
     private final TalonFX driveMotor;
@@ -55,9 +60,21 @@ public class turretSubsystem extends SubsystemBase {
     }
 
     public double getTurretAngle() {
+<<<<<<< HEAD
         double angle1 = canCoder1.getAbsolutePosition().getValueAsDouble() * CANCODER1_GEAR_RATIO;
         double angle2 = canCoder2.getAbsolutePosition().getValueAsDouble() * CANCODER2_GEAR_RATIO;
         return (angle1 + angle2) / 2.0;
+=======
+        //Chinese remainder theorm
+        long a1 = 1;
+        long m1 = 2;
+
+        long a2 = 2;
+        long m2 = 3;
+        
+        long [] result = ChineseRemainderSolver.solveTwoCongruences(a1, m1, a2, m2);
+        return result[0];
+>>>>>>> 4cdad2c0a5c0bd706c088a25640b5c12e9c7e7bc
     }
 
     public boolean isAtTarget(double degrees) {
@@ -65,7 +82,15 @@ public class turretSubsystem extends SubsystemBase {
     }
 
     public void setTarget(double degrees) {
+<<<<<<< HEAD
         targetAngle = MathUtil.inputModulus(degrees, 0, 360);
+=======
+        double targetAngle  = 0;
+        if (degrees > 360) {
+            targetAngle = degrees - (360 * Math.floor(degrees / 360));
+            System.out.println(targetAngle); // Doesn't return values back
+        
+>>>>>>> 4cdad2c0a5c0bd706c088a25640b5c12e9c7e7bc
     }
 
     public Command moveToTarget(Supplier<Double> degrees, double timeoutMs) {
@@ -86,4 +111,6 @@ public class turretSubsystem extends SubsystemBase {
 
     public void setStateBased(boolean using) {}
     */
+}
+
 }
