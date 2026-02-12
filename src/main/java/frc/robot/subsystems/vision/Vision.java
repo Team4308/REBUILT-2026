@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -20,7 +19,7 @@ import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.vision.VisionConfig.CameraConfig;
-import frc.robot.subsystems.swerve.SwerveSubsystem; // <--- NEW IMPORT
+import frc.robot.subsystems.swerve.SwerveSubsystem;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.simulation.VisionSystemSim;
 

@@ -20,7 +20,7 @@ public class SwerveSubsystem extends SubsystemBase {
     }
 
     public SwerveDrive getSwerveDrive() { 
-        return null; 
+        return swerveDrive; 
     }
     public Pose2d getPose() { 
         return fakePose; 
