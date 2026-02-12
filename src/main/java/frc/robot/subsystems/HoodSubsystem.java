@@ -12,7 +12,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.Util.trajCalc;
+import frc.robot.Util.TrajectoryCalculations;
 
 import java.util.function.Supplier;
 
@@ -79,7 +79,7 @@ public class HoodSubsystem extends SubsystemBase {
     public void setStateBased(boolean using) { this.isStateManaged = using; }
 
     // Placeholder for Vision/Strategy Logic
-    public void aimAtHub() { setHoodAngle( new trajCalc().getNeededPitch()); }
+    public void aimAtHub() { setHoodAngle( new TrajectoryCalculations().getNeededPitch()); }
     public Command aimAtHubCommand() { return run(this::aimAtHub); }
 
     public void aimAtPassingZone() { setHoodAngle( Constants.Hood.kPassingAngle ); }

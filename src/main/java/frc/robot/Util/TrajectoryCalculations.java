@@ -20,7 +20,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import frc.robot.Constants;
 
-public class trajCalc {
+public class TrajectoryCalculations {
     private final ShooterSystem shooterSystem;
     private final TrajectorySolver trajectorySolver;
 
@@ -35,7 +35,7 @@ public class trajCalc {
     private Translation2d shooterOffset = new Translation2d(0.1,0.1);
     private Translation3d hub = new Translation3d(4.0, 0.0,2.1);
 
-    public trajCalc() {
+    public TrajectoryCalculations() {
         super();
         TrajectorySolver.SolverConfig solverConfig = TrajectorySolver.SolverConfig.defaults()
                 .toBuilder()
