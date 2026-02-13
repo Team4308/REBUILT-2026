@@ -94,11 +94,16 @@ public class HoodSubsystem extends SubsystemBase {
     public class StateManager extends SubsystemBase {
             //Robot states (I think these are all, check pls)
             public enum RobotState {
-                Idle,
-                Intake,
-                Shoot,
-                AutoAim,
-                Climb
+                ActiveTeleopAllianceZone,
+                ActiveTeleopNeutralZone,
+                ActiveTeleopOpponentZone,
+                InactiveTeleopAllianceZone,
+                InactiveTeleopNeutralZone,
+                InactiveTeleopOpponentZone,
+                EndgameTeleopAllianceZone,
+                EndgameTeleopNeutralZone,
+                EndgameTeleopOpponentZone,
+                Home
             }
 
             private RobotState currenState = RobotState.Idle;
@@ -107,6 +112,7 @@ public class HoodSubsystem extends SubsystemBase {
             private final ShooterSystem shooterSystem;
             private final IntakeSystem IntakeSystem;
             private final Arm arm;
+            private final ShooterSystem shooterSystem2;
             //add all the subsystems here: before the files are merged, I'll add placeholder values for subsystems
 
             public void StateManager(ShooterSystem shooterSystem, IntakeSystem IntakeSystem, Arm arm) {
@@ -130,30 +136,41 @@ public class HoodSubsystem extends SubsystemBase {
     public void periodic() {
 
         switch (currentState) {
-            case Idle:
-                ShooterSystem.StopMotors();
-                IntakeSystem.StopMotors();
-                Arm.StopMotors();
-                break;
-            
-            case Intake:
+            case ActiveTeleopAllianceZone:
                 IntakeSystem.setSpeed(1);
-                ShooterSystem.StopMotors();
-                Arm.setTargetAngle(15);
+                ShooterSystem.setTargetRPM(1);
                 break;
             
-            case Shoot:
-                ShooterSystem.setTargetRPM(4500);
-                Arm.setTargetAngle(55);
-                IntakeSystem.setSpeed(0.2); //I think it should still move since we need to feed the turret
+            case ActiveTeleopNeutralZone:
+                IntakeSystem.setSpeed(1.2);
                 break;
-            case AutoAim:
-                ShooterSystem.setTargetRPM(4500); //I don't know how much rpm we need so like change this according to need
+            
+            case ActiveTeleopOpponentZone:
+                IntakeSystem.setSpeed(1.5);
                 break;
-            case Climb:
-                Arm.setTargetPosition(1);
-                ShooterSystem.StopMotors();
-                IntakeSystem.StopMotors();
+            case InactiveTeleopAllianceZone:
+                IntakeSystem.setSpeed(1.5); //I don't know how much rpm we need so like change this according to need
+                shooterSystem2.aimAtHub();
+                break;
+            case InactiveTeleopNeutralZone:
+                IntakeSystem.setSpeed(1.5);
+                shooterSystem2.aimAtHub();
+                break;
+             case InactiveTeleopOpponentZone:
+                IntakeSystem.setSpeed(1.5);
+                shooterSystem2.aimAtHub();
+                break;
+            case EndgameTeleopAllianceZone:
+                IntakeSystem.setSpeed(1);
+                ShooterSystem.setTargetRPM(1);
+                break;
+            
+            case EndgameTeleopNeutralZone:
+                IntakeSystem.setSpeed(1.2);
+                break;
+            
+            case EndgameTeleopOpponentZone:
+                IntakeSystem.setSpeed(1.5);
                 break;
         }
 
