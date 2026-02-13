@@ -5,14 +5,19 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+
+import ca.team4308.absolutelib.math.trajectories.shooter.ShooterSystem;
+import ca.team4308.absolutelib.subsystems.Arm;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Util.TrajectoryCalculations;
+import swervelib.simulation.ironmaple.simulation.IntakeSimulation.IntakeSide;
 
 import java.util.function.Supplier;
 
@@ -84,6 +89,33 @@ public class HoodSubsystem extends SubsystemBase {
 
     public void aimAtPassingZone() { setHoodAngle( Constants.Hood.kPassingAngle ); }
     public Command aimAtPassingZoneCommand() { return run(this::aimAtPassingZone); }
+
+    public class StateManager extends SubsystemBase {
+            //Robot states (I think these are all, check pls)
+            public enum RobotState {
+                Idle,
+                Intake,
+                Shoot,
+                AutoAim,
+                Climb
+            }
+
+            private RobotState currenState = RobotState.Idle;
+
+            //Subsystem reference to access them
+            private final HoodSubsystem hoodSubsystem;
+            private final ShooterSystem shooterSystem;
+            private final IntakeSystem IntakeSystem;
+            private final Arm arm;
+            //add all the subsystems here: before the files are merged, I'll add placeholder values for subsystems
+
+            public RobotStateManager(ShooterSystem shooterSystem, IntakeSystem IntakeSystem, Arm arm) {
+                this.shooterSystem = shooterSystem;
+                this.IntakeSystem = IntakeSystem;
+                this.arm = arm;
+            }
+            
+        }
 
     @Override
     public void periodic() {
