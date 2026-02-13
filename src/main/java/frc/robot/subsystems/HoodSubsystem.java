@@ -28,8 +28,7 @@ public class HoodSubsystem extends SubsystemBase {
     
 
     private double targetAngle = 0;
-    private StateManager.RobotState currentState = StateManager.RobotState.Idle;
-    private boolean isStateManaged = false;
+    
     public HoodSubsystem() {
         var talonFXConfigs = new TalonFXConfiguration();
         talonFXConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
@@ -81,99 +80,24 @@ public class HoodSubsystem extends SubsystemBase {
         return run(this::resetHood).until(() -> m_hoodMotor.getSupplyCurrent().getValueAsDouble() > 20.0).andThen(runOnce(() -> m_hoodMotor.setPosition(0)));
     }
 
-    public void setState(String state) { this.currentState = state; }
-    public void setStateBased(boolean using) { this.isStateManaged = using; }
-
-    // Placeholder for Vision/Strategy Logic
-    public void aimAtHub() { setHoodAngle( new TrajectoryCalculations().getNeededPitch()); }
-    public Command aimAtHubCommand() { return run(this::aimAtHub); }
-
+    // The following aimAtHubCommand, aimAtPassingAngle, and aimAtPassingCommand are redundant
+    // I left them here in case you need them for some utility but otherwise all of their jobs 
+    // are completed in StateManager.java
+    // I removed aimAtHub bcuz it was litterally just setHoodAngle copy-pasted
+    public Command aimAtHubCommand(Supplier<Double> pitchSupplier) {
+        return run(() -> setHoodAngle(pitchSupplier.get()));
+    }
     public void aimAtPassingZone() { setHoodAngle( Constants.Hood.kPassingAngle ); }
-    public Command aimAtPassingZoneCommand() { return run(this::aimAtPassingZone); }
+    public Command aimAtPassingZoneCommand() { return run(this::aimAtPassingZone); }            
 
-    public class StateManager extends SubsystemBase {
-            //Robot states (I think these are all, check pls)
-            public enum RobotState {
-                ActiveTeleopAllianceZone,
-                ActiveTeleopNeutralZone,
-                ActiveTeleopOpponentZone,
-                InactiveTeleopAllianceZone,
-                InactiveTeleopNeutralZone,
-                InactiveTeleopOpponentZone,
-                EndgameTeleopAllianceZone,
-                EndgameTeleopNeutralZone,
-                EndgameTeleopOpponentZone,
-                Home
-            }
-
-            private RobotState currenState = RobotState.Idle;
-            //Subsystem reference to access them
-            private final HoodSubsystem hoodSubsystem;
-            private final ShooterSystem shooterSystem;
-            private final IntakeSystem IntakeSystem;
-            private final Arm arm;
-            private final ShooterSystem shooterSystem2;
-            //add all the subsystems here: before the files are merged, I'll add placeholder values for subsystems
-
-            public void StateManager(ShooterSystem shooterSystem, IntakeSystem IntakeSystem, Arm arm) {
-                this.shooterSystem = shooterSystem;
-                this.IntakeSystem = IntakeSystem;
-                this.arm = arm;
-            }
-
-            public void setState(StateManager.RobotState state) {
-                this.currentState = state;
-            }
-
-
-            public RobotState getState() {
-                return currenState;
-            }   
             
-        }
 
     @Override
     public void periodic() {
-
-        switch (currentState) {
-            case ActiveTeleopAllianceZone:
-                IntakeSystem.setSpeed(1);
-                ShooterSystem.setTargetRPM(1);
-                break;
-            
-            case ActiveTeleopNeutralZone:
-                IntakeSystem.setSpeed(1.2);
-                break;
-            
-            case ActiveTeleopOpponentZone:
-                IntakeSystem.setSpeed(1.5);
-                break;
-            case InactiveTeleopAllianceZone:
-                IntakeSystem.setSpeed(1.5); //I don't know how much rpm we need so like change this according to need
-                shooterSystem2.aimAtHub();
-                break;
-            case InactiveTeleopNeutralZone:
-                IntakeSystem.setSpeed(1.5);
-                shooterSystem2.aimAtHub();
-                break;
-             case InactiveTeleopOpponentZone:
-                IntakeSystem.setSpeed(1.5);
-                shooterSystem2.aimAtHub();
-                break;
-            case EndgameTeleopAllianceZone:
-                IntakeSystem.setSpeed(1);
-                ShooterSystem.setTargetRPM(1);
-                break;
-            
-            case EndgameTeleopNeutralZone:
-                IntakeSystem.setSpeed(1.2);
-                break;
-            
-            case EndgameTeleopOpponentZone:
-                IntakeSystem.setSpeed(1.5);
-                break;
+        // IMPORTANT: Update this to whatever the locationUtil file is actually called
+        if(LocationUtil.GetIsUnderTrench()) {
+            setHoodAngle(Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE); 
         }
-
         double currentAngle = getHoodAngle();
         double pidOutput = Constants.Hood.pidController.calculate(currentAngle, targetAngle);
         double ffVolts = Constants.Hood.feedforward.calculate(Units.degreesToRadians(currentAngle), Constants.Hood.pidController.getSetpoint().velocity);
@@ -182,8 +106,8 @@ public class HoodSubsystem extends SubsystemBase {
 
         Logger.recordOutput("Subsystems/Hood/TargetAngle", targetAngle);
         Logger.recordOutput("Subsystems/Hood/CurrentAngle", currentAngle);
-        Logger.recordOutput("Subsystems/Hood/State", currentState);
     }
+    
     public void StopMotors() {
         m_hoodMotor.setVoltage(0);
         m_hoodMotor.setPosition(0); 
