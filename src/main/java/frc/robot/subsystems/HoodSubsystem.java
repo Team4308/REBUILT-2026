@@ -28,7 +28,7 @@ public class HoodSubsystem extends SubsystemBase {
     
 
     private double targetAngle = 0;
-    private String currentState = "Idle";
+    private StateManager.RobotState currentState = StateManager.RobotState.Idle;
     private boolean isStateManaged = false;
     public HoodSubsystem() {
         var talonFXConfigs = new TalonFXConfiguration();
@@ -102,7 +102,6 @@ public class HoodSubsystem extends SubsystemBase {
             }
 
             private RobotState currenState = RobotState.Idle;
-
             //Subsystem reference to access them
             private final HoodSubsystem hoodSubsystem;
             private final ShooterSystem shooterSystem;
@@ -110,15 +109,16 @@ public class HoodSubsystem extends SubsystemBase {
             private final Arm arm;
             //add all the subsystems here: before the files are merged, I'll add placeholder values for subsystems
 
-            public RobotStateManager(ShooterSystem shooterSystem, IntakeSystem IntakeSystem, Arm arm) {
+            public void StateManager(ShooterSystem shooterSystem, IntakeSystem IntakeSystem, Arm arm) {
                 this.shooterSystem = shooterSystem;
                 this.IntakeSystem = IntakeSystem;
                 this.arm = arm;
             }
 
-            public void setState(RobotState newState) {
-                currenState = newState;
+            public void setState(StateManager.RobotState state) {
+                this.currentState = state;
             }
+
 
             public RobotState getState() {
                 return currenState;
@@ -131,14 +131,14 @@ public class HoodSubsystem extends SubsystemBase {
 
         switch (currentState) {
             case Idle:
-                ShooterSystem.stopMotors();
-                IntakeSystem.stopMotors();
-                Arm.stopMotors();
+                ShooterSystem.StopMotors();
+                IntakeSystem.StopMotors();
+                Arm.StopMotors();
                 break;
             
             case Intake:
                 IntakeSystem.setSpeed(1);
-                ShooterSystem.stopMotors();
+                ShooterSystem.StopMotors();
                 Arm.setTargetAngle(15);
                 break;
             
@@ -152,8 +152,8 @@ public class HoodSubsystem extends SubsystemBase {
                 break;
             case Climb:
                 Arm.setTargetPosition(1);
-                ShooterSystem.stopMotors();
-                IntakeSystem.stopMotors();
+                ShooterSystem.StopMotors();
+                IntakeSystem.StopMotors();
                 break;
         }
 
@@ -167,7 +167,7 @@ public class HoodSubsystem extends SubsystemBase {
         Logger.recordOutput("Subsystems/Hood/CurrentAngle", currentAngle);
         Logger.recordOutput("Subsystems/Hood/State", currentState);
     }
-    public void stopMotors() {
+    public void StopMotors() {
         m_hoodMotor.setVoltage(0);
         m_hoodMotor.setPosition(0); 
     }
