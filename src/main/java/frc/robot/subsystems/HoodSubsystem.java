@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import org.littletonrobotics.junction.Logger;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.mechanisms.swerve.LegacySwerveRequest.Idle;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
@@ -114,11 +115,47 @@ public class HoodSubsystem extends SubsystemBase {
                 this.IntakeSystem = IntakeSystem;
                 this.arm = arm;
             }
+
+            public void setState(RobotState newState) {
+                currenState = newState;
+            }
+
+            public RobotState getState() {
+                return currenState;
+            }   
             
         }
 
     @Override
     public void periodic() {
+
+        switch (currentState) {
+            case Idle:
+                ShooterSystem.stopMotors();
+                IntakeSystem.stopMotors();
+                Arm.stopMotors();
+                break;
+            
+            case Intake:
+                IntakeSystem.setSpeed(1);
+                ShooterSystem.stopMotors();
+                Arm.setTargetAngle(15);
+                break;
+            
+            case Shoot:
+                ShooterSystem.setTargetRPM(4500);
+                Arm.setTargetAngle(55);
+                IntakeSystem.setSpeed(0.2); //I think it should still move since we need to feed the turret
+                break;
+            case AutoAim:
+                ShooterSystem.setTargetRPM(4500); //I don't know how much rpm we need so like change this according to need
+                break;
+            case Climb:
+                Arm.setTargetPosition(1);
+                ShooterSystem.stopMotors();
+                IntakeSystem.stopMotors();
+                break;
+        }
 
         double currentAngle = getHoodAngle();
         double pidOutput = Constants.Hood.pidController.calculate(currentAngle, targetAngle);
