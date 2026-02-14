@@ -21,6 +21,8 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.Util.FuelSim;
 import frc.robot.subsystems.swerve.SwerveSubsystem;
 import java.io.File;
+import java.util.ArrayList;
+
 import swervelib.SwerveInputStream;
 
 public class RobotContainer {
@@ -67,6 +69,10 @@ public class RobotContainer {
           () -> Math.cos(driver.getLeftTrigger() * Math.PI) * (Math.PI * 2))
       .headingWhile(true);
 
+  // Command lists
+  ArrayList<Command> movementCommands = new ArrayList<>();
+  ArrayList<Command> actionCommands = new ArrayList<>();
+
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
@@ -109,6 +115,40 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
+    /*
+     * rows are slots: actions that happen in sequence
+     * 2 cols are actions: movement + action
+     * leave blank to say no action
+     * this way we can just chain commands together as long as they are able to be
+     * chained together
+     */
+
+    ArrayList<SendableChooser<Command>> movementChoosers = new ArrayList<>();
+    ArrayList<SendableChooser<Command>> actionChoosers = new ArrayList<>();
+
+    for (int i = 0; i < Constants.Auton.maxLength; i++) {
+      movementChoosers.add(i, new SendableChooser<Command>());
+      for (SendableChooser<Command> chooser : movementChoosers) {
+        for (Command toAdd : movementCommands)
+          chooser.addOption("String", toAdd);
+        chooser.setDefaultOption("String", null);
+      }
+
+      actionChoosers.add(i, new SendableChooser<Command>());
+      for (SendableChooser<Command> chooser : actionChoosers) {
+        for (Command toAdd : actionCommands)
+          chooser.addOption("String", toAdd);
+        chooser.setDefaultOption("String", null);
+      }
+    }
+
+    // If we select a premade auton, we will run it instead
+    if (autoChooser.getSelected() != null) {
+      return autoChooser.getSelected();
+    }
+
+    // TODO: figure out how to link commands together. skip commands if null? i
+    // guess
     return Commands.sequence(
         new InstantCommand(() -> drivebase.setRobotPose(new Pose2d(2, 2, new Rotation2d()))),
         drivebase.driveToPoseObjAvoid(() -> new Pose2d(2, 6, new Rotation2d(0))),
@@ -119,7 +159,7 @@ public class RobotContainer {
         drivebase.driveToPoseObjAvoid(() -> new Pose2d(2.6, 1, new Rotation2d(Units.degreesToRadians(270)))),
         drivebase.driveToPoseObjAvoid(() -> new Pose2d(14, 4, new Rotation2d(Units.degreesToRadians(67)))),
         drivebase.driveToPoseObjAvoid(() -> new Pose2d(10, 4, new Rotation2d(0))));
-    // return autoChooser.getSelected();
+
   }
 
   private void initFuelSim() {

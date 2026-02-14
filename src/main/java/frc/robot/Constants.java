@@ -41,6 +41,8 @@ public final class Constants {
       public static final PathConstraints constraints = new PathConstraints(
           3.0, 4.0,
           Units.degreesToRadians(540), Units.degreesToRadians(720));
+
+      public static final double MIN_ALIGNED_TIME = 500; // minimum time it needs to be at alignment for the pathfinding to end
     }
   }
 
@@ -66,6 +68,10 @@ public final class Constants {
     public static final double LEFT_Y_DEADBAND = 0.0;
     public static final double RIGHT_X_DEADBAND = 0.0;
     public static final double TURN_CONSTANT = 6;
+  }
+
+  public static class Auton {
+    public static final int maxLength = 10;
   }
 
   public static final Mode simMode = Mode.SIM;

@@ -7,6 +7,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.OptionalDouble;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -25,6 +27,7 @@ import com.pathplanner.lib.path.PathPoint;
 import com.pathplanner.lib.path.Waypoint;
 import com.pathplanner.lib.trajectory.PathPlannerTrajectoryState;
 
+import ca.team4308.absolutelib.math.DoubleUtils;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -37,6 +40,7 @@ import edu.wpi.first.networktables.DoubleArraySubscriber;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -45,7 +49,9 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import frc.robot.Constants;
+import frc.robot.FieldLayout;
 import frc.robot.Robot;
+import frc.robot.subsystems.vision.ObjectCamera;
 import frc.robot.subsystems.vision.PoseCamera;
 import swervelib.SwerveController;
 import swervelib.SwerveDrive;
@@ -69,10 +75,14 @@ public class SwerveSubsystem extends SubsystemBase {
 
   private final boolean usingVision = false;
   private PoseCamera poseCameras;
+  private ObjectCamera objectCameras;
 
   private Pose2d targetPose = new Pose2d();
 
   private Field2d m_driverStationField = new Field2d();
+
+  private final boolean diagonalBump = true; // This controls whether the bot turns 45 deg when we go over the bump
+                                             // automatically.
 
   private double resetTime = Timer.getFPGATimestamp() + 2; // To clear DS field 2 seconds after boot. Why? Idk
 
@@ -171,6 +181,49 @@ public class SwerveSubsystem extends SubsystemBase {
     Logger.recordOutput("Swerve/Is Aligned?", isAligned());
     Logger.recordOutput("Swerve/Pose", getPose());
     Logger.recordOutput("Swerve/Velocity", getRobotVelocity());
+
+    Logger.recordOutput("Swerve/FieldLocation", getFieldLocation());
+    Logger.recordOutput("Swerve/UnderTrench", getUnderTrench());
+    Logger.recordOutput("Swerve/OverBump", getOverBump());
+  }
+
+  private boolean getUnderTrench() {
+    Pose2d curPose = swerveDrive.getPose();
+    return FieldLayout.blueLeftTrench.contains(curPose) || FieldLayout.blueRightTrench.contains(curPose)
+        || FieldLayout.redLeftTrench.contains(curPose) || FieldLayout.redRightTrench.contains(curPose);
+  }
+
+  private boolean getOverBump() {
+    Pose2d curPose = swerveDrive.getPose();
+    return FieldLayout.blueLeftBump.contains(curPose) || FieldLayout.blueRightBump.contains(curPose)
+        || FieldLayout.redLeftBump.contains(curPose) || FieldLayout.redRightBump.contains(curPose);
+  }
+
+  private Alliance getAlliance() {
+    Optional<Alliance> alliance = DriverStation.getAlliance();
+    if (alliance.isEmpty()) {
+      return Alliance.Blue;
+    }
+
+    return alliance.get();
+  }
+
+  private String getFieldLocation() {
+    Pose2d curPose = swerveDrive.getPose();
+    if (FieldLayout.redAllianceZone.contains(curPose)) {
+      if (getAlliance() == Alliance.Blue) {
+        return "OpponentZone";
+      } else {
+        return "AllianceZone";
+      }
+    } else if (FieldLayout.blueAllianceZone.contains(curPose)) {
+      if (getAlliance() == Alliance.Red) {
+        return "OpponentZone";
+      } else {
+        return "AllianceZone";
+      }
+    }
+    return "NeutralZone";
   }
 
   private void clearDriverField() {
@@ -291,6 +344,28 @@ public class SwerveSubsystem extends SubsystemBase {
     return new PathPlannerAuto(pathName);
   }
 
+  public Command aimAtTarget(Supplier<Double> joyX, Supplier<Double> joyY) {
+    OptionalDouble yawDiff = objectCameras.getObjectOffset().get();
+    if (!yawDiff.isEmpty())
+      swerveDrive.driveFieldOriented(
+          getTargetSpeeds(
+              joyY.get(),
+              joyX.get(),
+              new Rotation2d(
+                  Math.toRadians(getHeading().getDegrees() - yawDiff.getAsDouble()))));
+  }
+
+  public Command driveTowardsTarget(Supplier<Double> throttle) {
+    OptionalDouble yawDiff = objectCameras.getObjectOffset().get();
+    swerveDrive.drive(
+        getTargetSpeeds(
+            DoubleUtils.clamp(throttle.get(), 0, 0.767),
+            0,
+            new Rotation2d(
+                Math.toRadians(getHeading().getDegrees() + yawDiff.getAsDouble() - 2))));
+
+  }
+
   public Command driveToPoseObjAvoid(Supplier<Pose2d> pose) {
     return defer(() -> driveToPoseObjAvoid(pose.get()));
   }
@@ -319,7 +394,7 @@ public class SwerveSubsystem extends SubsystemBase {
                   getPose(), goalState));
           Logger.recordOutput(
               "Swerve/PID output", ALIGN_CONTROLLER.calculateRobotRelativeSpeeds(getPose(), goalState));
-        }).until(() -> isAligned(200)))
+        }).until(() -> isAligned(Constants.Swerve.PathFinding.MIN_ALIGNED_TIME)))
         .finallyDo(() -> clearDriverField());
 
   }
@@ -380,7 +455,7 @@ public class SwerveSubsystem extends SubsystemBase {
                 }))
         .finallyDo(interrupted -> {
           clearDriverField();
-        }).until(() -> isAligned(500));
+        }).until(() -> isAligned(Constants.Swerve.PathFinding.MIN_ALIGNED_TIME));
   }
 
   /**

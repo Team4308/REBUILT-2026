@@ -1,3 +1,4 @@
 package frc.robot.subsystems.vision;
 
-public class ObjectCamera {}
+public class ObjectCamera {
+}
