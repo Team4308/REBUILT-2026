@@ -18,76 +18,77 @@ public class FieldLayout {
 
   public static final double kCenterLineX = kFieldLength / 2.0;
 
-  public static final double kDriverWallDepth = 4; // This is not in the controlled dimensions, so we might have to
-                                                   // measure this.
+  public static final double kZoneDepth = 4; // This is not in the controlled dimensions, so we might have to
+                                             // measure this.
+
+  public static final double kObstacleWidth = Units.inchesToMeters(47);
+  public static final double kTrenchWdith = Units.inchesToMeters(50.59);
 
   // TODO: verify all these are correct
   public static final FieldZone blueAllianceZone = new FieldZone(
       0.0,
-      kCenterLineX,
+      kZoneDepth,
       0.0,
       kFieldWidth);
 
   public static final FieldZone redAllianceZone = new FieldZone(
-      kCenterLineX,
+      kFieldLength - kZoneDepth,
       kFieldLength,
       0.0,
       kFieldWidth);
 
-  public static final double kNeutralHalfWidth = 0.5;
-
   public static final FieldZone neutralZone = new FieldZone(
-      kCenterLineX - kNeutralHalfWidth,
-      kCenterLineX + kNeutralHalfWidth,
+      kZoneDepth,
+      kFieldLength - kZoneDepth,
       0.0,
       kFieldWidth);
 
   public static final FieldZone redRightTrench = new FieldZone(
-      kCenterLineX,
-      kFieldLength,
+      kFieldLength - kZoneDepth - kObstacleWidth,
+      kFieldLength - kZoneDepth,
       0.0,
-      kFieldWidth / 2.0);
+      kTrenchWdith);
 
   public static final FieldZone redLeftTrench = new FieldZone(
-      kCenterLineX,
-      kFieldLength,
-      kFieldWidth / 2.0,
+      kFieldLength - kZoneDepth - kObstacleWidth,
+      kFieldLength - kZoneDepth,
+      kFieldWidth - kTrenchWdith,
       kFieldWidth);
 
   public static final FieldZone redRightBump = new FieldZone(
-      kFieldLength - kDriverWallDepth,
-      kFieldLength,
-      0.0,
+      kFieldLength - kZoneDepth - kObstacleWidth,
+      kFieldLength - kZoneDepth,
+      kTrenchWdith,
       kFieldWidth / 2.0);
 
   public static final FieldZone redLeftBump = new FieldZone(
-      kFieldLength - kDriverWallDepth,
-      kFieldLength,
+      kFieldLength - kZoneDepth - kObstacleWidth,
+      kFieldLength - kZoneDepth,
       kFieldWidth / 2.0,
-      kFieldWidth);
+      kFieldWidth - kTrenchWdith);
 
   public static final FieldZone blueRightTrench = new FieldZone(
-      0.0,
-      kCenterLineX,
-      0.0,
-      kFieldWidth / 2.0);
+      kZoneDepth,
+      kZoneDepth + kObstacleWidth,
+      kFieldWidth - kTrenchWdith,
+      kFieldWidth);
 
   public static final FieldZone blueLeftTrench = new FieldZone(
+      kZoneDepth,
+      kZoneDepth + kObstacleWidth,
       0.0,
-      kCenterLineX,
-      kFieldWidth / 2.0,
-      kFieldWidth);
+      kTrenchWdith);
 
   public static final FieldZone blueRightBump = new FieldZone(
-      0.0,
-      kDriverWallDepth,
-      0.0,
-      kFieldWidth / 2.0);
+      kZoneDepth,
+      kZoneDepth + kObstacleWidth,
+      kFieldWidth / 2.0,
+      kFieldWidth - kTrenchWdith);
 
   public static final FieldZone blueLeftBump = new FieldZone(
-      0.0,
-      kDriverWallDepth,
-      kFieldWidth / 2.0,
-      kFieldWidth);
+      kZoneDepth,
+      kZoneDepth + kObstacleWidth,
+      kTrenchWdith,
+      kFieldWidth / 2.0);
 
 }

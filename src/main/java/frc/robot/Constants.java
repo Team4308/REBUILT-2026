@@ -22,6 +22,8 @@ public final class Constants {
   public static final double LOOP_TIME = 0.13;
   public static final double MAX_SPEED = Units.feetToMeters(15.1);
 
+  public static final double BOT_WIDTH = Units.inchesToMeters(35);
+
   public static final class Swerve {
     public static final class Heading {
       public static final double TOLERANCE = 10; // In degrees
@@ -42,7 +44,8 @@ public final class Constants {
           3.0, 4.0,
           Units.degreesToRadians(540), Units.degreesToRadians(720));
 
-      public static final double MIN_ALIGNED_TIME = 500; // minimum time it needs to be at alignment for the pathfinding to end
+      public static final double MIN_ALIGNED_TIME = 500; // minimum time it needs to be at alignment for the pathfinding
+                                                         // to end
     }
   }
 

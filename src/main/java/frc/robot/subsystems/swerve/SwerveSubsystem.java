@@ -345,25 +345,28 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   public Command aimAtTarget(Supplier<Double> joyX, Supplier<Double> joyY) {
-    OptionalDouble yawDiff = objectCameras.getObjectOffset().get();
-    if (!yawDiff.isEmpty())
-      swerveDrive.driveFieldOriented(
-          getTargetSpeeds(
-              joyY.get(),
-              joyX.get(),
-              new Rotation2d(
-                  Math.toRadians(getHeading().getDegrees() - yawDiff.getAsDouble()))));
+    return run(() -> {
+      OptionalDouble yawDiff = objectCameras.getObjectOffset().get();
+      if (!yawDiff.isEmpty())
+        swerveDrive.driveFieldOriented(
+            getTargetSpeeds(
+                joyY.get(),
+                joyX.get(),
+                new Rotation2d(
+                    Math.toRadians(getHeading().getDegrees() - yawDiff.getAsDouble()))));
+    });
   }
 
   public Command driveTowardsTarget(Supplier<Double> throttle) {
-    OptionalDouble yawDiff = objectCameras.getObjectOffset().get();
-    swerveDrive.drive(
-        getTargetSpeeds(
-            DoubleUtils.clamp(throttle.get(), 0, 0.767),
-            0,
-            new Rotation2d(
-                Math.toRadians(getHeading().getDegrees() + yawDiff.getAsDouble() - 2))));
-
+    return run(() -> {
+      OptionalDouble yawDiff = objectCameras.getObjectOffset().get();
+      swerveDrive.drive(
+          getTargetSpeeds(
+              DoubleUtils.clamp(throttle.get(), 0, 0.767),
+              0,
+              new Rotation2d(
+                  Math.toRadians(getHeading().getDegrees() + yawDiff.getAsDouble() - 2))));
+    });
   }
 
   public Command driveToPoseObjAvoid(Supplier<Pose2d> pose) {
