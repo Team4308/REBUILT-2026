@@ -39,9 +39,10 @@ import edu.wpi.first.networktables.BooleanSubscriber;
 import edu.wpi.first.networktables.DoubleArraySubscriber;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -81,8 +82,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
   private Field2d m_driverStationField = new Field2d();
 
-  private final boolean diagonalBump = true; // This controls whether the bot turns 45 deg when we go over the bump
-                                             // automatically.
+  private final SendableChooser<Boolean> diagonalBumpChooser = new SendableChooser<>();
 
   private double resetTime = Timer.getFPGATimestamp() + 2; // To clear DS field 2 seconds after boot. Why? Idk
 
@@ -143,6 +143,13 @@ public class SwerveSubsystem extends SubsystemBase {
         Constants.Swerve.Translation.TRANSLATION_PID, Constants.Swerve.Heading.HEADING_PID);
 
     setupPathPlanner();
+
+    // Initialize chooser
+    diagonalBumpChooser.setDefaultOption("Diagonal Bump Enabled", true);
+    diagonalBumpChooser.addOption("Diagonal Bump Disabled", false);
+
+    // Put chooser on SmartDashboard
+    SmartDashboard.putData("Diagonal Bump Mode", diagonalBumpChooser);
   }
 
   public void setupPhotonVision() {
@@ -561,30 +568,99 @@ public class SwerveSubsystem extends SubsystemBase {
         });
   }
 
-  // Primary method for controlling the drivebase, for which the swerve drive
-  // methods base on.
-  public void drive(Translation2d translation, double rotation, boolean fieldRelative) {
-    swerveDrive.drive(
-        translation,
-        rotation,
-        fieldRelative,
-        false); // Open loop is disabled since it shouldn't be used
-    // most of the time.
-  }
-
+  /**
+   * Drives the robot with field-relative ChassisSpeeds, snapping rotation under
+   * trench
+   */
   public void driveFieldOriented(ChassisSpeeds velocity) {
+    velocity = applyBumpRotationOverride(velocity.vxMetersPerSecond, velocity.vyMetersPerSecond,
+        velocity.omegaRadiansPerSecond);
     swerveDrive.driveFieldOriented(velocity);
   }
 
-  public Command driveFieldOriented(Supplier<ChassisSpeeds> velocity) {
-    return run(
-        () -> {
-          swerveDrive.driveFieldOriented(velocity.get());
-        });
+  public Command driveFieldOriented(Supplier<ChassisSpeeds> velocitySupplier) {
+    return run(() -> {
+      // Get raw velocity from supplier
+      ChassisSpeeds rawVelocity = velocitySupplier.get();
+
+      // Apply trench rotation snap
+      ChassisSpeeds adjustedVelocity = applyBumpRotationOverride(
+          rawVelocity.vxMetersPerSecond,
+          rawVelocity.vyMetersPerSecond,
+          rawVelocity.omegaRadiansPerSecond);
+
+      // Drive with adjusted velocities
+      swerveDrive.driveFieldOriented(adjustedVelocity);
+    });
+  }
+
+  public void drive(Translation2d translation, double rotation, boolean fieldRelative) {
+    if (getOverBump() && diagonalBumpChooser.getSelected()) {
+      double currentDegrees = getHeading().getDegrees();
+
+      // Snap to nearest diagonal (45, 135, 225, 315)
+      int nearestMultiple = (int) Math.round(currentDegrees / 45.0);
+      if (nearestMultiple % 2 == 0) { // if even (0, 90, 180, 270), shift to nearest odd
+        nearestMultiple += (currentDegrees % 45.0 >= 22.5) ? 1 : -1;
+      }
+
+      double snappedDegrees = nearestMultiple * 45.0;
+
+      // Normalize the angle difference to [-180, 180] to avoid wiggle
+      double angleDiff = ((snappedDegrees - currentDegrees + 180) % 360) - 180;
+
+      // Compute angular velocity toward snapped diagonal
+      Rotation2d desiredAngle = Rotation2d.fromDegrees(currentDegrees + angleDiff);
+      rotation = swerveDrive.swerveController.headingCalculate(
+          getHeading().getRadians(),
+          desiredAngle.getRadians());
+    }
+
+    swerveDrive.drive(translation, rotation, fieldRelative, false);
   }
 
   public void drive(ChassisSpeeds velocity) {
+    velocity = applyBumpRotationOverride(velocity.vxMetersPerSecond, velocity.vyMetersPerSecond,
+        velocity.omegaRadiansPerSecond);
     swerveDrive.drive(velocity);
+  }
+
+  private ChassisSpeeds applyBumpRotationOverride(double vx, double vy, double omega) {
+    if (getOverBump() && diagonalBumpChooser.getSelected()) {
+      double currentDegrees = getHeading().getDegrees();
+
+      // Normalize to [0, 360)
+      currentDegrees = ((currentDegrees % 360) + 360) % 360;
+
+      // Find nearest multiple of 45
+      int nearest45 = (int) Math.round(currentDegrees / 45.0);
+
+      // If it's even (0, 2, 4, 6 = cardinal directions), force to nearest odd
+      if (nearest45 % 2 == 0) {
+        // Determine which direction to go based on remainder
+        double remainder = currentDegrees - (nearest45 * 45.0);
+        nearest45 += (remainder >= 0) ? 1 : -1;
+      }
+
+      double snappedDegrees = (nearest45 * 45.0) % 360;
+
+      // Calculate shortest angular distance
+      double angleDiff = snappedDegrees - currentDegrees;
+
+      // Normalize to [-180, 180]
+      while (angleDiff > 180)
+        angleDiff -= 360;
+      while (angleDiff < -180)
+        angleDiff += 360;
+
+      Rotation2d desiredAngle = Rotation2d.fromDegrees(currentDegrees + angleDiff);
+
+      omega = swerveDrive.swerveController.headingCalculate(
+          getHeading().getRadians(),
+          desiredAngle.getRadians());
+    }
+
+    return new ChassisSpeeds(vx, vy, omega);
   }
 
   public SwerveDriveKinematics getKinematics() {
