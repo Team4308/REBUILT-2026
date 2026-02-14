@@ -9,6 +9,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import ca.team4308.absolutelib.math.trajectories.shooter.ShooterSystem;
 import ca.team4308.absolutelib.subsystems.Arm;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -34,12 +35,6 @@ public class HoodSubsystem extends SubsystemBase {
         talonFXConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         talonFXConfigs.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         
-        // Software Limits
-        talonFXConfigs.SoftwareLimitSwitch.ForwardSoftLimitThreshold = (Constants.Hood.FORWARD_SOFT_LIMIT_ANGLE / 360.0) * Constants.Hood.TOTAL_GEAR_RATIO;
-        talonFXConfigs.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
-        talonFXConfigs.SoftwareLimitSwitch.ReverseSoftLimitThreshold = (Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE / 360.0) * Constants.Hood.TOTAL_GEAR_RATIO;
-        talonFXConfigs.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
-
         m_hoodMotor.getConfigurator().apply(talonFXConfigs);
         m_hoodMotor.setPosition(0);
     }
@@ -49,7 +44,11 @@ public class HoodSubsystem extends SubsystemBase {
     }
 
     public void setHoodAngle(double angle) {
-        this.targetAngle = Math.min(Math.max(angle, Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE), Constants.Hood.FORWARD_SOFT_LIMIT_ANGLE);
+        targetAngle = MathUtil.clamp(
+            angle,
+            Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE,
+            Constants.Hood.FORWARD_SOFT_LIMIT_ANGLE
+        );
     }
 
     public boolean isAtPosition() {
@@ -72,7 +71,6 @@ public class HoodSubsystem extends SubsystemBase {
             m_hoodMotor.setVoltage(-2.0); 
         } else {
             m_hoodMotor.setVoltage(0);
-            m_hoodMotor.setPosition(0);
         }
     }
 
@@ -108,7 +106,7 @@ public class HoodSubsystem extends SubsystemBase {
         Logger.recordOutput("Subsystems/Hood/CurrentAngle", currentAngle);
     }
     
-    public void StopMotors() {
+    public void stopMotors() {
         m_hoodMotor.setVoltage(0);
         m_hoodMotor.setPosition(0); 
     }
