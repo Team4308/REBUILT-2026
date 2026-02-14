@@ -2,7 +2,6 @@ package frc.robot.Util;
 
 import java.util.function.Supplier;
 
-import org.littletonrobotics.junction.Logger;
 
 import ca.team4308.absolutelib.math.trajectories.ShotInput;
 import ca.team4308.absolutelib.math.trajectories.TrajectorySolver;
