@@ -16,7 +16,6 @@ public class HoodCommand extends Command {
 
     @Override
     public void initialize() {
-        m_hood.setState("Moving");
     }
 
     @Override
@@ -31,6 +30,5 @@ public class HoodCommand extends Command {
 
     @Override
     public void end(boolean interrupted) {
-        m_hood.setState("Idle");
     }
 }

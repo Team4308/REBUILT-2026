@@ -72,8 +72,8 @@ public class StateManager extends SubsystemBase {
         switch (currentState) {
 
             case Home:
-                intake.StopMotors();
-                shooter.StopMotors();
+                intake.stopMotors();
+                shooter.stopMotors();
                 hood.setHoodAngle(Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE);
                 break;
             case ActiveTeleopAllianceZone:
@@ -129,4 +129,5 @@ public class StateManager extends SubsystemBase {
                 break;
 
         }
+}
 }
