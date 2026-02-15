@@ -27,6 +27,7 @@ import com.pathplanner.lib.path.PathPoint;
 import com.pathplanner.lib.path.Waypoint;
 import com.pathplanner.lib.trajectory.PathPlannerTrajectoryState;
 
+import ca.team4308.absolutelib.control.RazerWrapper;
 import ca.team4308.absolutelib.math.DoubleUtils;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -57,6 +58,7 @@ import frc.robot.subsystems.vision.PoseCamera;
 import swervelib.SwerveController;
 import swervelib.SwerveDrive;
 import swervelib.SwerveDriveTest;
+import swervelib.SwerveInputStream;
 import swervelib.math.SwerveMath;
 import swervelib.parser.SwerveDriveConfiguration;
 import swervelib.parser.SwerveParser;
@@ -84,6 +86,24 @@ public class SwerveSubsystem extends SubsystemBase {
 
   private final SendableChooser<Boolean> diagonalBumpChooser = new SendableChooser<>();
 
+  private boolean usingState = false;
+
+  // Holds the currently scheduled command for driving to a pose so we don't
+  // reschedule
+  // it every periodic loop.
+  private Command currentDriveToPoseCommand = null;
+
+  public enum States {
+    FIELD_ORIENTED_DRIVE,
+    ROBOT_ORIENTED_DRIVE,
+    DRIVE_TO_POSE,
+    DRIVEBASE_LOCK
+  }
+
+  private States robotState = States.FIELD_ORIENTED_DRIVE;
+
+  private RazerWrapper driver = new RazerWrapper(0);
+
   private double resetTime = Timer.getFPGATimestamp() + 2; // To clear DS field 2 seconds after boot. Why? Idk
 
   { // To clear DS field 2 seconds after boot. Why? Idk
@@ -106,6 +126,17 @@ public class SwerveSubsystem extends SubsystemBase {
       .subscribe(false);
 
   private double alignedStartTime = -1; // Tracks how long the bot has been aligned for
+
+  SwerveInputStream driveAngularVelocity = SwerveInputStream.of(getSwerveDrive(),
+      () -> driver.getLeftY() * -1,
+      () -> driver.getLeftX() * -1)
+      .withControllerRotationAxis(() -> driver.getRightX() * -1)
+      .deadband(Constants.OperatorConstants.DEADBAND)
+      .scaleTranslation(1.0)
+      .allianceRelativeControl(true);
+
+  SwerveInputStream driveRobotOriented = driveAngularVelocity.copy().robotRelative(true)
+      .allianceRelativeControl(false);
 
   public SwerveSubsystem(File directory) {
     if (Robot.isSimulation()) // Removes Ramp so we can just drive over it in sim
@@ -156,6 +187,61 @@ public class SwerveSubsystem extends SubsystemBase {
     poseCameras = new PoseCamera(swerveDrive::getPose, swerveDrive.field);
   }
 
+  public void setUsingState(boolean using) {
+    usingState = using;
+  }
+
+  public void setState(States curState) {
+    robotState = curState;
+  }
+
+  private void calculateStates() {
+    switch (robotState) {
+
+      case FIELD_ORIENTED_DRIVE:
+        driveFieldOriented(driveAngularVelocity);
+        break;
+
+      case ROBOT_ORIENTED_DRIVE:
+        driveFieldOriented(driveRobotOriented);
+        break;
+
+      case DRIVE_TO_POSE:
+        drivingToPose();
+        break;
+
+      case DRIVEBASE_LOCK:
+        lock();
+        break;
+
+      default:
+        driveFieldOriented(driveAngularVelocity);
+        break;
+    }
+  }
+
+  private void drivingToPose() {
+    if (targetPose == null) {
+      return;
+    }
+
+    // If we already have a scheduled command that is still running, do nothing.
+    if (currentDriveToPoseCommand != null && CommandScheduler.getInstance().isScheduled(currentDriveToPoseCommand)) {
+      return;
+    }
+
+    // Build the drive-to-pose command. We reuse the existing helper which returns a
+    // PathPlanner-following command. Wrap it so that we clear our reference when it
+    // finishes or is interrupted and return to normal control.
+    currentDriveToPoseCommand = driveToPose(targetPose).finallyDo(interrupted -> {
+      currentDriveToPoseCommand = null;
+      // Once finished, return to normal driving mode
+      robotState = States.FIELD_ORIENTED_DRIVE;
+    });
+
+    CommandScheduler.getInstance().schedule(currentDriveToPoseCommand);
+  }
+
   @Override
   public void periodic() {
     if (usingVision) {
@@ -163,6 +249,10 @@ public class SwerveSubsystem extends SubsystemBase {
       poseCameras.updatePoseEstimation(swerveDrive);
 
       poseCameras.updateVisionField();
+    }
+
+    if (usingState) {
+      calculateStates();
     }
 
     // Puts the pathing onto DS
@@ -602,6 +692,21 @@ public class SwerveSubsystem extends SubsystemBase {
         });
   }
 
+  public void drive(
+      DoubleSupplier translationX, DoubleSupplier translationY, DoubleSupplier angularRotationX) {
+    // Make the robot move
+    swerveDrive.drive(
+        SwerveMath.scaleTranslation(
+            new Translation2d(
+                translationX.getAsDouble() * swerveDrive.getMaximumChassisVelocity(),
+                translationY.getAsDouble() * swerveDrive.getMaximumChassisVelocity()),
+            0.8),
+        Math.pow(angularRotationX.getAsDouble(), 3)
+            * swerveDrive.getMaximumChassisAngularVelocity(),
+        true,
+        false);
+  }
+
   // Command to drive the robot using translative values and heading as a
   // setpoint.
   public Command driveCommand(
@@ -642,15 +747,7 @@ public class SwerveSubsystem extends SubsystemBase {
     return run(() -> {
       // Get raw velocity from supplier
       ChassisSpeeds rawVelocity = velocitySupplier.get();
-
-      // Apply trench rotation snap
-      ChassisSpeeds adjustedVelocity = applyBumpRotationOverride(
-          rawVelocity.vxMetersPerSecond,
-          rawVelocity.vyMetersPerSecond,
-          rawVelocity.omegaRadiansPerSecond);
-
-      // Drive with adjusted velocities
-      swerveDrive.driveFieldOriented(adjustedVelocity);
+      swerveDrive.driveFieldOriented(rawVelocity);
     });
   }
 
