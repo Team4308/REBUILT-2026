@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import java.util.function.Supplier;
 
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
@@ -9,15 +10,16 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import absolutelib;
 
-import ca.team4308.absolutelib.wrapper.LogSubsystem;
+import ca.team4308.absolutelib.wrapper.AbsoluteSubsystem;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants;
 
-public class ShooterSubsystem extends LogSubsystem{
+public class ShooterSubsystem extends AbsoluteSubsystem{
     public final TalonFX rightMotor;
     public final TalonFX leftMotor;
 
@@ -67,7 +69,7 @@ public class ShooterSubsystem extends LogSubsystem{
         rpm = 0;
 
     }
-    void setTargetSpeed(double rpm) {
+    public void setTargetSpeed(double rpm) {
         this.rpm = rpm;
         rightVelocity.Velocity = rpm * Constants.Shooter.topMultiplier;
         leftVelocity.Velocity = rpm * Constants.Shooter.bottomMultiplier;
@@ -75,13 +77,15 @@ public class ShooterSubsystem extends LogSubsystem{
         leftMotor.setControl(leftVelocity);
     }
 
-     boolean isAtTargetSpeed() {
-        double rightError = Math.abs(rightMotor.getVelocity() - rightVelocity.Velocity);
-        double leftError = Math.abs(leftMotor.getVelocity() - leftVelocity.Velocity);
+    boolean isAtTargetSpeed() {
+        double rightRpm = ((ShooterSubsystem) rightMotor.getVelocity().getValue()).getRPM();
+        double leftRpm  = ((ShooterSubsystem) leftMotor.getVelocity().getValue()).getRPM();
+        double rightError = Math.abs(rightRpm - rightVelocity.Velocity);
+        double leftError  = Math.abs(leftRpm  - leftVelocity.Velocity);
         return rightError < Constants.Shooter.kRPMTolerance && leftError < Constants.Shooter.kRPMTolerance;
      }
 
-     void stopMotors() {
+     public void stopMotors() {
         setTargetSpeed(0);
      }
 
@@ -106,6 +110,21 @@ public class ShooterSubsystem extends LogSubsystem{
      void setStateBased(boolean using) {
         this.using = using;
      } // turns on/off the state manager
+     
+    @Override
+    public Sendable log() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'log'");
+    }
+    
+    public double getRPM() {
+        return this.rpm;
+    }
+
+    public void selectProfileSlot(int i) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'selectProfileSlot'");
+    }
 
 
     }

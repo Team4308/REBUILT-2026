@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.commands;
 
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -6,13 +6,10 @@ import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
-import co m.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
-import ca.team4308.absolutelib.wrapper.LogSubsystem;
 import edu.wpi.first.util.sendable.Sendable;
 import frc.robot.Constants;
-
-package frc.robot.commands;
 
 import frc.robot.subsystems.ShooterSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -32,18 +29,18 @@ public class ShooterCommand extends Command {
   @Override
   public void initialize() {
     m_subsystem.selectProfileSlot(0);
-    m_subsystem.stopControllers();
+    m_subsystem.stopMotors();
   }
 
   @Override
   public void execute() {
     double control = this.control.get();//converting to rpm
-    m_subsystem.setMotorOutput(control);
+    m_subsystem.setTargetSpeed(control);
   }
 
   @Override
   public void end(boolean interrupted) {
-    m_subsystem.stopControllers();
+    m_subsystem.stopMotors();
   }
 
   @Override
