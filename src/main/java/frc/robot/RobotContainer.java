@@ -94,15 +94,8 @@ public class RobotContainer {
 
     driver.M1.onTrue(
         Commands.runOnce(() -> drivebase.resetOdometry(new Pose2d(0, 0, new Rotation2d()))));
-    driver.B.whileTrue(
-        drivebase.driveToPose(() -> new Pose2d(new Translation2d(3.5, 4), Rotation2d.fromDegrees(0))));
-    driver.A.whileTrue(
-        drivebase.driveToPose(() -> new Pose2d(new Translation2d(8, 4), Rotation2d.fromDegrees(0))));
 
-    driver.X.whileTrue(
-        drivebase.driveToPoseObjAvoid(() -> new Pose2d(new Translation2d(3.5, 4), Rotation2d.fromDegrees(0))));
-    driver.Y.whileTrue(
-        drivebase.driveToPoseObjAvoid(() -> new Pose2d(new Translation2d(8, 4), Rotation2d.fromDegrees(0))));
+    driver.LeftTrigger.whileTrue(driveRobotOrientedAngularVelocity);
 
     driver.M3.whileTrue(drivebase.moveUpLeft());
     driver.M4.whileTrue(drivebase.moveUpRight());

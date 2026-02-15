@@ -85,8 +85,8 @@ public class RazerWrapper {
 
     this.M3 = new POVToJoystick(joystick, 0);
     this.M4 = new POVToJoystick(joystick, 180);
-    this.M5 = new POVToJoystick(joystick, 90);
-    this.M6 = new POVToJoystick(joystick, 270);
+    this.M5 = new POVToJoystick(joystick, 270);
+    this.M6 = new POVToJoystick(joystick, 90);
 
     this.RightTrigger = new Trigger(() -> getRightTriggerAsBoolean());
     this.LeftTrigger = new Trigger(() -> getLeftTriggerAsBoolean());
