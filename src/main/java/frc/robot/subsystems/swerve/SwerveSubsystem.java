@@ -97,7 +97,8 @@ public class SwerveSubsystem extends SubsystemBase {
     FIELD_ORIENTED_DRIVE,
     ROBOT_ORIENTED_DRIVE,
     DRIVE_TO_POSE,
-    DRIVEBASE_LOCK
+    DRIVEBASE_LOCK,
+    ALIGN_TO_FUEL
   }
 
   private States robotState = States.FIELD_ORIENTED_DRIVE;
@@ -212,6 +213,10 @@ public class SwerveSubsystem extends SubsystemBase {
 
       case DRIVEBASE_LOCK:
         lock();
+        break;
+
+      case ALIGN_TO_FUEL:
+        driveTowardsTarget(() -> driver.getLeftTrigger());
         break;
 
       default:
