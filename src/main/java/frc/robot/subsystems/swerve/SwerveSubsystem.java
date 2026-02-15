@@ -369,10 +369,10 @@ public class SwerveSubsystem extends SubsystemBase {
       OptionalDouble yawDiff = objectCameras.getObjectOffset().get();
       swerveDrive.drive(
           getTargetSpeeds(
-              DoubleUtils.clamp(throttle.get(), 0, 0.767),
+              DoubleUtils.clamp(throttle.get(), 0, 1),
               0,
               new Rotation2d(
-                  Math.toRadians(getHeading().getDegrees() + yawDiff.getAsDouble() - 2))));
+                  Math.toRadians(getHeading().getDegrees() + yawDiff.getAsDouble()))));
     });
   }
 
