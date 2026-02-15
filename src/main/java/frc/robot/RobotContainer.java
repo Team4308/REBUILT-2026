@@ -104,11 +104,12 @@ public class RobotContainer {
     driver.Y.whileTrue(
         drivebase.driveToPoseObjAvoid(() -> new Pose2d(new Translation2d(8, 4), Rotation2d.fromDegrees(0))));
 
-    if (RobotBase.isSimulation()) {
-      drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocityKeyboard);
-    } else {
-      drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
-    }
+    driver.M3.whileTrue(drivebase.moveUpLeft());
+    driver.M4.whileTrue(drivebase.moveUpRight());
+    driver.M5.whileTrue(drivebase.moveDownLeft());
+    driver.M6.whileTrue(drivebase.moveDownRight());
+
+    drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
   }
 
   public void configureNamedCommands() {

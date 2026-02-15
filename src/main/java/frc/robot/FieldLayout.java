@@ -1,6 +1,10 @@
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.Util.FieldZone;
 
 public class FieldLayout {
@@ -24,7 +28,6 @@ public class FieldLayout {
   public static final double kObstacleWidth = Units.inchesToMeters(47);
   public static final double kTrenchWdith = Units.inchesToMeters(50.59);
 
-  // TODO: verify all these are correct
   public static final FieldZone blueAllianceZone = new FieldZone(
       0.0,
       kZoneDepth,
@@ -91,4 +94,46 @@ public class FieldLayout {
       kTrenchWdith,
       kFieldWidth / 2.0);
 
+  public static final Pose2d blueLeftPose = new Pose2d(2.5, 6.5, new Rotation2d(0));
+  public static final Pose2d blueRightPose = new Pose2d(2.5, 1.5, new Rotation2d(0));
+  public static final Pose2d neutralLeftPose = new Pose2d(8.25, 6.5, new Rotation2d(0));
+  public static final Pose2d neutralRightPose = new Pose2d(8.25, 1.5, new Rotation2d(0));
+  public static final Pose2d redLeftPose = new Pose2d(13.5, 6.5, new Rotation2d(0));
+  public static final Pose2d redRightPose = new Pose2d(13.5, 1.5, new Rotation2d(0));
+
+  public static Pose2d getAllianceLeftPose() {
+    return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
+        ? blueLeftPose
+        : redRightPose;
+  }
+
+  public static Pose2d getAllianceRightPose() {
+    return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
+        ? blueRightPose
+        : redLeftPose;
+  }
+
+  public static Pose2d getOpponentRightPose() {
+    return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
+        ? redRightPose
+        : blueLeftPose;
+  }
+
+  public static Pose2d getOpponentLeftPose() {
+    return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
+        ? redLeftPose
+        : blueRightPose;
+  }
+
+  public static Pose2d getNeutralLeft() {
+    return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
+        ? neutralLeftPose
+        : neutralRightPose;
+  }
+
+  public static Pose2d getNeutralRight() {
+    return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
+        ? neutralRightPose
+        : neutralLeftPose;
+  }
 }

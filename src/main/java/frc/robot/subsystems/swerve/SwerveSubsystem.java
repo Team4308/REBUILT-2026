@@ -295,6 +295,8 @@ public class SwerveSubsystem extends SubsystemBase {
    * @return boolean aligned
    */
   public boolean isTranslationAligned() {
+    if (targetPose == null)
+      return false;
     Translation2d currentTranslation2d = getPose().getTranslation();
     Translation2d targetTranslation2d = targetPose.getTranslation();
 
@@ -307,6 +309,8 @@ public class SwerveSubsystem extends SubsystemBase {
    * @return boolean aligned
    */
   public boolean isHeadingAligned() {
+    if (targetPose == null)
+      return false;
     Rotation2d currentHeading = getPose().getRotation();
     Rotation2d targetHeading = targetPose.getRotation();
 
@@ -383,6 +387,9 @@ public class SwerveSubsystem extends SubsystemBase {
   public Command driveToPoseObjAvoid(Pose2d pose) {
     targetPose = pose; // Sets the global target pose
 
+    if (targetPose == null)
+      return Commands.none();
+
     Command pathfindingCommand = AutoBuilder.pathfindToPose(
         targetPose,
         Constants.Swerve.PathFinding.constraints,
@@ -416,6 +423,9 @@ public class SwerveSubsystem extends SubsystemBase {
   public Command driveToPose(Pose2d pose) { // Tried and tested Auto Align we used in 2025
     // Change global target pose
     targetPose = pose;
+
+    if (targetPose == null)
+      return Commands.none();
 
     // Create the goal state
     PathPlannerTrajectoryState goalState = new PathPlannerTrajectoryState();
@@ -477,23 +487,73 @@ public class SwerveSubsystem extends SubsystemBase {
             () -> swerveDrive.getPose().getTranslation().getDistance(new Translation2d(0, 0)) > distanceInMeters);
   }
 
-  /*
-   * //TODO: IMPLEMENT OBJECT CAMERA
-   * public Command aimAtTarget(Cameras camera) {
-   * return run(() -> {
-   * Optional<PhotonPipelineResult> resultO = camera.getBestResult();
-   * if (resultO.isPresent()) {
-   * var result = resultO.get();
-   * if (result.hasTargets()) {
-   * drive(getTargetSpeeds(0,
-   * 0,
-   * Rotation2d.fromDegrees(result.getBestTarget()
-   * .getYaw()))); // Not sure if this will work, more math may be required.
-   * }
-   * }
-   * });
-   * }
+  /**
+   * Move up one zone on the left side
    */
+  public Command moveUpLeft() {
+    return Commands.runOnce(() -> {
+      String zone = getFieldLocation();
+
+      if (zone.equals("AllianceZone")) {
+        targetPose = FieldLayout.getNeutralLeft();
+      } else if (zone.equals("NeutralZone")) {
+        targetPose = FieldLayout.getOpponentLeftPose();
+      } else {
+        targetPose = null;
+      }
+    }, this).andThen(driveToPoseObjAvoid(() -> targetPose));
+  }
+
+  /**
+   * Move up one zone on the right side
+   */
+  public Command moveUpRight() {
+    return Commands.runOnce(() -> {
+      String zone = getFieldLocation();
+
+      if (zone.equals("AllianceZone")) {
+        targetPose = FieldLayout.getNeutralRight();
+      } else if (zone.equals("NeutralZone")) {
+        targetPose = FieldLayout.getOpponentRightPose();
+      } else {
+        targetPose = null;
+      }
+    }, this).andThen(driveToPoseObjAvoid(() -> targetPose));
+  }
+
+  /**
+   * Move down one zone on the left side
+   */
+  public Command moveDownLeft() {
+    return Commands.runOnce(() -> {
+      String zone = getFieldLocation();
+
+      if (zone.equals("OpponentZone")) {
+        targetPose = FieldLayout.getNeutralLeft();
+      } else if (zone.equals("NeutralZone")) {
+        targetPose = FieldLayout.getAllianceLeftPose();
+      } else {
+        targetPose = null;
+      }
+    }, this).andThen(driveToPoseObjAvoid(() -> targetPose));
+  }
+
+  /**
+   * Move down one zone on the right side
+   */
+  public Command moveDownRight() {
+    return Commands.runOnce(() -> {
+      String zone = getFieldLocation();
+
+      if (zone.equals("OpponentZone")) {
+        targetPose = FieldLayout.getNeutralRight();
+      } else if (zone.equals("NeutralZone")) {
+        targetPose = FieldLayout.getAllianceRightPose();
+      } else {
+        targetPose = null;
+      }
+    }, this).andThen(driveToPoseObjAvoid(() -> targetPose));
+  }
 
   // SysID Drive Motors Characterization
   public Command sysIdDriveMotorCommand() {
