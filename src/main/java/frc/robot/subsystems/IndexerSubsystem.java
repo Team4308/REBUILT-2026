@@ -1,4 +1,4 @@
-package frc.robot;
+package frc.robot.subsystems;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -118,17 +118,6 @@ public class IndexerSubsystem extends SubsystemBase{
         this.currentState = newState;
 }
 }
-
-
-
-//Teleop (Active) 
-//Neutral Zone 
-//Opposite Alliance Zone
-//Teleop (Inactive) 
-//Our Alliance Zone 
-//Neutral Zone 
-//Opposite Alliance Zone 
-//Endgame 
 
 
 
