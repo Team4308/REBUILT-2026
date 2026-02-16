@@ -118,6 +118,3 @@ public class IndexerSubsystem extends SubsystemBase{
         this.currentState = newState;
 }
 }
-
-
-
