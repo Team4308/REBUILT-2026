@@ -132,8 +132,6 @@ public class StateManager extends SubsystemBase {
                 break;
 
         }
-
-        // ── Update LEDs to match the current robot state ──
         leds.applyStatePattern(currentState);
     }
 }
