@@ -118,17 +118,3 @@ public class IndexerSubsystem extends SubsystemBase{
         this.currentState = newState;
 }
 }
-
-
-
-//Teleop (Active) 
-//Neutral Zone 
-//Opposite Alliance Zone
-//Teleop (Inactive) 
-//Our Alliance Zone 
-//Neutral Zone 
-//Opposite Alliance Zone 
-//Endgame 
-
-
-
