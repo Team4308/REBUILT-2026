@@ -11,13 +11,11 @@ public class IndexerSubsystem extends SubsystemBase{
    
     private State currentState = State.IDLE;
     
-    
     public enum State { //the diff states 
         IDLE,
         SHOOTING
     }
     
-    final public double RollerSpeed = Constants.HopperSpeed; //takes the speed set in constants
     TalonFX Falcon = new TalonFX(Constants.HopperMotorId);
     TalonFX Kraken = new TalonFX(Constants.IndexerMotorId);
     
@@ -35,7 +33,6 @@ public class IndexerSubsystem extends SubsystemBase{
          slot0Configs.kI = Constants.HopperMotorConfigsKi; // no output for integrated error
          slot0Configs.kD = Constants.HopperMotorConfigsKd; // no output for error derivative
 
-
          Falcon.getConfigurator().apply(slot0Configs);
 
 
@@ -46,11 +43,7 @@ public class IndexerSubsystem extends SubsystemBase{
          slot1Configs.kI = Constants.IndexerMotorConfigsKi; // no output for integrated error
          slot1Configs.kD = Constants.IndexerMotorConfigsKd; // no output for error derivative
 
-
-         Kraken.getConfigurator().apply(slot1Configs);
-
-        
-        
+         Kraken.getConfigurator().apply(slot1Configs); 
                    
     }
 
@@ -65,8 +58,6 @@ public class IndexerSubsystem extends SubsystemBase{
 
     }
 
-   
-   
    
    public void setIndexerVelocity(double rpm){ //sets the velocity for Hopper
   
