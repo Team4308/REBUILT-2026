@@ -33,6 +33,7 @@ public class StateManager extends SubsystemBase {
     private final TurretSubsystem turret;
     private final IntakeSubsystem intake;
     private final DriveSubsystem drive;
+    private final LedSubsystem leds;
     private final Arm arm;
     private StateManager.RobotState currentState = StateManager.RobotState.Home;
 
@@ -52,13 +53,15 @@ public class StateManager extends SubsystemBase {
         ShooterSubsystem shooter,
         TurretSubsystem turret,
         IntakeSubsystem intake,
-        DriveSubsystem drive
+        DriveSubsystem drive,
+        LedSubsystem leds
     ) {
         this.hood = hood;
         this.shooter = shooter;
         this.turret = turret;
         this.intake = intake;
         this.drive = drive;
+        this.leds = leds;
 
         trajectory = new TrajectoryCalculations();
 
@@ -129,4 +132,8 @@ public class StateManager extends SubsystemBase {
                 break;
 
         }
+
+        // ── Update LEDs to match the current robot state ──
+        leds.applyStatePattern(currentState);
+    }
 }

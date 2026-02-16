@@ -21,4 +21,9 @@ public class Constants {
         new TrapezoidProfile.Constraints(Constants.Hood.max_velocity, Constants.Hood.max_accel)
         );
     }
+
+    public static final class Leds {
+        public static final int LED_PORT = 0;
+        public static final int LED_LENGTH = 60;
+    }
 }

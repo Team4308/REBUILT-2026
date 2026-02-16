@@ -9,7 +9,10 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Util.TrajectoryCalculations;
 
 public class RobotContainer {
+  private final TrajectoryCalculations trajectoryCalculations = new TrajectoryCalculations();
+
   public RobotContainer() {
+    
     configureBindings();
   }
 
@@ -20,6 +23,6 @@ public class RobotContainer {
   }
 
   public void robotPeriodic() {
-    new TrajectoryCalculations().updateShot();
+    trajectoryCalculations.updateShot();
   }
 }
