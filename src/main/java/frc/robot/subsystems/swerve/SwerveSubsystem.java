@@ -92,6 +92,9 @@ public class SwerveSubsystem extends SubsystemBase {
   // reschedule
   // it every periodic loop.
   private Command currentDriveToPoseCommand = null;
+  // Public flag that indicates whether the subsystem is currently executing
+  // a drive-to-pose command (true while the command is scheduled).
+  public boolean isDrivingToPose = false;
 
   public enum States {
     FIELD_ORIENTED_DRIVE,
@@ -225,6 +228,10 @@ public class SwerveSubsystem extends SubsystemBase {
     }
   }
 
+  public void setTargetPose(Pose2d pose) {
+    targetPose = pose;
+  }
+
   private void drivingToPose() {
     if (targetPose == null) {
       return;
@@ -237,13 +244,15 @@ public class SwerveSubsystem extends SubsystemBase {
 
     // Build the drive-to-pose command. We reuse the existing helper which returns a
     // PathPlanner-following command. Wrap it so that we clear our reference when it
-    // finishes or is interrupted and return to normal control.
+    // finishes or is interrupted and return to normal control. Also update the
+    // public `isDrivingToPose` flag so callers can observe the state.
     currentDriveToPoseCommand = driveToPose(targetPose).finallyDo(interrupted -> {
       currentDriveToPoseCommand = null;
-      // Once finished, return to normal driving mode
-      robotState = States.FIELD_ORIENTED_DRIVE;
+      isDrivingToPose = false;
     });
 
+    // Mark that we are driving to a pose and schedule the command.
+    isDrivingToPose = true;
     CommandScheduler.getInstance().schedule(currentDriveToPoseCommand);
   }
 
