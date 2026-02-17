@@ -92,30 +92,9 @@ public class HoodSubsystem extends SubsystemBase {
 
     //States for Hood
     public enum RobotState {
-                ActiveTeleopAllianceZoneResting,
-                ActiveTeleopAllianceZoneShooting,
-                ActiveTeleopAllianceZoneIntaking,
-                ActiveTeleopAllianceZoneShootingIntaking,
-                ActiveTeleopNeutralZoneResting,
-                ActiveTeleopNeutralZonePassing,
-                ActiveTeleopNeutralZoneIntaking,
-                ActiveTeleopNeutralZonePassingIntaking,
-                ActiveTeleopOpponentZoneResting,
-                ActiveTeleopOpponentZonePassing,
-                ActiveTeleopOpponentZoneIntaking,
-                ActiveTeleopOpponentZonePassingIntaking,
-                InactiveTeleopAllianceZoneResting, 
-                InactiveTeleopAllianceZoneIntaking, 
-                InactiveTeleopNeutralZoneResting, 
-                InactiveTeleopNeutralZoneIntaking, 
-                InactiveTeleopNeutralZonePassingIntaking,
-                InactiveTeleopOpponentZoneResting, 
-                InactiveTeleopOpponentZoneIntaking, 
-                InactiveTeleopOpponentlZonePassingIntaking,
-                ClimbPrepareLeft, 
-                ClimbPrepareRight, 
-                ClimbedUp, 
-                Home
+                REST,
+                PASS,
+                SHOOT,
     }   
 
     private RobotState currentState = RobotState.Home;
@@ -158,76 +137,17 @@ public void periodic() {
     switch (currentState) {
 
         /* ================= HOME ================= */
-        case Home:
+        case REST:
             setHoodAngle(Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE);
-            break;
-
-        /* ========== ACTIVE TELEOP – ALLIANCE ========== */
-        case ActiveTeleopAllianceZoneResting:
-        case ActiveTeleopAllianceZoneIntaking:
-            setHoodAngle(Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE);
-            break;
-
-        case ActiveTeleopAllianceZoneShooting:
-        case ActiveTeleopAllianceZoneShootingIntaking:
+            break;        
+        case SHOOT:
             trajectory.updateShot();
             setHoodAngle(trajectory.getNeededPitch());
-            break;
+            break;        
 
-        /* ========== ACTIVE TELEOP – NEUTRAL ========== */
-        case ActiveTeleopNeutralZoneResting:
-        case ActiveTeleopNeutralZoneIntaking:
-            setHoodAngle(Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE);
-            break;
-
-        case ActiveTeleopNeutralZonePassing:
-        case ActiveTeleopNeutralZonePassingIntaking:
+        case PASS:
             setHoodAngle(Constants.Hood.kPassingAngle);
-            break;
-
-        /* ========== ACTIVE TELEOP – OPPONENT ========== */
-        case ActiveTeleopOpponentZoneResting:
-        case ActiveTeleopOpponentZoneIntaking:
-            setHoodAngle(Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE);
-            break;
-
-        case ActiveTeleopOpponentZonePassing:
-        case ActiveTeleopOpponentZonePassingIntaking:
-            setHoodAngle(Constants.Hood.kPassingAngle);
-            break;
-
-        /* ========== INACTIVE TELEOP – ALLIANCE ========== */
-        case InactiveTeleopAllianceZoneResting:
-        case InactiveTeleopAllianceZoneIntaking:
-            setHoodAngle(Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE);
-            break;
-
-        /* ========== INACTIVE TELEOP – NEUTRAL ========== */
-        case InactiveTeleopNeutralZoneResting:
-        case InactiveTeleopNeutralZoneIntaking:
-            setHoodAngle(Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE);
-            break;
-
-        case InactiveTeleopNeutralZonePassingIntaking:
-            setHoodAngle(Constants.Hood.kPassingAngle);
-            break;
-
-        /* ========== INACTIVE TELEOP – OPPONENT ========== */
-        case InactiveTeleopOpponentZoneResting:
-        case InactiveTeleopOpponentZoneIntaking:
-            setHoodAngle(Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE);
-            break;
-
-        case InactiveTeleopOpponentlZonePassingIntaking:
-            setHoodAngle(Constants.Hood.kPassingAngle);
-            break;
-
-        /* ========== ENDGAME / CLIMB ========== */
-        case ClimbPrepareLeft:
-        case ClimbPrepareRight:
-        case ClimbedUp:
-            setHoodAngle(Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE);
-            break;
+            break;                
     }
 
         double currentAngle = getHoodAngle();
