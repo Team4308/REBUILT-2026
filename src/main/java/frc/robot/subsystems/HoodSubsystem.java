@@ -87,8 +87,6 @@ public class HoodSubsystem extends SubsystemBase {
     public Command aimAtHubCommand(Supplier<Double> pitchSupplier) {
         return run(() -> setHoodAngle(pitchSupplier.get()));
     }
-    public void aimAtPassingZone() { setHoodAngle( Constants.Hood.kPassingAngle ); }
-    public Command aimAtPassingZoneCommand() { return run(this::aimAtPassingZone); }            
 
     //States for Hood
     public enum RobotState {
@@ -132,7 +130,6 @@ public void periodic() {
     // Safety override: hood must retract under trench
     if (underTrench) {
         setHoodAngle(Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE);
-        return;
     }else if(trajectory.suppliersAreSet()){
 
     switch (currentState) {
