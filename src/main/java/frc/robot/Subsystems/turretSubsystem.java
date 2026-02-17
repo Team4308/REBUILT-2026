@@ -31,6 +31,9 @@ import ca.team4308.absolutelib.math.trajectories.solver.ChineseRemainderSolver.C
 import ca.team4308.absolutelib.math.trajectories.shooter.ShooterSystem;
 import ca.team4308.absolutelib.subsystems.Arm;
 import frc.robot.Util.TrajectoryCalculations;
+import frc.robot.Util.TrajectoryCalculations;
+import java.util.function.Supplier;
+
 
 public class turretSubsystem extends SubsystemBase {
 
@@ -40,6 +43,7 @@ public class turretSubsystem extends SubsystemBase {
 
     //(85/17)(40/31):1
     //(85/17)(40/33):1
+
     private final double CANCODER1_GEAR_RATIO = ((85.0/17.0)*(40.0/31.0))/1.0;
     private final double CANCODER2_GEAR_RATIO = ((85.0/17.0)*(40.0/33.0))/1.0;
     private final double DRIVE_MOTOR_GEAR_RATIO = (12.0/85.0);
@@ -50,11 +54,8 @@ public class turretSubsystem extends SubsystemBase {
     public turretSubsystem() {
         driveMotor = new TalonFX(0);
 
-        canCoder1 = new CANcoder(1);
+        canCoder1 = new CANcoder(1); //Device ids are place holders
         canCoder2 = new CANcoder(2);
-
-        //uhh the deviceids are placeholders but we can change them later, just wanted to get the code down
-        //Drive Motor Config
 
         TalonFXConfiguration driveConfig = new TalonFXConfiguration();
 
@@ -69,13 +70,12 @@ public class turretSubsystem extends SubsystemBase {
         canCoder2.getConfigurator().apply(ccConfig);
     }
 
-    public double getTurretAngle() {
 
-    // Get encoder rotations (0–1)
+    public double getTurretAngle() {
+ 
     double e1 = canCoder1.getAbsolutePosition().getValueAsDouble();
     double e2 = canCoder2.getAbsolutePosition().getValueAsDouble();
 
-    // Convert to scaled integers for CRT
     long m1 = 31;
     long m2 = 33;
 
@@ -92,8 +92,8 @@ public class turretSubsystem extends SubsystemBase {
     double turretDegrees = turretRotations * 360.0;
 
     return MathUtil.inputModulus(turretDegrees, -180, 180);
-}
-    
+    }
+  
     public boolean isAtTarget(double degrees) {
         return (Math.abs(MathUtil.inputModulus(degrees - getTurretAngle(), -180, 180)) < 1.0);
     }
@@ -103,7 +103,6 @@ public class turretSubsystem extends SubsystemBase {
     }
 
     final Command moveToTarget(Supplier<Double> degrees, double timeoutMs) {
-        
     return run(() -> {
             targetAngle = degrees.get();
             double error = MathUtil.inputModulus(targetAngle - getTurretAngle(), -180, 180);
@@ -120,9 +119,9 @@ public class turretSubsystem extends SubsystemBase {
         }).until(() -> isAtTarget(targetAngle)).withTimeout(2000);
     }
     
-    public Command aimAtHub(double degrees) {
-        //find hub degrees using vision and then do it
-        double hubDegrees = degrees;
+    public Command aimAtHub() {
+        TrajectoryCalculations trajCalc = new TrajectoryCalculations();
+        double hubDegrees = trajCalc.getNeededYaw();
 
         return run(() -> {
             targetAngle = hubDegrees;
@@ -132,8 +131,7 @@ public class turretSubsystem extends SubsystemBase {
     }
 
     public Command aimAtPassingZone(double degrees) {
-
-        double passingzoneDegrees = degrees;//aint shit in constats.java bro 😭
+        double passingzoneDegrees = degrees;//aint  in constats.java bro 😭
 
         return run(() -> {
             targetAngle = passingzoneDegrees;
@@ -145,61 +143,38 @@ public class turretSubsystem extends SubsystemBase {
     /* States */
     public class StateManager extends SubsystemBase {
         public enum RobotState {
-            ActiveTeleopAllianceZoneResting,
-            ActiveTeleopAllianceZoneShooting,
-            ActiveTeleopAllianceZoneIntaking,
-            ActiveTeleopAllianceZoneShootingIntaking,
-            ActiveTeleopNeutralZoneResting,
-            ActiveTeleopNeutralZonePassing,
-            ActiveTeleopNeutralZoneIntaking,
-            ActiveTeleopNeutralZonePassingIntaking,
-            ActiveTeleopOpponentZoneResting,
-            ActiveTeleopOpponentZonePassing,
-            ActiveTeleopOpponentZoneIntaking,
-            ActiveTeleopOpponentZonePassingIntaking,
-            InactiveTeleopAllianceZoneResting,
-            InactiveTeleopAllianceZoneIntaking,
-            InactiveTeleopNeutralZoneResting,
-            InactiveTeleopNeutralZoneIntaking,
-            InactiveTeleopNeutralZonePassingIntaking,
-            InactiveTeleopOpponentZoneResting,
-            InactiveTeleopOpponentZoneIntaking,
-            InactiveTeleopOpponentlZonePassingIntaking,
-            ClimbPrepareLeft,
-            ClimbPrepareRight,
-            ClimbedUp,
-            Home,
+            activeTeleopShooting,
+            activeTeleopIntakingShooting,
+            neutralModeCycling,
+            neutralModeFeeding,
+            neutralModeMixture,
+            inactiveTelepintaking,
+            neutralModeIntaking,
+            oppositeAllienceZone,
+            endgame, 
     }
     }
     
-    private StateManager.RobotState currentState = StateManager.RobotState.Home;
+    private StateManager.RobotState currentState;
 
     @Override
     public void periodic() {
         switch(currentState) {
-            case ActiveTeleopAllianceZoneResting:
-            case ActiveTeleopAllianceZoneIntaking:
-            case ActiveTeleopAllianceZoneShootingIntaking:
-            case ActiveTeleopNeutralZoneResting:
-            case ActiveTeleopNeutralZonePassing:
-            case ActiveTeleopNeutralZoneIntaking:
-            case ActiveTeleopNeutralZonePassingIntaking:
-            case ActiveTeleopOpponentZoneResting:
-            case ActiveTeleopOpponentZonePassing:
-            case ActiveTeleopOpponentZoneIntaking:
-            case ActiveTeleopOpponentZonePassingIntaking:
-            case InactiveTeleopAllianceZoneResting:
-            case InactiveTeleopAllianceZoneIntaking:
-            case InactiveTeleopNeutralZoneResting:
-            case InactiveTeleopNeutralZoneIntaking:
-            case InactiveTeleopNeutralZonePassingIntaking:
-            case InactiveTeleopOpponentZoneResting:
-            case InactiveTeleopOpponentZoneIntaking:
-            case InactiveTeleopOpponentlZonePassingIntaking:
-            case ClimbPrepareLeft:
-            case ClimbPrepareRight:
-            case ClimbedUp:
-            case Home:
+            case activeTeleopShooting:
+            case activeTeleopIntakingShooting:
+            case inactiveTelepintaking:
+                aimAtHub();
+            case neutralModeCycling:  
+            case neutralModeFeeding:
+            case neutralModeMixture:
+            case neutralModeIntaking:
+            case oppositeAllienceZone:
+                //double passingAngle;
+                //aimAtPassingZone(passingAngle);
+            case endgame:
+            //double resetAngle;
+                //moveToTarget(() -> getTurretAngle(), resetAngle);
+
         }
 
     }
