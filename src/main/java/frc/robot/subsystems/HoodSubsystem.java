@@ -93,11 +93,12 @@ public class HoodSubsystem extends SubsystemBase {
     //States for Hood
     public enum RobotState {
                 REST,
-                PASS,
+                PASS_RIGHT,
+                PASS_LEFT,
                 SHOOT,
     }   
 
-    private RobotState currentState = RobotState.Home;
+    private RobotState currentState = RobotState.REST;
 
     private final TrajectoryCalculations trajectory;
 
@@ -136,18 +137,28 @@ public void periodic() {
 
     switch (currentState) {
 
-        /* ================= HOME ================= */
         case REST:
             setHoodAngle(Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE);
-            break;        
+            break;    
+
         case SHOOT:
+            trajectory.setTargetSupplier(() -> {return Constants.Hood.HUB;});
             trajectory.updateShot();
             setHoodAngle(trajectory.getNeededPitch());
-            break;        
+            break;
+            
+        case PASS_RIGHT:
+            trajectory.setTargetSupplier(() -> {return Constants.Hood.kPASS_RIGHT;});
+            trajectory.updateShot();
+            setHoodAngle(trajectory.getNeededPitch());
+            break;  
 
-        case PASS:
-            setHoodAngle(Constants.Hood.kPassingAngle);
-            break;                
+        case PASS_LEFT:
+            trajectory.setTargetSupplier(() -> {return Constants.Hood.kPASS_LEFT;});
+            trajectory.updateShot();
+            setHoodAngle(trajectory.getNeededPitch());
+            break;    
+
     }
 
         double currentAngle = getHoodAngle();
