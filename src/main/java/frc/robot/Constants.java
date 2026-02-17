@@ -2,12 +2,12 @@ package frc.robot;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 
 public class Constants {
     public static final class Hood {
         public static final int HoodMotor = 10; // CAN ID for the hood motor
-        public static final double kPassingAngle = 30.0; //angle for passing zone
         public static final double kToleranceDegrees = 2.0; // Tolerance for position control
         public static final double TOTAL_GEAR_RATIO = 50.0 * (42.0 / 12.0); // Gear ratio
         public static final double FORWARD_SOFT_LIMIT_ANGLE = 82.0;
@@ -20,5 +20,10 @@ public class Constants {
         0.06, 0.0, 0.0, 
         new TrapezoidProfile.Constraints(Constants.Hood.max_velocity, Constants.Hood.max_accel)
         );
+        
+        public static final Translation3d HUB = new Translation3d(4.0, 0.0, 2.1);
+        public static final Translation3d kPASS_LEFT   = new Translation3d(4.0, 0.5, 2.1);
+        public static final Translation3d kPASS_RIGHT  = new Translation3d(4.0, -0.5, 2.1);
+
     }
 }
