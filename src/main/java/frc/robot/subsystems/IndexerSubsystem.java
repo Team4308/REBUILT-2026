@@ -11,6 +11,8 @@ public class IndexerSubsystem extends SubsystemBase{
    
     private State currentState = State.IDLE;
     
+    private boolean usingState = false;
+
     public enum State { //the diff states 
         IDLE,
         SHOOTING
@@ -89,24 +91,29 @@ public class IndexerSubsystem extends SubsystemBase{
     
 
     @Override
+    
+
     public void periodic() { // the states 
         
-      switch (currentState) {
+        if (usingState) {
+    
+            switch (currentState) {
          
-        case IDLE:
-            StopMotors();
-             break;
+            case IDLE:
+                StopMotors();
+                break;
         
         
-        case SHOOTING:
-            RunMotors();
-             break;
+            case SHOOTING:
+                RunMotors();
+                break;
 
-        
+            }
         }
     }
 
     public void setState(State newState) {
         this.currentState = newState;
 }
+
 }
