@@ -34,6 +34,22 @@ public class TrajectoryCalculations {
     private Translation2d shooterOffset = new Translation2d(0.1,0.1);
     private Translation3d hub = new Translation3d(4.0, 0.0,2.1);
 
+    // Setters
+    public void setPoseSupplier(Supplier<Pose2d> supplier) {
+        this.poseSupplier = supplier;
+    }
+
+    public void setChassisSupplier(Supplier<ChassisSpeeds> supplier) {
+        this.chassisSupplier = supplier;
+    }
+
+    public void setCurrentRPMsupply(Supplier<Double> supplier) {
+        this.currentRPMsupply = supplier;
+    }
+    
+    public boolean suppliersAreSet() {
+        return poseSupplier != null && chassisSupplier != null && currentRPMsupply != null;
+    }
     public TrajectoryCalculations() {
         super();
         TrajectorySolver.SolverConfig solverConfig = TrajectorySolver.SolverConfig.defaults()
@@ -73,23 +89,23 @@ public class TrajectoryCalculations {
     public double getNeededPitch() {
         return shooterSystem.getLastTrajectoryResult().getPitchAngleDegrees();
     }
+    
+
 
     public double getNeededRPM(){
-        return shooterSystem.getLastTrajectoryResult().getRecommendedRpm();
+        return (shooterSystem.getLastTrajectoryResult().getRecommendedRpm());
     }
-
     public void updateShot(){
         Pose2d pose = poseSupplier.get();
         Rotation2d rot = pose.getRotation();
         double worldOffsetX = shooterOffset.getX() * rot.getCos() - shooterOffset.getY() * rot.getSin();
-        double worldOffsetY = shooterOffset.getY() * rot.getSin() + shooterOffset.getX() * rot.getCos();
+        double worldOffsetY = shooterOffset.getX() * rot.getSin() + shooterOffset.getY() * rot.getCos();
         double shooterX = pose.getX() + worldOffsetX;
         double shooterY = pose.getY() + worldOffsetY;
-        
 
         double dx = hub.getX() - shooterX;
         double dy = hub.getY() - shooterY;
-        double yawRad = Math.atan2(dx, dy);
+        double yawRad = Math.atan2(dy, dx);
         lastDistantMeter = Math.hypot(dx, dy);
         targetYawDegrees = Math.toDegrees(yawRad);
         double vx = 0, vy = 0;
@@ -115,6 +131,6 @@ public class TrajectoryCalculations {
         currentShot = shooterSystem.calculate(lastDistantMeter, measuredRPM, vx, vy, yawRad);
     }   
 
-    
+
 
 }

@@ -14,6 +14,7 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -31,6 +32,7 @@ public class HoodSubsystem extends SubsystemBase {
     private double targetAngle = 0;
     
     public HoodSubsystem() {
+        trajectory = new TrajectoryCalculations();
         var talonFXConfigs = new TalonFXConfiguration();
         talonFXConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         talonFXConfigs.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
@@ -88,26 +90,155 @@ public class HoodSubsystem extends SubsystemBase {
     public void aimAtPassingZone() { setHoodAngle( Constants.Hood.kPassingAngle ); }
     public Command aimAtPassingZoneCommand() { return run(this::aimAtPassingZone); }            
 
-            
+    //States for Hood
+    public enum RobotState {
+                ActiveTeleopAllianceZoneResting,
+                ActiveTeleopAllianceZoneShooting,
+                ActiveTeleopAllianceZoneIntaking,
+                ActiveTeleopAllianceZoneShootingIntaking,
+                ActiveTeleopNeutralZoneResting,
+                ActiveTeleopNeutralZonePassing,
+                ActiveTeleopNeutralZoneIntaking,
+                ActiveTeleopNeutralZonePassingIntaking,
+                ActiveTeleopOpponentZoneResting,
+                ActiveTeleopOpponentZonePassing,
+                ActiveTeleopOpponentZoneIntaking,
+                ActiveTeleopOpponentZonePassingIntaking,
+                InactiveTeleopAllianceZoneResting, 
+                InactiveTeleopAllianceZoneIntaking, 
+                InactiveTeleopNeutralZoneResting, 
+                InactiveTeleopNeutralZoneIntaking, 
+                InactiveTeleopNeutralZonePassingIntaking,
+                InactiveTeleopOpponentZoneResting, 
+                InactiveTeleopOpponentZoneIntaking, 
+                InactiveTeleopOpponentlZonePassingIntaking,
+                ClimbPrepareLeft, 
+                ClimbPrepareRight, 
+                ClimbedUp, 
+                Home
+    }   
 
-    @Override
-    public void periodic() {
-        // IMPORTANT: Update this to whatever the locationUtil file is actually called
-        if(LocationUtil.GetIsUnderTrench()) {
-            setHoodAngle(Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE); 
+    private RobotState currentState = RobotState.Home;
+
+    private final TrajectoryCalculations trajectory;
+
+            public void setState( RobotState state) {
+                this.currentState = state;
+            }
+
+
+            public RobotState getState() {
+                return currentState;
+            }
+        
+    
+
+    boolean underTrench = NetworkTableInstance.getDefault()
+    .getTable("AdvantageKit/RealOutputs")
+    .getEntry("Swerve/UnderTrench")
+    .getBoolean(false);
+
+    public void stopMotors() {
+            m_hoodMotor.setVoltage(0);
         }
+
+@Override
+public void periodic() {
+    underTrench = NetworkTableInstance.getDefault()
+    .getTable("AdvantageKit/RealOutputs")
+    .getEntry("Swerve/UnderTrench")
+    .getBoolean(false);
+
+    // Safety override: hood must retract under trench
+    if (underTrench) {
+        setHoodAngle(Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE);
+        return;
+    }else if(trajectory.suppliersAreSet()){
+
+    switch (currentState) {
+
+        /* ================= HOME ================= */
+        case Home:
+            setHoodAngle(Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE);
+            break;
+
+        /* ========== ACTIVE TELEOP – ALLIANCE ========== */
+        case ActiveTeleopAllianceZoneResting:
+        case ActiveTeleopAllianceZoneIntaking:
+            setHoodAngle(Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE);
+            break;
+
+        case ActiveTeleopAllianceZoneShooting:
+        case ActiveTeleopAllianceZoneShootingIntaking:
+            trajectory.updateShot();
+            setHoodAngle(trajectory.getNeededPitch());
+            break;
+
+        /* ========== ACTIVE TELEOP – NEUTRAL ========== */
+        case ActiveTeleopNeutralZoneResting:
+        case ActiveTeleopNeutralZoneIntaking:
+            setHoodAngle(Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE);
+            break;
+
+        case ActiveTeleopNeutralZonePassing:
+        case ActiveTeleopNeutralZonePassingIntaking:
+            setHoodAngle(Constants.Hood.kPassingAngle);
+            break;
+
+        /* ========== ACTIVE TELEOP – OPPONENT ========== */
+        case ActiveTeleopOpponentZoneResting:
+        case ActiveTeleopOpponentZoneIntaking:
+            setHoodAngle(Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE);
+            break;
+
+        case ActiveTeleopOpponentZonePassing:
+        case ActiveTeleopOpponentZonePassingIntaking:
+            setHoodAngle(Constants.Hood.kPassingAngle);
+            break;
+
+        /* ========== INACTIVE TELEOP – ALLIANCE ========== */
+        case InactiveTeleopAllianceZoneResting:
+        case InactiveTeleopAllianceZoneIntaking:
+            setHoodAngle(Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE);
+            break;
+
+        /* ========== INACTIVE TELEOP – NEUTRAL ========== */
+        case InactiveTeleopNeutralZoneResting:
+        case InactiveTeleopNeutralZoneIntaking:
+            setHoodAngle(Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE);
+            break;
+
+        case InactiveTeleopNeutralZonePassingIntaking:
+            setHoodAngle(Constants.Hood.kPassingAngle);
+            break;
+
+        /* ========== INACTIVE TELEOP – OPPONENT ========== */
+        case InactiveTeleopOpponentZoneResting:
+        case InactiveTeleopOpponentZoneIntaking:
+            setHoodAngle(Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE);
+            break;
+
+        case InactiveTeleopOpponentlZonePassingIntaking:
+            setHoodAngle(Constants.Hood.kPassingAngle);
+            break;
+
+        /* ========== ENDGAME / CLIMB ========== */
+        case ClimbPrepareLeft:
+        case ClimbPrepareRight:
+        case ClimbedUp:
+            setHoodAngle(Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE);
+            break;
+    }
+
         double currentAngle = getHoodAngle();
         double pidOutput = Constants.Hood.pidController.calculate(currentAngle, targetAngle);
-        double ffVolts = Constants.Hood.feedforward.calculate(Units.degreesToRadians(currentAngle), Constants.Hood.pidController.getSetpoint().velocity);
+        double ffVolts = Constants.Hood.feedforward.calculate(
+                Units.degreesToRadians(currentAngle),
+                Constants.Hood.pidController.getSetpoint().velocity
+        );
 
         m_hoodMotor.setVoltage(pidOutput + ffVolts);
-
         Logger.recordOutput("Subsystems/Hood/TargetAngle", targetAngle);
         Logger.recordOutput("Subsystems/Hood/CurrentAngle", currentAngle);
     }
-    
-    public void stopMotors() {
-        m_hoodMotor.setVoltage(0);
-        m_hoodMotor.setPosition(0); 
-    }
-}
+}}
