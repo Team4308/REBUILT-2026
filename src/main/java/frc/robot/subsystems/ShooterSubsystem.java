@@ -19,7 +19,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants;
 
-public class ShooterSubsystem extends AbsoluteSubsystem{
+public class ShooterSubsystem extends AbsoluteSubsystem {
     public final TalonFX rightMotor;
     public final TalonFX leftMotor;
 
@@ -62,13 +62,14 @@ public class ShooterSubsystem extends AbsoluteSubsystem{
         rightConfiguration.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         // leftConfiguration.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         leftConfiguration.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-        
+
         rightMotor.getConfigurator().apply(rightConfiguration);
         leftMotor.getConfigurator().apply(leftConfiguration);
 
         rpm = 0;
 
     }
+
     public void setTargetSpeed(double rpm) {
         this.rpm = rpm;
         rightVelocity.Velocity = rpm * Constants.Shooter.topMultiplier;
@@ -77,46 +78,45 @@ public class ShooterSubsystem extends AbsoluteSubsystem{
         leftMotor.setControl(leftVelocity);
     }
 
-    boolean isAtTargetSpeed() {
+    public boolean isAtTargetSpeed() {
         double rightRpm = ((ShooterSubsystem) rightMotor.getVelocity().getValue()).getRPM();
-        double leftRpm  = ((ShooterSubsystem) leftMotor.getVelocity().getValue()).getRPM();
+        double leftRpm = ((ShooterSubsystem) leftMotor.getVelocity().getValue()).getRPM();
         double rightError = Math.abs(rightRpm - rightVelocity.Velocity);
-        double leftError  = Math.abs(leftRpm  - leftVelocity.Velocity);
+        double leftError = Math.abs(leftRpm - leftVelocity.Velocity);
         return rightError < Constants.Shooter.kRPMTolerance && leftError < Constants.Shooter.kRPMTolerance;
-     }
+    }
 
-     public void stopMotors() {
+    public void stopMotors() {
         setTargetSpeed(0);
-     }
+    }
 
-    public Command setShooterSpeed(Supplier<Double> rpm) {      
+    public Command setShooterSpeed(Supplier<Double> rpm) {
         return Commands.run(
-            () -> setTargetSpeed(rpm.get()),
-            this
-        ).until(this::isAtTargetSpeed);
-     } // sets the speed to rpm, and runs until it has reached the target
-
-         public Command setShooterSpeed(Supplier<Double> rpm, double timeoutMs) {
-           return Commands.run(
                 () -> setTargetSpeed(rpm.get()),
-               this
-           ).until(() -> isAtTargetSpeed() || Timer.getFPGATimestamp() >= timeoutMs);
-     } // same as setshooterspeed but if the timeout runs out first, it will finish anyways
+                this).until(this::isAtTargetSpeed);
+    } // sets the speed to rpm, and runs until it has reached the target
 
-     void setState(String state) {
+    public Command setShooterSpeed(Supplier<Double> rpm, double timeoutMs) {
+        return Commands.run(
+                () -> setTargetSpeed(rpm.get()),
+                this).until(() -> isAtTargetSpeed() || Timer.getFPGATimestamp() >= timeoutMs);
+    } // same as setshooterspeed but if the timeout runs out first, it will finish
+      // anyways
+
+    public void setState(String state) {
         this.state = state;
-     } // sets the current state
+    } // sets the current state
 
-     void setStateBased(boolean using) {
+    public void setStateBased(boolean using) {
         this.using = using;
-     } // turns on/off the state manager
-     
+    } // turns on/off the state manager
+
     @Override
     public Sendable log() {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'log'");
     }
-    
+
     public double getRPM() {
         return this.rpm;
     }
@@ -126,33 +126,49 @@ public class ShooterSubsystem extends AbsoluteSubsystem{
         throw new UnsupportedOperationException("Unimplemented method 'selectProfileSlot'");
     }
 
+    public void setShooterSpeedPass() {
+        setTargetSpeed(Constants.Shooter.passRPM);
+    } // sets the shooter’s speed to the correct speed to pass to our zone. Specific
+      // location will be in strategy
 
-    }
+    public Command setShooterSpeedPassCommand() {
+        return Commands.run(
+                () -> setShooterSpeedPass(),
+                this);
+    } // same as previous, but it runs until interrupted.
 
+}
 
-
-
-
-/* Necessary functions
-void setTargetSpeed(double rpm) {} // sets the target speed of the motors to rpm DONE
-
-boolean isAtTargetSpeed() {} // returns whether the target speed is within x rpm of the target (x in Constants.java) DONE
-
-Command setShooterSpeed(Supplier<Double> rpm) {} // sets the speed to rpm, and runs until it has reached the target DONE
-
-Command setShooterSpeed(Supplier<Double>, double timeoutMs) {} // same as setshooterspeed but if the timeout runs out first, it will finish anyways DONE
-
-void stopMotors() {} // sets target to 0, and stops motors DONE
-
-void setShooterSpeedHub() {} // sets the shooter’s speed to the correct speed to target to the hub. Ask nicholas for how to do this
-Command setShooterSpeedHub() {} // same as previous, but it runs until interrupted.
-
-void setShooterSpeedPass() {} // sets the shooter’s speed to the correct speed to pass to our zone. Specific location will be in strategy
-Command setShooterSpeedPass() {} // same as previous, but it runs until interrupted. lingfeng said 50%
-
-void setState(String state) {} // sets the current state 
-
-void setStateBased(boolean using) {} // turns on/off the state manager 
-
-make function to turn RPM to percent 0-1, krakens have 3000 max rpm.
-*/
+/*
+ * Necessary functions
+ * void setTargetSpeed(double rpm) {} // sets the target speed of the motors to
+ * rpm DONE
+ * 
+ * boolean isAtTargetSpeed() {} // returns whether the target speed is within x
+ * rpm of the target (x in Constants.java) DONE
+ * 
+ * Command setShooterSpeed(Supplier<Double> rpm) {} // sets the speed to rpm,
+ * and runs until it has reached the target DONE
+ * 
+ * Command setShooterSpeed(Supplier<Double>, double timeoutMs) {} // same as
+ * setshooterspeed but if the timeout runs out first, it will finish anyways
+ * DONE
+ * 
+ * void stopMotors() {} // sets target to 0, and stops motors DONE
+ * 
+ * void setShooterSpeedHub() {} // sets the shooter’s speed to the correct speed
+ * to target to the hub. Ask nicholas for how to do this
+ * Command setShooterSpeedHub() {} // same as previous, but it runs until
+ * interrupted.
+ * 
+ * void setShooterSpeedPass() {} // sets the shooter’s speed to the correct
+ * speed to pass to our zone. Specific location will be in strategy
+ * Command setShooterSpeedPass() {} // same as previous, but it runs until
+ * interrupted. lingfeng said 50% DONE
+ * 
+ * void setState(String state) {} // sets the current state DONE
+ * 
+ * void setStateBased(boolean using) {} // turns on/off the state manager Done
+ * 
+ * make function to turn RPM to percent 0-1, krakens have 3000 max rpm.
+ */
