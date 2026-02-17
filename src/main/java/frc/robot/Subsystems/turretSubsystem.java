@@ -22,12 +22,15 @@ import edu.wpi.first.wpilibj.motorcontrol.Talon;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Util.TrajectoryCalculations;
 import swervelib.encoders.CANCoderSwerve;
 
 import ca.team4308.absolutelib.math.trajectories.solver.ChineseRemainderSolver;
 import ca.team4308.absolutelib.math.trajectories.solver.ChineseRemainderSolver.ModularConstraint;
 import ca.team4308.absolutelib.math.trajectories.solver.ChineseRemainderSolver.CRTSolution;
+
+import ca.team4308.absolutelib.math.trajectories.shooter.ShooterSystem;
+import ca.team4308.absolutelib.subsystems.Arm;
+import frc.robot.Util.TrajectoryCalculations;
 
 public class turretSubsystem extends SubsystemBase {
 
@@ -100,6 +103,7 @@ public class turretSubsystem extends SubsystemBase {
     }
 
     final Command moveToTarget(Supplier<Double> degrees, double timeoutMs) {
+        
     return run(() -> {
             targetAngle = degrees.get();
             double error = MathUtil.inputModulus(targetAngle - getTurretAngle(), -180, 180);
@@ -115,7 +119,7 @@ public class turretSubsystem extends SubsystemBase {
             driveMotor.set(error * 0.01);
         }).until(() -> isAtTarget(targetAngle)).withTimeout(2000);
     }
-
+    
     public Command aimAtHub(double degrees) {
         //find hub degrees using vision and then do it
         double hubDegrees = degrees;
@@ -137,9 +141,72 @@ public class turretSubsystem extends SubsystemBase {
             driveMotor.set(error * 0.01);
         }).until(() -> isAtTarget(targetAngle)).withTimeout(2000); 
     }
-    /*
-    public void setState(String state) {} son i have no clue what this is :sob:
 
+    /* States */
+    public class StateManager extends SubsystemBase {
+        public enum RobotState {
+            ActiveTeleopAllianceZoneResting,
+            ActiveTeleopAllianceZoneShooting,
+            ActiveTeleopAllianceZoneIntaking,
+            ActiveTeleopAllianceZoneShootingIntaking,
+            ActiveTeleopNeutralZoneResting,
+            ActiveTeleopNeutralZonePassing,
+            ActiveTeleopNeutralZoneIntaking,
+            ActiveTeleopNeutralZonePassingIntaking,
+            ActiveTeleopOpponentZoneResting,
+            ActiveTeleopOpponentZonePassing,
+            ActiveTeleopOpponentZoneIntaking,
+            ActiveTeleopOpponentZonePassingIntaking,
+            InactiveTeleopAllianceZoneResting,
+            InactiveTeleopAllianceZoneIntaking,
+            InactiveTeleopNeutralZoneResting,
+            InactiveTeleopNeutralZoneIntaking,
+            InactiveTeleopNeutralZonePassingIntaking,
+            InactiveTeleopOpponentZoneResting,
+            InactiveTeleopOpponentZoneIntaking,
+            InactiveTeleopOpponentlZonePassingIntaking,
+            ClimbPrepareLeft,
+            ClimbPrepareRight,
+            ClimbedUp,
+            Home,
+    }
+    }
+    
+    private StateManager.RobotState currentState = StateManager.RobotState.Home;
+
+    @Override
+    public void periodic() {
+        switch(currentState) {
+            case ActiveTeleopAllianceZoneResting:
+            case ActiveTeleopAllianceZoneIntaking:
+            case ActiveTeleopAllianceZoneShootingIntaking:
+            case ActiveTeleopNeutralZoneResting:
+            case ActiveTeleopNeutralZonePassing:
+            case ActiveTeleopNeutralZoneIntaking:
+            case ActiveTeleopNeutralZonePassingIntaking:
+            case ActiveTeleopOpponentZoneResting:
+            case ActiveTeleopOpponentZonePassing:
+            case ActiveTeleopOpponentZoneIntaking:
+            case ActiveTeleopOpponentZonePassingIntaking:
+            case InactiveTeleopAllianceZoneResting:
+            case InactiveTeleopAllianceZoneIntaking:
+            case InactiveTeleopNeutralZoneResting:
+            case InactiveTeleopNeutralZoneIntaking:
+            case InactiveTeleopNeutralZonePassingIntaking:
+            case InactiveTeleopOpponentZoneResting:
+            case InactiveTeleopOpponentZoneIntaking:
+            case InactiveTeleopOpponentlZonePassingIntaking:
+            case ClimbPrepareLeft:
+            case ClimbPrepareRight:
+            case ClimbedUp:
+            case Home:
+        }
+
+    }
+    public void setState(String state) {
+
+    }
+  /*
     public void setStateBased(boolean using) {}
     */
 }
