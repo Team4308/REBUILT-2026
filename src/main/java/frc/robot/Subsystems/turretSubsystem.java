@@ -143,15 +143,9 @@ public class turretSubsystem extends SubsystemBase {
     /* States */
     public class StateManager extends SubsystemBase {
         public enum RobotState {
-            activeTeleopShooting,
-            activeTeleopIntakingShooting,
-            neutralModeCycling,
-            neutralModeFeeding,
-            neutralModeMixture,
-            inactiveTelepintaking,
-            neutralModeIntaking,
-            oppositeAllienceZone,
-            endgame, 
+            aimAtHub,
+            aimAtPassingZone,
+            defaultTurret
     }
     }
     
@@ -160,19 +154,13 @@ public class turretSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         switch(currentState) {
-            case activeTeleopShooting:
-            case activeTeleopIntakingShooting:
-            case inactiveTelepintaking:
+            case aimAtHub:
                 aimAtHub();
-            case neutralModeCycling:  
-            case neutralModeFeeding:
-            case neutralModeMixture:
-            case neutralModeIntaking:
-            case oppositeAllienceZone:
+            case aimAtPassingZone:
                 //double passingAngle;
                 //aimAtPassingZone(passingAngle);
-            case endgame:
-            //double resetAngle;
+            case defaultTurret:
+            //double reset  Angle;
                 //moveToTarget(() -> getTurretAngle(), resetAngle);
 
         }
