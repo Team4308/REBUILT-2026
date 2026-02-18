@@ -48,7 +48,8 @@ public class turretSubsystem extends SubsystemBase {
     private final double CANCODER2_GEAR_RATIO = ((85.0/17.0)*(40.0/33.0))/1.0;
     private final double DRIVE_MOTOR_GEAR_RATIO = (12.0/85.0);
 
-    public double targetAngle; // I think these angles need to be imported in our subsystems.
+    //Is this for yaw??
+    public double targetAngle; // I think these angles need to be imported in our subsystems (Import from import frc.robot.Util.TrajectoryCalculations;).
     public double degrees; // Same for this.
 
     public turretSubsystem() {
@@ -149,16 +150,16 @@ public class turretSubsystem extends SubsystemBase {
     
     private StateManager.RobotState currentState;
 
-    @Override
     public void periodic() {
         switch(currentState) {
             case aimAtHub:
                 aimAtHub();
             case aimAtPassingZone:
-                //double passingAngle;
-                //aimAtPassingZone(passingAngle);
+                TrajectoryCalculations trajCalc = new TrajectoryCalculations();
+                double hubDegrees = trajCalc.getNeededYaw();
+                aimAtPassingZone(hubDegrees); //is this correct?
             case defaultTurret:
-            //double reset  Angle;
+                //double reset  Angle;
                 //moveToTarget(() -> getTurretAngle(), resetAngle);
 
         }
