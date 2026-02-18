@@ -48,8 +48,8 @@ public class turretSubsystem extends SubsystemBase {
     private final double CANCODER2_GEAR_RATIO = ((85.0/17.0)*(40.0/33.0))/1.0;
     private final double DRIVE_MOTOR_GEAR_RATIO = (12.0/85.0);
 
-    public double targetAngle = 0.0;
-    public double degrees = 0.0;
+    public double targetAngle; // I think these angles need to be imported in our subsystems.
+    public double degrees; // Same for this.
 
     public turretSubsystem() {
         driveMotor = new TalonFX(0);
@@ -72,26 +72,24 @@ public class turretSubsystem extends SubsystemBase {
 
 
     public double getTurretAngle() {
- 
-    double e1 = canCoder1.getAbsolutePosition().getValueAsDouble();
-    double e2 = canCoder2.getAbsolutePosition().getValueAsDouble();
+        double e1 = canCoder1.getAbsolutePosition().getValueAsDouble();
+        double e2 = canCoder2.getAbsolutePosition().getValueAsDouble();
 
-    long m1 = 31;
-    long m2 = 33;
+        long m1 = 31;
+        long m2 = 33;
 
-    long a1 = Math.round(e1 * 200) % m1;
-    long a2 = Math.round(e2 * 200) % m2;
-    long[] result = ChineseRemainderSolver.solveTwoCongruences(a1, m1, a2, m2);
+        long a1 = Math.round(e1 * 200) % m1;
+        long a2 = Math.round(e2 * 200) % m2;
+        long[] result = ChineseRemainderSolver.solveTwoCongruences(a1, m1, a2, m2);
 
-    if (result == null) {
-        return 0.0;
-    }
+        if (result == null) {
+            return 0.0;
+        }
+        long turretScaled = result[0];
+        double turretRotations = turretScaled / 200.0;
+        double turretDegrees = turretRotations * 360.0;
 
-    long turretScaled = result[0];
-    double turretRotations = turretScaled / 200.0;
-    double turretDegrees = turretRotations * 360.0;
-
-    return MathUtil.inputModulus(turretDegrees, -180, 180);
+        return MathUtil.inputModulus(turretDegrees, -180, 180);
     }
   
     public boolean isAtTarget(double degrees) {
