@@ -6,7 +6,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 
 public class Constants {
     public static class Shooter {
-        public static final double maxrpm = 100;
+        public static final double kMaxRPM = 6000.0;
         public static final double topMultiplier = 1;
         public static final double bottomMultiplier = 1;
         public static final int kRPMTolerance = 10;

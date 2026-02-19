@@ -2,17 +2,12 @@ package frc.robot.subsystems;
 
 import java.util.function.Supplier;
 
-import com.ctre.phoenix6.StatusSignal;
-import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import ca.team4308.absolutelib.wrapper.AbsoluteSubsystem;
-import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -23,9 +18,6 @@ public class ShooterSubsystem extends AbsoluteSubsystem {
     public final TalonFX rightMotor;
     public final TalonFX leftMotor;
 
-    private final DutyCycleOut rightMotorOut;
-    private final DutyCycleOut leftMotorOut;
-
     private final TalonFXConfiguration rightConfiguration;
     private final TalonFXConfiguration leftConfiguration;
 
@@ -34,8 +26,7 @@ public class ShooterSubsystem extends AbsoluteSubsystem {
 
     public double bottomMultiplier;
     public double topMultiplier;
-
-    public double maxrpm;
+    
     public double rpm;
 
     public String state;
@@ -44,9 +35,6 @@ public class ShooterSubsystem extends AbsoluteSubsystem {
     public ShooterSubsystem() {
         rightMotor = new TalonFX(Constants.Mapping.ShooterMotor.kMotor1);
         leftMotor = new TalonFX(Constants.Mapping.ShooterMotor.kMotor2);
-
-        rightMotorOut = new DutyCycleOut(0);
-        leftMotorOut = new DutyCycleOut(0);
 
         rightVelocity = new VelocityVoltage(0);
         leftVelocity = new VelocityVoltage(0);
@@ -79,13 +67,12 @@ public class ShooterSubsystem extends AbsoluteSubsystem {
     }
 
     public boolean isAtTargetSpeed() {
-        double rightRpm = ((ShooterSubsystem) rightMotor.getVelocity().getValue()).getRPM();
-        double leftRpm = ((ShooterSubsystem) leftMotor.getVelocity().getValue()).getRPM();
+        double rightRpm = rightMotor.getVelocity().getValue().in(edu.wpi.first.units.Units.RPM);
+        double leftRpm = leftMotor.getVelocity().getValue().in(edu.wpi.first.units.Units.RPM);
         double rightError = Math.abs(rightRpm - rightVelocity.Velocity);
         double leftError = Math.abs(leftRpm - leftVelocity.Velocity);
         return rightError < Constants.Shooter.kRPMTolerance && leftError < Constants.Shooter.kRPMTolerance;
     }
-
     public void stopMotors() {
         setTargetSpeed(0);
     }
@@ -113,17 +100,22 @@ public class ShooterSubsystem extends AbsoluteSubsystem {
 
     @Override
     public Sendable log() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'log'");
-    }
-
-    public double getRPM() {
-        return this.rpm;
+        return builder -> {
+        builder.addDoubleProperty("Target RPM", this::getRPM, null);
+        builder.addDoubleProperty("Right Motor RPM", () -> rightMotor.getVelocity().getValue().in(edu.wpi.first.units.Units.RPM), null);
+        builder.addDoubleProperty("Left Motor RPM", () -> leftMotor.getVelocity().getValue().in(edu.wpi.first.units.Units.RPM), null);
+        builder.addBooleanProperty("At Target Speed", this::isAtTargetSpeed, null);
+        builder.addStringProperty("State", () -> this.state, null);
+        }; // publishes live shooter data 
     }
 
     public void selectProfileSlot(int i) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'selectProfileSlot'");
+        rightVelocity.Slot = i;
+        leftVelocity.Slot = i;
+    } // switches  PID slot
+
+    public double getRPM() {
+        return this.rpm;
     }
 
     public void setShooterSpeedPass() {
@@ -136,6 +128,14 @@ public class ShooterSubsystem extends AbsoluteSubsystem {
                 () -> setShooterSpeedPass(),
                 this);
     } // same as previous, but it runs until interrupted.
+
+public void setShooterSpeedHub() {
+        setTargetSpeed(Constants.Shooter.kMaxRPM);
+    }
+
+    public Command setShooterSpeedHubCommand() {
+        return Commands.run(() -> setShooterSpeedHub(), this);
+    }
 
 }
 

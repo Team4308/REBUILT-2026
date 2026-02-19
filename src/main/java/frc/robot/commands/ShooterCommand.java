@@ -1,20 +1,9 @@
 package frc.robot.commands;
 
-import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.DutyCycleOut;
-import com.ctre.phoenix6.controls.VelocityVoltage;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.InvertedValue;
-import com.ctre.phoenix6.signals.NeutralModeValue;
-
-import edu.wpi.first.util.sendable.Sendable;
-import frc.robot.Constants;
-
-import frc.robot.subsystems.ShooterSubsystem;
-import edu.wpi.first.wpilibj2.command.Command;
-
 import java.util.function.Supplier;
+
+import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.subsystems.ShooterSubsystem;
 
 public class ShooterCommand extends Command {
   private final ShooterSubsystem m_subsystem;
@@ -34,7 +23,7 @@ public class ShooterCommand extends Command {
 
   @Override
   public void execute() {
-    double control = this.control.get();//converting to rpm
+    double control = this.control.get();
     m_subsystem.setTargetSpeed(control);
   }
 
@@ -56,40 +45,47 @@ public class ShooterCommand extends Command {
     return m_subsystem.setShooterSpeed(rpm);
   } // sets the speed to rpm, and runs until it has reached the target
 
-     public Command setShooterSpeed(Supplier<Double> rpm, double timeoutMs) {
-        return m_subsystem.setShooterSpeed(rpm, timeoutMs);
-    }
+  public Command setShooterSpeed(Supplier<Double> rpm, double timeoutMs) {
+    return m_subsystem.setShooterSpeed(rpm, timeoutMs);
+  }
 
-    public void setShooterSpeedPass() {
+  public void setShooterSpeedPass() {
     m_subsystem.setShooterSpeedPass();
 }
   
-    public Command setShooterSpeedPassCommand() {
-        return new Command() {
-            { addRequirements(m_subsystem); }
+  public Command setShooterSpeedPassCommand() {
+    return new Command() {
+      { addRequirements(m_subsystem); }
 
-            @Override
-            public void initialize() {
-                m_subsystem.setShooterSpeedPass();
-            }
+      @Override
+      public void initialize() {
+        m_subsystem.setShooterSpeedPass();
+      }
 
-            @Override
-            public void execute() {
-                m_subsystem.setShooterSpeedPass();
-            }
+      @Override
+      public void execute() {
+        m_subsystem.setShooterSpeedPass();
+      }
 
-            @Override
-            public void end(boolean interrupted) {
-                m_subsystem.stopMotors();
-            }
+      @Override
+        public void end(boolean interrupted) {
+          m_subsystem.stopMotors();
+        }
 
-            @Override
-            public boolean isFinished() {
-                return false; // runs until interrupted
-            }
-
+        @Override
+          public boolean isFinished() {
+            return false; // runs until interrupted
+          }
         };
     }
+
+  public void setShooterSpeedHub() {
+    m_subsystem.setShooterSpeedHub();
+  }
+
+  public Command setShooterSpeedHubCommand() {
+    return m_subsystem.setShooterSpeedHubCommand();
+  } 
 
     public void setState(String state) {
         m_subsystem.setState(state);
@@ -103,10 +99,10 @@ public class ShooterCommand extends Command {
 
 
 
-/* Necessary functions
+/* Necessary functions  
 void setTargetSpeed(double rpm) {} // sets the target speed of the motors to rpm DONE CALLED IN EXECUTE
 
-boolean isAtTargetSpeed() {} // returns whether the target speed is within x rpm of the target (x in Constants.java)
+boolean isAtTargetSpeed() {} // returns whether the target speed is within x rpm of the target (x in Constants.java) DONE
 
 Command setShooterSpeed(Supplier<Double> rpm) {} // sets the speed to rpm, and runs until it has reached the target DONE
 
