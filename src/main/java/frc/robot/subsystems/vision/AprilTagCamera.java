@@ -19,9 +19,13 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants.VisionConstants;
 
+/**
+ * Represents a standard AprilTag camera using PhotonVision.
+ * Handles pose estimation, standard deviation calculations based on tag count/distance,
+ * and simulation integration.
+ */
 public class AprilTagCamera {
     protected final String name;
     protected final PhotonCamera photonCamera;
@@ -29,6 +33,14 @@ public class AprilTagCamera {
     protected PhotonCameraSim cameraSim; 
     public Matrix<N3, N1> curStdDevs;
 
+    /**
+     * Creates a new AprilTagCamera.
+     *
+     * @param name The name of the camera (must match PhotonVision pipeline name).
+     * @param robotToCam The transform from the robot's center to the camera.
+     * @param layout The AprilTag field layout.
+     * @param visionSim The simulation system (can be null if not in sim).
+     */
     public AprilTagCamera(String name, Transform3d robotToCam, AprilTagFieldLayout layout, VisionSystemSim visionSim) {
         this.name = name;
         this.photonCamera = new PhotonCamera(name);
@@ -40,15 +52,26 @@ public class AprilTagCamera {
         }
     }
 
+    /**
+     * Fetches the latest pipeline result.
+     * In simulation, this pulls from the simulated camera instance.
+     *
+     * @return The latest PhotonPipelineResult.
+     */
     public PhotonPipelineResult getLatestResult() {
         if (RobotBase.isSimulation() && cameraSim != null) {
-            return cameraSim.getCamera().getAllUnreadResults().stream()
-                .reduce((first, second) -> second).orElse(new PhotonPipelineResult());
+            return cameraSim.getCamera().getAllUnreadResults().stream().reduce((first, second) -> second).orElse(new PhotonPipelineResult());
         }
         var results = photonCamera.getAllUnreadResults();
         return results.isEmpty() ? new PhotonPipelineResult() : results.get(results.size() - 1);
     }
 
+    /**
+     * Calculates the estimated robot pose based on visible AprilTags.
+     *
+     * @param prevPose The previous estimated pose (used for reference, though not always required by PhotonPoseEstimator).
+     * @return An Optional containing the EstimatedRobotPose if a valid estimate is found.
+     */
     public Optional<EstimatedRobotPose> getEstimatedGlobalPose(Pose2d prevPose) {
         PhotonPipelineResult result = getLatestResult();
         if (!result.hasTargets()) return Optional.empty();
@@ -67,12 +90,7 @@ public class AprilTagCamera {
         
         // Fallback Strategy
         if (est.isEmpty()) {
-            if (ambiguity == -1) {
-                 if (Timer.getFPGATimestamp() % 5.0 < 0.05) {
-                     System.err.println("CRITICAL: [" + name + "] UNCALIBRATED & NO 3D DATA!");
-                 }
-                 return Optional.empty();
-            }
+            if (ambiguity == -1) return Optional.empty();
             est = poseEstimator.estimateLowestAmbiguityPose(result);
         }
 
@@ -80,19 +98,25 @@ public class AprilTagCamera {
             updateEstimationStdDevs(est.get(), result.getTargets());
             return est;
         }
+
         return Optional.empty();
     }
 
+    /**
+     * Dynamically updates the standard deviations for the pose estimate based on the number and distance of tags.
+     *
+     * @param pose The estimated robot pose.
+     * @param targets The list of visible targets used for the estimate.
+     */
     protected void updateEstimationStdDevs(EstimatedRobotPose pose, List<PhotonTrackedTarget> targets) {
         Matrix<N3, N1> estStdDevs = VecBuilder.fill(VisionConstants.SINGLE_TAG_STD_DEV, VisionConstants.SINGLE_TAG_STD_DEV, 2.0);
         int numTags = 0;
         double avgDist = 0;
 
-        for (var tgt : targets) {
-            var tagPose = poseEstimator.getFieldTags().getTagPose(tgt.getFiducialId());
-            if (tagPose.isEmpty()) continue;
-            numTags++;
+        for (var target : targets) {
+            var tagPose = poseEstimator.getFieldTags().getTagPose(target.getFiducialId());
             avgDist += tagPose.get().toPose2d().getTranslation().getDistance(pose.estimatedPose.toPose2d().getTranslation());
+            numTags++;
         }
 
         if (numTags > 0) {
@@ -105,6 +129,12 @@ public class AprilTagCamera {
         }
     }
 
+    /**
+     * Configures the camera simulation properties.
+     *
+     * @param visionSim The VisionSystemSim instance.
+     * @param robotToCam The camera's transform relative to the robot.
+     */
     private void setupSimulation(VisionSystemSim visionSim, Transform3d robotToCam) {
         SimCameraProperties props = new SimCameraProperties();
         props.setCalibration(VisionConstants.SIM_RES_WIDTH, VisionConstants.SIM_RES_HEIGHT, Rotation2d.fromDegrees(VisionConstants.SIM_DIAG_FOV));

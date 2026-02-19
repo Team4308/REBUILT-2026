@@ -14,9 +14,24 @@ import edu.wpi.first.networktables.PubSubOption;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants.VisionConstants;
 
+//untested and unimplemented on pi side DO NOT USE
+
+/**
+ * EXPERIMENTAL: An implementation of an AprilTag camera that consumes raw data arrays
+ * from a Python backend via NetworkTables instead of using standard PhotonVision pipelines.
+ * * <p><b>WARNING:</b> This class is marked as untested and unimplemented on the Pi side. Use with caution.</p>
+ */
 public class ExperimentalAprilTagCamera extends AprilTagCamera {
     private final DoubleArraySubscriber experimentalSubscriber;
 
+    /**
+     * Creates a new ExperimentalAprilTagCamera.
+     *
+     * @param name The name of the camera.
+     * @param robotToCam The transform from the robot to the camera.
+     * @param layout The AprilTag field layout.
+     * @param visionSim The simulation system.
+     */
     public ExperimentalAprilTagCamera(String name, Transform3d robotToCam, AprilTagFieldLayout layout, VisionSystemSim visionSim) {
         super(name, robotToCam, layout, visionSim);
         this.experimentalSubscriber = NetworkTableInstance.getDefault()
@@ -25,6 +40,12 @@ public class ExperimentalAprilTagCamera extends AprilTagCamera {
         System.out.println("Vision: [" + name + "] initialized in EXPERIMENTAL (Python) mode.");
     }
 
+    /**
+     * Decodes the raw double array from NetworkTables into a PhotonPipelineResult.
+     * Expects a specific protocol: [Timestamp, Count, Target1_Data..., Target2_Data...].
+     *
+     * @return The constructed PhotonPipelineResult.
+     */
     @Override
     public PhotonPipelineResult getLatestResult() {
         double[] data = experimentalSubscriber.get();

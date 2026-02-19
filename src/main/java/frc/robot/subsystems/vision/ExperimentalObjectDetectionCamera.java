@@ -13,10 +13,23 @@ import edu.wpi.first.networktables.PubSubOption;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants.VisionConstants;
 
+//untested and unimplemented on pi side DO NOT USE
+
+/**
+ * EXPERIMENTAL: An implementation of an Object Detection camera that consumes raw data arrays
+ * from a Python backend via NetworkTables.
+ * <p><b>WARNING:</b> This class is marked as untested and unimplemented on the Pi side. Use with caution.</p>
+ */
 public class ExperimentalObjectDetectionCamera extends ObjectDetectionCamera {
 
     private final DoubleArraySubscriber experimentalSubscriber;
 
+    /**
+     * Constructs a new ExperimentalObjectDetectionCamera.
+     * Subscribes to the "Experimental/[Name]/Data" NetworkTable topic.
+     *
+     * @param name The name of the camera.
+     */
     public ExperimentalObjectDetectionCamera(String name) {
         super(name);
         
@@ -30,6 +43,12 @@ public class ExperimentalObjectDetectionCamera extends ObjectDetectionCamera {
         System.out.println("Vision: [" + name + "] initialized in EXPERIMENTAL (Python) mode.");
     }
 
+    /**
+     * Decodes the raw double array from NetworkTables into a PhotonPipelineResult.
+     * Expects a protocol containing Timestamp, Count, and per-target data (ClassID, Yaw, Pitch, Area, Confidence).
+     *
+     * @return The constructed PhotonPipelineResult.
+     */
     @Override
     public PhotonPipelineResult getLatestResult() {
         double[] data = experimentalSubscriber.get();
