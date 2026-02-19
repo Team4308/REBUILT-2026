@@ -26,7 +26,7 @@ public class ShooterSubsystem extends AbsoluteSubsystem {
 
     public double bottomMultiplier;
     public double topMultiplier;
-    
+
     public double rpm;
 
     public String state;
@@ -157,9 +157,9 @@ public void setShooterSpeedHub() {
  * void stopMotors() {} // sets target to 0, and stops motors DONE
  * 
  * void setShooterSpeedHub() {} // sets the shooter’s speed to the correct speed
- * to target to the hub. Ask nicholas for how to do this
+ * to target to the hub. Ask nicholas for how to do this DONE
  * Command setShooterSpeedHub() {} // same as previous, but it runs until
- * interrupted.
+ * interrupted. DONE
  * 
  * void setShooterSpeedPass() {} // sets the shooter’s speed to the correct
  * speed to pass to our zone. Specific location will be in strategy

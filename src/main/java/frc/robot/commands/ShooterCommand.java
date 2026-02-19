@@ -54,30 +54,8 @@ public class ShooterCommand extends Command {
 }
   
   public Command setShooterSpeedPassCommand() {
-    return new Command() {
-      { addRequirements(m_subsystem); }
-
-      @Override
-      public void initialize() {
-        m_subsystem.setShooterSpeedPass();
-      }
-
-      @Override
-      public void execute() {
-        m_subsystem.setShooterSpeedPass();
-      }
-
-      @Override
-        public void end(boolean interrupted) {
-          m_subsystem.stopMotors();
-        }
-
-        @Override
-          public boolean isFinished() {
-            return false; // runs until interrupted
-          }
-        };
-    }
+    return m_subsystem.setShooterSpeedPassCommand();
+  }
 
   public void setShooterSpeedHub() {
     m_subsystem.setShooterSpeedHub();
@@ -110,8 +88,8 @@ Command setShooterSpeed(Supplier<Double>, double timeoutMs) {} // same as setsho
 
 void stopMotors() {} // sets target to 0, and stops motors DONE CALLED IN END
 
-void setShooterSpeedHub() {} // sets the shooter’s speed to the correct speed to target to the hub. Ask nicholas for how to do this
-Command setShooterSpeedHub() {} // same as previous, but it runs until interrupted.
+void setShooterSpeedHub() {} // sets the shooter’s speed to the correct speed to target to the hub. Ask nicholas for how to do this DONE
+Command setShooterSpeedHub() {} // same as previous, but it runs until interrupted. DONE
 
 void setShooterSpeedPass() {} // sets the shooter’s speed to the correct speed to pass to our zone. Specific location will be in strategy DONE
 Command setShooterSpeedPass() {} // same as previous, but it runs until interrupted. DONE
