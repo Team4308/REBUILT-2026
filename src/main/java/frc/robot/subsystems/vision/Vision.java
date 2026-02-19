@@ -93,8 +93,8 @@ public class Vision extends SubsystemBase {
     private void updatePoseEstimation() {
         Pose2d currentPose = swerve.getPose();
         
-        // Sim Logic (Only runs if we have a valid SwerveDrive object for sim)
-        if (RobotBase.isSimulation() && visionSim != null && swerve.getSwerveDrive() != null) {
+        // Sim Logic
+        if (RobotBase.isSimulation() && visionSim != null) {
             if (swerve.getSwerveDrive().getSimulationDriveTrainPose().isPresent()) {
                 visionSim.update(swerve.getSwerveDrive().getSimulationDriveTrainPose().get());
             }

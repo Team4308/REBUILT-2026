@@ -26,12 +26,12 @@ public class SwerveSubsystem extends SubsystemBase {
         return swerveDrive; 
     }
 
-    // integrate with actual pose estimate
+    // integrate with actual swerve current pose estimate
     public Pose2d getPose() { 
         return fakePose; 
     }
 
-    // integrate with actual swerve swerveDrive.addVisionMeasurement
+    // integrate with actual swerveDrive object
     public void addVisionMeasurement(Pose2d pose, double timestamp, Matrix<N3, N1> stdDevs) {
         this.fakePose = pose;
         field.setRobotPose(pose);
