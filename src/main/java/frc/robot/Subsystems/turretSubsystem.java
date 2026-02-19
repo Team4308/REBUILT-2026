@@ -140,15 +140,15 @@ public class turretSubsystem extends SubsystemBase {
     }
 
     /* States */
-    public class StateManager extends SubsystemBase {
+    public void setState(String state) {
         public enum RobotState {
             aimAtHub,
             aimAtPassingZone,
             defaultTurret
-    }
+        }
     }
     
-    private StateManager.RobotState currentState;
+    private setState.RobotState currentState;
 
     public void periodic() {
         switch(currentState) {
@@ -159,15 +159,10 @@ public class turretSubsystem extends SubsystemBase {
                 double hubDegrees = trajCalc.getNeededYaw();
                 aimAtPassingZone(hubDegrees); //is this correct?
             case defaultTurret:
-                //double reset  Angle;
-                //moveToTarget(() -> getTurretAngle(), resetAngle);
-
+                resetTurret();
         }
-
     }
-    public void setState(String state) {
 
-    }
   /*
     public void setStateBased(boolean using) {}
     */
