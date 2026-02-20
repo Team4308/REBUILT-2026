@@ -34,6 +34,10 @@ import ca.team4308.absolutelib.subsystems.Arm;
 import frc.robot.Util.TrajectoryCalculations;
 import java.util.function.Supplier;
 
+import ca.team4308.absolutelib.control.XBoxWrapper;
+
+import edu.wpi.first.wpilibj.Joystick;
+
 import frc.robot.RobotState;
 
 
@@ -42,6 +46,11 @@ public class turretSubsystem extends SubsystemBase {
     private final TalonFX driveMotor;
     private final CANcoder canCoder1;
     private final CANcoder canCoder2;
+
+    Joystick driver = new Joystick(0);
+
+    double x = driver.getRawAxis(0);
+    double y = driver.getRawAxis(1);
 
     //(85/17)(40/31):1
     //(85/17)(40/33):1
