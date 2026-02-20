@@ -36,7 +36,7 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    driver.A.onTrue(Commands.runOnce(runMotors, IndexerSubsystem));
+    driver.A.onTrue(Commands.runOnce(RunMotors, IndexerSubsystem));
   }
 
   public Command getAutonomousCommand() {
