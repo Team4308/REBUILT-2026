@@ -102,6 +102,14 @@ public class IndexerSubsystem extends SubsystemBase{
         indexerSpeed = value;
     }
 
+  public void setUsingState(boolean using) {
+    usingState = using;
+  }
+
+  public void setState(States curState) {
+    robotState = curState;
+  }
+   
     @Override
     public void periodic() { // the states 
         
