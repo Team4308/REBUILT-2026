@@ -15,7 +15,7 @@ public class ShooterCommand extends Command {
     addRequirements(subsystem);
   }
 
-  @Override
+@Override
   public void initialize() {
     m_subsystem.selectProfileSlot(0);
     m_subsystem.stopMotors();

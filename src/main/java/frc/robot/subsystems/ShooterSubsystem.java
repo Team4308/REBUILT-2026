@@ -91,7 +91,7 @@ public class ShooterSubsystem extends AbsoluteSubsystem {
       // anyways
 
     public void setState(String state) {
-        this.state = state;
+        this    .state = state;
     } // sets the current state
 
     public void setStateBased(boolean using) {
