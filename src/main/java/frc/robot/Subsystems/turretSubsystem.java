@@ -45,15 +45,15 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import frc.robot.RobotState;
 
 
+
 public class turretSubsystem extends SubsystemBase {
 
     private final TalonFX driveMotor;
     private final CANcoder canCoder1;
     private final CANcoder canCoder2;
 
-    Joystick driver = new Joystick(0);
-
-    double x = driver.getRawAxis(0);
+    Joystick driver = new Joystick(0); 
+    double x = driver.getRawAxis(0); 
     boolean pressed = driver.getRawButton(1);
 
     //(85/17)(40/31):1
@@ -67,11 +67,8 @@ public class turretSubsystem extends SubsystemBase {
     public double targetAngle; // I think these angles need to be imported in our subsystems (Import from import frc.robot.Util.TrajectoryCalculations;).
     public double degrees; // Same for this.
 
-    XboxController controller = new XboxController(0);
-
-    controller.getLe
-
     public turretSubsystem() {
+
         driveMotor = new TalonFX(0);
 
         canCoder1 = new CANcoder(1); //Device ids are place holders
