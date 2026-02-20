@@ -37,6 +37,10 @@ import java.util.function.Supplier;
 import ca.team4308.absolutelib.control.XBoxWrapper;
 
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.XboxController;
+
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.TimedRobot;
 
 import frc.robot.RobotState;
 
@@ -50,7 +54,7 @@ public class turretSubsystem extends SubsystemBase {
     Joystick driver = new Joystick(0);
 
     double x = driver.getRawAxis(0);
-    double y = driver.getRawAxis(1);
+    boolean pressed = driver.getRawButton(1);
 
     //(85/17)(40/31):1
     //(85/17)(40/33):1
@@ -62,6 +66,10 @@ public class turretSubsystem extends SubsystemBase {
     //Is this for yaw??
     public double targetAngle; // I think these angles need to be imported in our subsystems (Import from import frc.robot.Util.TrajectoryCalculations;).
     public double degrees; // Same for this.
+
+    XboxController controller = new XboxController(0);
+
+    controller.getLe
 
     public turretSubsystem() {
         driveMotor = new TalonFX(0);
