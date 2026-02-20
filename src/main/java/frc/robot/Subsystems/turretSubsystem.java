@@ -123,7 +123,7 @@ public class turretSubsystem extends SubsystemBase {
         double hubDegrees = trajCalc.getNeededYaw();
 
         return run(() -> {
-            targetAngle = hubDegrees;//do simmilar angle names conflict?
+            targetAngle = hubDegrees;//do simmilar angle 
             double error = MathUtil.inputModulus(targetAngle - getTurretAngle(), -180, 180);
             driveMotor.set(error * 0.01);
         }).until(() -> isAtTarget(targetAngle)).withTimeout(2000);
@@ -148,7 +148,7 @@ public class turretSubsystem extends SubsystemBase {
         }
     }
     
-    private setState.RobotState currentState;
+    private void setState.RobotState currentState;
 
     public void periodic() {
         switch(currentState) {
