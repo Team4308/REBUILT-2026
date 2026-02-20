@@ -15,10 +15,11 @@ public class RobotContainer {
 
   public RobotContainer() {
     configureBindings();
-    
   }
 
-  private void configureBindings() {} 
+  private void configureBindings() {
+    //add button bindings here
+  } 
 
   public Command getAutonomousCommand() {
     return Commands.print("No autonomous command configured");

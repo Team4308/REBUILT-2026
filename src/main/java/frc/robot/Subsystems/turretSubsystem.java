@@ -2,6 +2,7 @@ package frc.robot.Subsystems;
 
 import static edu.wpi.first.units.Units.Degrees;
 
+import java.lang.Thread.State;
 import java.util.function.Supplier;
 
 import org.opencv.core.Mat;
@@ -31,8 +32,9 @@ import ca.team4308.absolutelib.math.trajectories.solver.ChineseRemainderSolver.C
 import ca.team4308.absolutelib.math.trajectories.shooter.ShooterSystem;
 import ca.team4308.absolutelib.subsystems.Arm;
 import frc.robot.Util.TrajectoryCalculations;
-import frc.robot.Util.TrajectoryCalculations;
 import java.util.function.Supplier;
+
+import frc.robot.RobotState;
 
 
 public class turretSubsystem extends SubsystemBase {
@@ -140,30 +142,28 @@ public class turretSubsystem extends SubsystemBase {
     }
 
     /* States */
-    public void setState(String state) {
-        public enum RobotState {
-            aimAtHub,
-            aimAtPassingZone,
-            defaultTurret
-        }
-    }
     
-    private setState.RobotState currentState;
+    private RobotState currentState;
 
     public void periodic() {
         switch(currentState) {
             case aimAtHub:
                 aimAtHub();
+                break;
+
             case aimAtPassingZone:
                 TrajectoryCalculations trajCalc = new TrajectoryCalculations();
                 double hubDegrees = trajCalc.getNeededYaw();
                 aimAtPassingZone(hubDegrees); //is this correct?
+                break;
+
             case defaultTurret:
                 resetTurret();
+                break;
         }
     }
 
-  /*
+    /*
     public void setStateBased(boolean using) {}
-    */
+    */  
 }
