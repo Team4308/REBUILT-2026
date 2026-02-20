@@ -103,6 +103,12 @@ public class RobotContainer {
     driver.M6.whileTrue(drivebase.moveDownRight());
 
     drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
+
+    driver.X.onTrue(
+        Commands.runOnce(() -> drivebase.resetOdometry(new Pose2d(2, 4, new Rotation2d()))));
+
+    driver.Y.whileTrue(driveFieldOrientedAnglularVelocityKeyboard);
+    driver.A.onTrue(drivebase.driveToPoseObjAvoid(() -> new Pose2d(2, 4, new Rotation2d())));
   }
 
   public void configureNamedCommands() {

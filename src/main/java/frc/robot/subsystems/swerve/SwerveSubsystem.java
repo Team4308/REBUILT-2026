@@ -68,7 +68,6 @@ import swervelib.telemetry.SwerveDriveTelemetry;
 import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
 
 public class SwerveSubsystem extends SubsystemBase {
-
   private PIDConstants ANGLE_CONTROLLER;
   private PIDConstants TRANSLATION_CONTROLLER;
 
@@ -148,7 +147,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
     // Configure the Telemetry before creating the SwerveDrive to avoid unnecessary
     // objects being created.
-    SwerveDriveTelemetry.verbosity = TelemetryVerbosity.NONE;
+    SwerveDriveTelemetry.verbosity = TelemetryVerbosity.HIGH;
     try {
       swerveDrive = new SwerveParser(directory)
           .createSwerveDrive(
