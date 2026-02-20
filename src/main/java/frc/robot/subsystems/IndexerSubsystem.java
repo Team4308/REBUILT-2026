@@ -1,4 +1,6 @@
 package frc.robot.subsystems;
+import org.w3c.dom.html.HTMLOptGroupElement;
+
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -13,6 +15,9 @@ public class IndexerSubsystem extends SubsystemBase{
     
     private boolean usingState = false;
 
+    private double hopperSpeed;
+    private double indexerSpeed;
+
     public enum State { //the diff states 
         IDLE,
         SHOOTING
@@ -26,7 +31,8 @@ public class IndexerSubsystem extends SubsystemBase{
 
     
     public IndexerSubsystem(){
-         
+        hopperSpeed = Constants.HopperSpeed;
+        indexerSpeed = Constants.IndexerSpeed;
          // in init function, set slot 0 gains
          var slot0Configs = new Slot0Configs();
          slot0Configs.kS = Constants.HopperMotorConfigsKs; // Add 0.1 V output to overcome static friction
@@ -79,8 +85,8 @@ public class IndexerSubsystem extends SubsystemBase{
 
     public void RunMotors(){ //uh runs
 
-        setHopperVelocity(Constants.HopperSpeed);
-        setIndexerVelocity(Constants.IndexerSpeed);
+        setHopperVelocity(hopperSpeed);
+        setIndexerVelocity(indexerSpeed);
 
     }
        
@@ -88,11 +94,15 @@ public class IndexerSubsystem extends SubsystemBase{
     Falcon.stopMotor(); 
     Kraken.stopMotor(); 
 }
-    
+    public void SetHopperSpeed(double value){
+        hopperSpeed = value;
+    }    
+
+    public void SetIndexerSpeed(double value){
+        indexerSpeed = value;
+    }
 
     @Override
-    
-
     public void periodic() { // the states 
         
         if (usingState) {
