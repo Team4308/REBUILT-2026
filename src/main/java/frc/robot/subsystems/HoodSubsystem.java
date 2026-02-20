@@ -71,9 +71,7 @@ public class HoodSubsystem extends SubsystemBase {
         return run(this::resetHood).until(() -> m_hoodMotor.getSupplyCurrent().getValueAsDouble() > 20.0).andThen(runOnce(() -> m_hoodMotor.setPosition(0)));
     }
 
-    // The following aimAtHubCommand, aimAtPassingAngle, and aimAtPassingCommand are redundant
-    // I left them here in case you need them for some utility but otherwise all of their jobs 
-    // are completed in StateManager.java
+    // The following aimAtHubCommand
     // I removed aimAtHub bcuz it was litterally just setHoodAngle copy-pasted
     public Command aimAtHubCommand(Supplier<Double> pitchSupplier) {
         return run(() -> setHoodAngle(pitchSupplier.get()));

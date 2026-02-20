@@ -1,5 +1,6 @@
 package frc.robot;
 
+import ca.team4308.absolutelib.control.XBoxWrapper;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -24,6 +25,7 @@ public class Constants {
         public static final Translation3d HUB = new Translation3d(4.0, 0.0, 2.1);
         public static final Translation3d kPASS_LEFT   = new Translation3d(4.0, 0.5, 2.1);
         public static final Translation3d kPASS_RIGHT  = new Translation3d(4.0, -0.5, 2.1);
+        public static final int kDriverControllerPort = 0;
 
     }
 }
