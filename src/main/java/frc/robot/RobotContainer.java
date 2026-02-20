@@ -8,17 +8,19 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Subsystems.turretSubsystem;
-
+import edu.wpi.first.wpilibj.Joystick;
 public class RobotContainer {
-  public turretSubsystem m_turret = new turretSubsystem();
+public turretSubsystem m_turret = new turretSubsystem();
 
 
   public RobotContainer() {
     configureBindings();
-    
+
   }
 
-  private void configureBindings() {} 
+  private void configureBindings() {
+    //add button bindings here
+  } 
 
   public Command getAutonomousCommand() {
     return Commands.print("No autonomous command configured");
