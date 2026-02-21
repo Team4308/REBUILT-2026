@@ -15,10 +15,10 @@ import swervelib.math.Matter;
 
 public final class Constants {
 
-  public static final double ROBOT_MASS = Units.lbsToKilograms(120); // TODO: Update with correct weight
+  public static final double ROBOT_MASS = Units.lbsToKilograms(140);
   public static final Matter CHASSIS = new Matter(
-      new Translation3d(0, 0, Units.inchesToMeters(8)),
-      ROBOT_MASS); // TODO: Update with correct COG locations
+      new Translation3d(Units.inchesToMeters(0.4), Units.inchesToMeters(0.4), Units.inchesToMeters(7.2)),
+      ROBOT_MASS);
   public static final double LOOP_TIME = 0.13;
   public static final double MAX_SPEED = Units.feetToMeters(15.1);
 

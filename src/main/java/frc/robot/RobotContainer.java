@@ -8,11 +8,9 @@ import ca.team4308.absolutelib.control.RazerWrapper;
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
-import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -69,9 +67,7 @@ public class RobotContainer {
           () -> Math.cos(driver.getLeftTrigger() * Math.PI) * (Math.PI * 2))
       .headingWhile(true);
 
-  // Command lists
-  ArrayList<Command> movementCommands = new ArrayList<>();
-  ArrayList<Command> actionCommands = new ArrayList<>();
+  Pose2d targetPoseForTESTING = new Pose2d(2, 4, new Rotation2d());
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -104,11 +100,10 @@ public class RobotContainer {
 
     drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
 
-    driver.X.onTrue(
-        Commands.runOnce(() -> drivebase.resetOdometry(new Pose2d(2, 4, new Rotation2d()))));
+    driver.X.onTrue(new InstantCommand(() -> targetPoseForTESTING = drivebase.getPose()));
 
     driver.Y.whileTrue(driveFieldOrientedAnglularVelocityKeyboard);
-    driver.A.onTrue(drivebase.driveToPoseObjAvoid(() -> new Pose2d(2, 4, new Rotation2d())));
+    driver.A.whileTrue(drivebase.driveToPose(() -> targetPoseForTESTING));
   }
 
   public void configureNamedCommands() {
