@@ -17,7 +17,8 @@ public class IndexerSubsystem extends SubsystemBase{
     
     private boolean usingState = false;
 
-
+    //private double slowerIndexerSpeed;
+    
     private double hopperSpeed;
     private double indexerSpeed;
 
@@ -82,37 +83,42 @@ public class IndexerSubsystem extends SubsystemBase{
 
     public Command feedBalls(){
 
-        return run(()-> RunMotors()); //tells to run
+        return run(()-> runMotors()); //tells to run
 }
 
 
-    public void RunMotors(){ //uh runs
+    public void runMotors(){ //uh runs
 
         setHopperVelocity(hopperSpeed);
         setIndexerVelocity(indexerSpeed);
 
     }
 
-    public void RunMotorsby2(){ //uh runs "But slower Than normal Something like that" - lingfeng
+    public void runMotorsby2(){ //uh runs "But slower Than normal Something like that" - lingfeng
 
-        setHopperVelocity(hopperSpeed/2);
-        setIndexerVelocity(indexerSpeed/2);
+        setHopperVelocity(hopperSpeed);
+        setIndexerVelocity(indexerSpeed/(Constants.SlowerIndexerSpeed));
 
     }
        
-  public void StopMotors(){ 
+  public void stopMotors(){ 
     Falcon.stopMotor(); 
     Kraken.stopMotor(); 
 }
-    public void SetHopperSpeed(double value){
+    public void setHopperSpeed(double value){
         hopperSpeed = value;
     }    
 
-    public void SetIndexerSpeed(double value){
+    public void setIndexerSpeed(double value){
         indexerSpeed = value;
     }
 
-  public void setUsingState(boolean using) {
+            /*public void SetSlowerIndexerSpeed (double value){ might need later idk its too late for this
+                slowerIndexerSpeed = indexerSpeed/(Constants.slowerIndexerSpeed);
+            }
+        */
+        
+public void setUsingState(boolean using) {
     usingState = using;
   }
 
@@ -130,20 +136,20 @@ public class IndexerSubsystem extends SubsystemBase{
                 
             if (BallsReady) {
                 
-                StopMotors();
+                stopMotors();
             }
 
             else{
 
-                RunMotorsby2();
+                runMotorsby2();
 
             }
             
-                break;
+                 break;
         
         
             case SHOOTING:
-                RunMotors();
+                runMotors();
                 break;
 
             }
