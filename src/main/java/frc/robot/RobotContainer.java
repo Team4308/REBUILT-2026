@@ -31,12 +31,16 @@ public class RobotContainer {
 
   private final XBoxWrapper driver = new XBoxWrapper(Ports.Joysticks.DRIVER);
 
+  private final IndexerSubsystem indexer = new IndexerSubsystem();
+
   public RobotContainer() {
     configureBindings();
   }
 
   private void configureBindings() {
-    driver.A.onTrue(Commands.runOnce(RunMotors, IndexerSubsystem));
+    driver.A.onTrue(
+        Commands.runOnce(indexer::runMotors, indexer)
+  );
   }
 
   public Command getAutonomousCommand() {
