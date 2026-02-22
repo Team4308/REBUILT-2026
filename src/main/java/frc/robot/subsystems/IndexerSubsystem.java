@@ -1,19 +1,22 @@
 package frc.robot.subsystems;
-import org.w3c.dom.html.HTMLOptGroupElement;
-
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
 
 public class IndexerSubsystem extends SubsystemBase{
-   
+    
+    private final DigitalInput m_beambreak = new DigitalInput(Constants.BeambreakSensor);
+
     private State currentState = State.IDLE;
     
     private boolean usingState = false;
+
 
     private double hopperSpeed;
     private double indexerSpeed;
@@ -89,6 +92,13 @@ public class IndexerSubsystem extends SubsystemBase{
         setIndexerVelocity(indexerSpeed);
 
     }
+
+    public void RunMotorsby2(){ //uh runs "But slower Than normal Something like that" - lingfeng
+
+        setHopperVelocity(hopperSpeed/2);
+        setIndexerVelocity(indexerSpeed/2);
+
+    }
        
   public void StopMotors(){ 
     Falcon.stopMotor(); 
@@ -110,12 +120,25 @@ public class IndexerSubsystem extends SubsystemBase{
     @Override
     public void periodic() { // the states 
         
+        boolean BallsReady = !m_beambreak.get();
+
         if (usingState) {
     
             switch (currentState) {
          
             case IDLE:
+                
+            if (BallsReady) {
+                
                 StopMotors();
+            }
+
+            else{
+
+                RunMotorsby2();
+
+            }
+            
                 break;
         
         

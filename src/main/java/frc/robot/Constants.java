@@ -20,6 +20,8 @@ public class Constants {
     public static double IndexerMotorConfigsKp;
     public static double IndexerMotorConfigsKi;
     public static double IndexerMotorConfigsKd;
+   
+    public static int BeambreakSensor;
     
 
 }
