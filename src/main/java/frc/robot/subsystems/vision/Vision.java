@@ -30,13 +30,13 @@ import org.photonvision.simulation.VisionSystemSim;
  * camera objects and aggregates their data to update the robot's pose estimator.
  */
 public class Vision extends SubsystemBase {
-
     private final AprilTagFieldLayout fieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
-    public final List<AprilTagCamera> tagCameras = new ArrayList<>();
     private final Map<String, ObjectDetectionCamera> objectCameras = new HashMap<>();
-    
     private final VisionSystemSim visionSim;
     private final SwerveSubsystem swerve; 
+
+    public final List<AprilTagCamera> tagCameras = new ArrayList<>();
+    public record TargetData(Rotation2d angle, double distance) {}
 
     /**
      * Constructs the Vision subsystem.
@@ -120,31 +120,84 @@ public class Vision extends SubsystemBase {
     }
 
     /**
-     * Retrieves the yaw angles of all targets detected by a specific object detection camera.
-     *
-     * @param cameraName The name of the camera to query.
-     * @return A list of Rotation2d representing the yaw to each target.
+     * Estimates distance to an object detection target.
+     * Must be calibrated; current implementation relies on an inverse square root of target area as a placeholder.
+     * For high accuracy, substitute with pitch-based trigonometry using camera and target height.
+     * * @param target The tracked target.
+     * @return Estimated distance.
      */
-    public List<Rotation2d> getTargetAngles(String cameraName) {
-        ObjectDetectionCamera cam = objectCameras.get(cameraName);
-        List<Rotation2d> angles = new ArrayList<>();
-        if (cam != null) {
-            var result = cam.getLatestResult();
-            if (result.hasTargets()) {
-                for (PhotonTrackedTarget target : result.getTargets()) angles.add(Rotation2d.fromDegrees(target.getYaw()));
-            }
-        }
-        return angles;
+    private double estimateDistance(PhotonTrackedTarget target) {
+        if (target.getArea() <= 0) return Double.MAX_VALUE;
+        // Placeholder constant (10.0) needs tuning based on your specific camera and object scale.
+        return 10.0 / Math.sqrt(target.getArea()); 
     }
 
     /**
-     * Retrieves the best (highest confidence/largest area) target from a specific camera.
+     * Retrieves the angles and estimated distances of all targets detected by a specific object detection camera.
      *
      * @param cameraName The name of the camera to query.
-     * @return An Optional containing the best target if one exists, otherwise empty.
+     * @return A list of TargetData containing the yaw angle and estimated distance to each target.
      */
-    public Optional<PhotonTrackedTarget> getBestTarget(String cameraName) {
+    public List<TargetData> getTargetAngles(String cameraName) {
         ObjectDetectionCamera cam = objectCameras.get(cameraName);
-        return cam != null ? cam.getBestTarget() : Optional.empty();
+        List<TargetData> targetsInfo = new ArrayList<>();
+        if (cam != null) {
+            var result = cam.getLatestResult();
+            if (result.hasTargets()) {
+                for (PhotonTrackedTarget target : result.getTargets()) {
+                    targetsInfo.add(new TargetData(Rotation2d.fromDegrees(target.getYaw()), estimateDistance(target)));
+                }
+            }
+        }
+        return targetsInfo;
+    }
+
+    /**
+     * Retrieves the best (highest confidence/largest area) target's angle and estimated distance from a specific camera.
+     *
+     * @param cameraName The name of the camera to query.
+     * @return An Optional containing the TargetData for the best target if one exists, otherwise empty.
+     */
+    public Optional<TargetData> getBestTarget(String cameraName) {
+        ObjectDetectionCamera cam = objectCameras.get(cameraName);
+        if (cam != null) {
+            Optional<PhotonTrackedTarget> targetOpt = cam.getBestTarget();
+            if (targetOpt.isPresent()) {
+                PhotonTrackedTarget target = targetOpt.get();
+                return Optional.of(new TargetData(Rotation2d.fromDegrees(target.getYaw()), estimateDistance(target)));
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Evaluates all visible targets and retrieves the one with the shortest estimated distance.
+     *
+     * @param cameraName The name of the camera to query.
+     * @return An Optional containing the TargetData for the closest target if one exists, otherwise empty.
+     */
+    public Optional<TargetData> getClosestTarget(String cameraName) {
+        ObjectDetectionCamera cam = objectCameras.get(cameraName);
+        if (cam == null) return Optional.empty();
+
+        var result = cam.getLatestResult();
+        if (!result.hasTargets()) return Optional.empty();
+
+        PhotonTrackedTarget closestTarget = null;
+        double minDistance = Double.MAX_VALUE;
+
+        for (PhotonTrackedTarget target : result.getTargets()) {
+            double distance = estimateDistance(target);
+            if (distance < minDistance) {
+                minDistance = distance;
+                closestTarget = target;
+            }
+        }
+
+        if (closestTarget != null) {
+            return Optional.of(new TargetData(Rotation2d.fromDegrees(closestTarget.getYaw()), minDistance));
+        }
+
+        return Optional.empty();
     }
 }
