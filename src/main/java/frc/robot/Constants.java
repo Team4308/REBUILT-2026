@@ -21,4 +21,11 @@ public class Constants {
         new TrapezoidProfile.Constraints(Constants.Hood.max_velocity, Constants.Hood.max_accel)
         );
     }
+
+    public static final class Leds {
+        public static final int LED_PORT = 0;
+        public static final int LED_LENGTH = 60;
+        public static final int[] startIndexes = new int[] {0, 60, 120, 180, 240}; // Front, Back, Left, Right, UnderGlow
+        public static final int[] viewAngles = new int[] {0, 90, 180, 270}; // Front, Back, Left, Right (in Degrees from facing the front of the robot)
+    }
 }

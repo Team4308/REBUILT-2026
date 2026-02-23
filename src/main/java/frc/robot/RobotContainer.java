@@ -7,9 +7,13 @@ package frc.robot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Util.TrajectoryCalculations;
+import frc.robot.subsystems.LedSubsystem;
 
 public class RobotContainer {
+  private final TrajectoryCalculations trajectoryCalculations = new TrajectoryCalculations();
+  private final LedSubsystem ledSubsystem = new LedSubsystem();
   public RobotContainer() {
+    
     configureBindings();
   }
 
@@ -20,6 +24,6 @@ public class RobotContainer {
   }
 
   public void robotPeriodic() {
-    new TrajectoryCalculations().updateShot();
+    trajectoryCalculations.updateShot();
   }
 }
