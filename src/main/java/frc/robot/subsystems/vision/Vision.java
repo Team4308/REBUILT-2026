@@ -12,40 +12,48 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.vision.VisionConfig.CameraConfig;
-import frc.robot.subsystems.swerve.SwerveSubsystem;
+import org.photonvision.EstimatedRobotPose;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.simulation.VisionSystemSim;
 
 /**
  * The Vision subsystem coordinates all camera operations, including AprilTag-based
- * pose estimation and object detection. It manages the lifecycle of individual
- * camera objects and aggregates their data to update the robot's pose estimator.
+ * pose estimation and object detection. It acts as a standalone data provider.
  */
 public class Vision extends SubsystemBase {
-    private final AprilTagFieldLayout fieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
-    private final Map<String, ObjectDetectionCamera> objectCameras = new HashMap<>();
-    private final VisionSystemSim visionSim;
-    private final SwerveSubsystem swerve; 
 
+    private final AprilTagFieldLayout fieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
     public final List<AprilTagCamera> tagCameras = new ArrayList<>();
+    private final Map<String, ObjectDetectionCamera> objectCameras = new HashMap<>();
+    
+    private final VisionSystemSim visionSim;
+
+    /**
+     * A record holding a target's calculated angle and estimated distance.
+     */
     public record TargetData(Rotation2d angle, double distance) {}
+
+    /**
+     * A record holding an estimated global pose and its calculated standard deviations.
+     */
+    public record VisionMeasurement(EstimatedRobotPose estimation, Matrix<N3, N1> stdDevs) {}
 
     /**
      * Constructs the Vision subsystem.
      * Initializes the simulation environment (if applicable) and loads camera configurations.
-     *
-     * @param swerve The SwerveSubsystem instance used for pose estimation updates.
      */
-    public Vision(SwerveSubsystem swerve) {
-        this.swerve = swerve;
+    public Vision() {
         this.visionSim = RobotBase.isSimulation() ? new VisionSystemSim("Vision") : null;
         if (visionSim != null && fieldLayout != null) visionSim.addAprilTags(fieldLayout);
 
@@ -54,10 +62,6 @@ public class Vision extends SubsystemBase {
         System.out.println("---------- VISION SUBSYSTEM INITIALIZED ----------");
     }
 
-    /**
-     * Loads camera configurations from the "vision-config.json" file located in the deploy directory.
-     * Instantiates {@link AprilTagCamera} or {@link ObjectDetectionCamera} objects based on the config.
-     */
     private void loadCameraConfigs() {
         File configFile = new File(Filesystem.getDeployDirectory(), "vision-config.json");
         if (!configFile.exists()) DriverStation.reportWarning("Critical: Camera config file not found", false);
@@ -87,57 +91,41 @@ public class Vision extends SubsystemBase {
     }
 
     /**
-     * Collects pose estimates from all active AprilTag cameras and updates the SwerveSubsystem.
-     * Also updates the simulation physics if running in a simulation environment.
+     * Generates pose estimates from all active AprilTag cameras.
+     * * @param currentPose The robot's current estimated pose (used for ambiguity resolution).
+     * @return A list of valid VisionMeasurements.
      */
-    private void updatePoseEstimation() {
-        Pose2d currentPose = swerve.getPose();
-        
-        // Sim Logic
-        if (RobotBase.isSimulation() && visionSim != null) {
-            if (swerve.getSwerveDrive().getSimulationDriveTrainPose().isPresent()) {
-                visionSim.update(swerve.getSwerveDrive().getSimulationDriveTrainPose().get());
+    public List<VisionMeasurement> getVisionMeasurements(Pose2d currentPose) {
+        List<VisionMeasurement> measurements = new ArrayList<>();
+        for (AprilTagCamera cam : tagCameras) {
+            Optional<EstimatedRobotPose> poseEst = cam.getEstimatedGlobalPose(currentPose);
+            if (poseEst.isPresent()) {
+                measurements.add(new VisionMeasurement(poseEst.get(), cam.curStdDevs));
             }
         }
+        return measurements;
+    }
 
-        for (AprilTagCamera cam : tagCameras) {
-            var poseEst = cam.getEstimatedGlobalPose(currentPose);
-            
-            if (poseEst.isPresent()) {
-                var pose = poseEst.get();
-                swerve.addVisionMeasurement(
-                    pose.estimatedPose.toPose2d(), 
-                    pose.timestampSeconds, 
-                    cam.curStdDevs
-                );
-            }
+    /**
+     * Updates the vision simulation environment with the robot's actual driven pose.
+     * * @param robotPose The true robot pose in the simulation.
+     */
+    public void updateSimVision(Pose2d robotPose) {
+        if (RobotBase.isSimulation() && visionSim != null && robotPose != null) {
+            visionSim.update(robotPose);
         }
     }
 
     @Override
     public void periodic() {
-        updatePoseEstimation();
+        // Left intentionally blank. Data is now polled dynamically by the drivebase.
     }
 
-    /**
-     * Estimates distance to an object detection target.
-     * Must be calibrated; current implementation relies on an inverse square root of target area as a placeholder.
-     * For high accuracy, substitute with pitch-based trigonometry using camera and target height.
-     * * @param target The tracked target.
-     * @return Estimated distance.
-     */
     private double estimateDistance(PhotonTrackedTarget target) {
         if (target.getArea() <= 0) return Double.MAX_VALUE;
-        // Placeholder constant (10.0) needs tuning based on your specific camera and object scale.
         return 10.0 / Math.sqrt(target.getArea()); 
     }
 
-    /**
-     * Retrieves the angles and estimated distances of all targets detected by a specific object detection camera.
-     *
-     * @param cameraName The name of the camera to query.
-     * @return A list of TargetData containing the yaw angle and estimated distance to each target.
-     */
     public List<TargetData> getTargetAngles(String cameraName) {
         ObjectDetectionCamera cam = objectCameras.get(cameraName);
         List<TargetData> targetsInfo = new ArrayList<>();
@@ -152,12 +140,6 @@ public class Vision extends SubsystemBase {
         return targetsInfo;
     }
 
-    /**
-     * Retrieves the best (highest confidence/largest area) target's angle and estimated distance from a specific camera.
-     *
-     * @param cameraName The name of the camera to query.
-     * @return An Optional containing the TargetData for the best target if one exists, otherwise empty.
-     */
     public Optional<TargetData> getBestTarget(String cameraName) {
         ObjectDetectionCamera cam = objectCameras.get(cameraName);
         if (cam != null) {
@@ -170,12 +152,6 @@ public class Vision extends SubsystemBase {
         return Optional.empty();
     }
 
-    /**
-     * Evaluates all visible targets and retrieves the one with the shortest estimated distance.
-     *
-     * @param cameraName The name of the camera to query.
-     * @return An Optional containing the TargetData for the closest target if one exists, otherwise empty.
-     */
     public Optional<TargetData> getClosestTarget(String cameraName) {
         ObjectDetectionCamera cam = objectCameras.get(cameraName);
         if (cam == null) return Optional.empty();
