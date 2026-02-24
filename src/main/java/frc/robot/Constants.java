@@ -10,7 +10,7 @@ public class Constants {
         public static final double topMultiplier = 1;
         public static final double bottomMultiplier = 1;
         public static final int kRPMTolerance = 10;
-        public static final double passRPM = 3000.0;
+        public static final double kPassingRPM = 3000.0;
         }
     public static class Mapping {
         public static class ShooterMotor {

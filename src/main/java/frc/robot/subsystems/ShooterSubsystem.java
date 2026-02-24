@@ -119,7 +119,7 @@ public class ShooterSubsystem extends AbsoluteSubsystem {
     }
 
     public void setShooterSpeedPass() {
-        setTargetSpeed(Constants.Shooter.passRPM);
+        setTargetSpeed(Constants.Shooter.kPassingRPM);
     } // sets the shooter’s speed to the correct speed to pass to our zone. Specific
       // location will be in strategy
 
