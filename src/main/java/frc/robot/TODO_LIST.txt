@@ -5,8 +5,12 @@ switch to pid tolerance?: this is when the pathfinding switches form a path to p
 Min aligned time tuning: this is how long the bot waits until ending a pathfinding command once it reaches the target. (constnats). make sure it is as low as possible without having it overshoot and miss
 try setAngularVelocityCompensation: search it up, it might be helpful to have? if it works turn it on for auton and teleop both
 tune swerve tolerances: how close it is to target befure returning true. as close as possible without it taking a long time to align
+tune heading pid, transalation is good
 
 Needs practice field:
 Heading and transalation PID still needs to be fine tuned on carpet.
 tune PathConstraints
 more min aligned tuning?
+switch to pid tolerance?: this is when the pathfinding switches form a path to pure pid, change in constnats
+Min aligned time tuning: this is how long the bot waits until ending a pathfinding command once it reaches the target. (constnats). make sure it is as low as possible without having it overshoot and miss
+tune swerve tolerances: how close it is to target befure returning true. as close as possible without it taking a long time to align

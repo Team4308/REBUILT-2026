@@ -53,8 +53,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import frc.robot.Constants;
 import frc.robot.FieldLayout;
 import frc.robot.Robot;
-import frc.robot.subsystems.vision.ObjectCamera;
-import frc.robot.subsystems.vision.PoseCamera;
+import frc.robot.subsystems.vision.Vision;
 import swervelib.SwerveController;
 import swervelib.SwerveDrive;
 import swervelib.SwerveDriveTest;
@@ -76,8 +75,7 @@ public class SwerveSubsystem extends SubsystemBase {
   private final SwerveDrive swerveDrive;
 
   private final boolean usingVision = false;
-  private PoseCamera poseCameras;
-  private ObjectCamera objectCameras;
+  private Vision vision;
 
   private Pose2d targetPose = new Pose2d();
 
@@ -187,7 +185,7 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   public void setupPhotonVision() {
-    poseCameras = new PoseCamera(swerveDrive::getPose, swerveDrive.field);
+    vision = new Vision(swerveDrive::getPose, swerveDrive.field);
   }
 
   public void setUsingState(boolean using) {
@@ -259,9 +257,9 @@ public class SwerveSubsystem extends SubsystemBase {
   public void periodic() {
     if (usingVision) {
       swerveDrive.updateOdometry();
-      poseCameras.updatePoseEstimation(swerveDrive);
+      vision.updatePoseEstimation(swerveDrive);
 
-      poseCameras.updateVisionField();
+      vision.updateVisionField();
     }
 
     if (usingState) {
@@ -460,7 +458,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
   public Command aimAtTarget(Supplier<Double> joyX, Supplier<Double> joyY) {
     return run(() -> {
-      OptionalDouble yawDiff = objectCameras.getObjectOffset().get();
+      OptionalDouble yawDiff = vision.getBestTarget("INTAKE_CAM").getYaw().get();
       if (!yawDiff.isEmpty())
         swerveDrive.driveFieldOriented(
             getTargetSpeeds(
@@ -473,7 +471,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
   public Command driveTowardsTarget(Supplier<Double> throttle) {
     return run(() -> {
-      OptionalDouble yawDiff = objectCameras.getObjectOffset().get();
+      OptionalDouble yawDiff = vision.getBestTarget("INTAKE_CAM").getYaw().get();
       swerveDrive.drive(
           getTargetSpeeds(
               DoubleUtils.clamp(throttle.get(), 0, 1),
