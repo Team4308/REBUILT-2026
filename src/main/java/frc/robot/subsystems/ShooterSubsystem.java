@@ -8,6 +8,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import ca.team4308.absolutelib.wrapper.AbsoluteSubsystem;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -31,6 +32,8 @@ public class ShooterSubsystem extends AbsoluteSubsystem {
 
     public String state;
     public boolean using;
+
+    boolean underTrench = NetworkTableInstance.getDefault().getTable("AdvantageKit/RealOutputs").getEntry("Swerve/UnderTrench").getBoolean(false);
 
     public ShooterSubsystem() {
         rightMotor = new TalonFX(Constants.Mapping.ShooterMotor.kMotor1);
@@ -118,6 +121,22 @@ public class ShooterSubsystem extends AbsoluteSubsystem {
         return this.rpm;
     }
 
+    public enum ShooterState {
+        IDLE, 
+        SHOOTING, 
+        PASSING,
+    }
+
+    private ShooterState currentState = ShooterState.IDLE;
+
+    public ShooterState getState() {
+        return currentState;
+    }
+
+    public void setState(ShooterState state) {
+        this.currentState = state;
+    }
+
     public void setShooterSpeedPass() {
         setTargetSpeed(Constants.Shooter.kPassingRPM);
     } // sets the shooter’s speed to the correct speed to pass to our zone. Specific
@@ -135,6 +154,27 @@ public void setShooterSpeedHub() {
 
     public Command setShooterSpeedHubCommand() {
         return Commands.run(() -> setShooterSpeedHub(), this);
+    }
+    
+    @Override
+    public void periodic() {
+        underTrench = NetworkTableInstance.getDefault().getTable("AdvantageKit/RealOutputs").getEntry("Swerve/UnderTrench").getBoolean(false);
+        if (underTrench) {
+            currentState = ShooterState.IDLE;
+        } else {
+            switch (currentState) {
+                case IDLE:
+                    stopMotors();
+                    break;
+                case SHOOTING:
+                    setShooterSpeedHub();
+                    break;
+                case PASSING:
+                    setShooterSpeedPass();
+                    break;
+            }
+        }
+    
     }
 
 }
