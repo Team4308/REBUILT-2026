@@ -10,26 +10,66 @@ public class IntakeWhileShooting extends Command {
     HoodSubsystem m_HoodSubsystem = new HoodSubsystem();
     ShooterSubsystem m_ShooterSubsystem = new HoodSubsystem();
     TurretSubsystem m_TurretSubsystem = new TurrentSubsystem();
-
+    SwerveSubsystem m_SwerveSubsystem = new SwerveSubsystem();
 
     @Override
     public void initialize() {
         // After Intake makes their statemanager update the 2 lines below:
         m_IntakeSubsystem.setRollerSpeed(Constants.Intake.ROLLER_INTAKE_RPM);
         m_IntakeSubsystem.setIntakeAngle(Constants.Intake.INTAKE_ANGLE_DEG);
-        m_IndexerSubsystem.setState(IndexerSubsystem.State.SHOOTING);
-        m_HoodSubsystem.setState(RobotState.SHOOT);
-        m_ShooterSubsystem.setState(ShooterState.SHOOTING);
-        m_TurretSubsystem.setState(RobotState.aimAtHub); // Has to check whether passing or not, use a button perhaps?
+
+        if (m_SwerveSubsystem.getFieldLocation == "AllianceZone") {
+            m_IndexerSubsystem.setState(IndexerSubsystem.State.SHOOTING);
+            m_ShooterSubsystem.setState(ShooterState.SHOOTING);
+            m_HoodSubsystem.setState(RobotState.SHOOT);
+            m_TurretSubsystem.setState(RobotState.aimAtHub);
+
+        } else if (m_SwerveSubsystem.getFieldLocation == "NeutralZone") {
+            m_IndexerSubsystem.setState(IndexerSubsystem.State.SHOOTING);
+            m_ShooterSubsystem.setState(ShooterState.PASSING);
+            m_TurretSubsystem.setState(RobotState.aimAtPassingZone);
+
+
+        } else {
+            m_IndexerSubsystem.setState(IndexerSubsystem.State.IDLE);
+            m_ShooterSubsystem.setState(ShooterState.IDLE);
+            m_TurretSubsystem.setState(RobotState.defaultTurret);
+            m_HoodSubsystem.setState(RobotState.REST);
+
+        }
+
     }
 
     @Override
     public void execute() {
 
+        if (m_SwerveSubsystem.getFieldLocation == "AllianceZone") {
+            m_IndexerSubsystem.setState(IndexerSubsystem.State.SHOOTING);
+            m_ShooterSubsystem.setState(ShooterState.SHOOTING);
+            m_HoodSubsystem.setState(RobotState.SHOOT);
+            m_TurretSubsystem.setState(RobotState.aimAtHub);
+
+        } else if (m_SwerveSubsystem.getFieldLocation == "NeutralZone") {
+            m_IndexerSubsystem.setState(IndexerSubsystem.State.SHOOTING);
+            m_ShooterSubsystem.setState(ShooterState.PASSING);
+            m_TurretSubsystem.setState(RobotState.aimAtPassingZone);
+
+
+
+        } else {
+            m_IndexerSubsystem.setState(IndexerSubsystem.State.IDLE);
+            m_ShooterSubsystem.setState(ShooterState.IDLE);
+            m_TurretSubsystem.setState(RobotState.defaultTurret);
+            m_HoodSubsystem.setState(RobotState.REST);
+
+        }
+
+
     }
 
     @Override
     public boolean isFinished() {
+
         return false;
     }
 

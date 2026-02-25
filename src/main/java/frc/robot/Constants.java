@@ -1,6 +1,5 @@
 package frc.robot;
 
-import ca.team4308.absolutelib.control.XBoxWrapper;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Translation3d;
