@@ -26,23 +26,23 @@ public final class Constants {
 
   public static final class Swerve {
     public static final class Heading {
-      public static final double TOLERANCE = 10; // In degrees
+      public static final double TOLERANCE = 1;
 
-      public static final PIDConstants HEADING_PID = new PIDConstants(2, 0, 0);
+      public static final PIDConstants PID = new PIDConstants(5, 0, 0);
     }
 
     public static final class Translation {
-      public static final double TOLERANCE = 0.05;
+      public static final double TOLERANCE = 0.01;
 
-      public static final PIDConstants TRANSLATION_PID = new PIDConstants(5, 0, 0);
+      public static final PIDConstants PID = new PIDConstants(5, 0, 0);
     }
 
     public static final class PathFinding {
-      public static final double PIDTolerance = Units.inchesToMeters(10); // How close the bot is when it switches to
+      public static final double PIDTolerance = Units.inchesToMeters(12); // How close the bot is when it switches to
                                                                           // PID or align
       public static final PathConstraints constraints = new PathConstraints(
-          3.0, 4.0,
-          Units.degreesToRadians(540), Units.degreesToRadians(720));
+          3.0, 3.0,
+          Units.degreesToRadians(360), Units.degreesToRadians(360));
 
       public static final double MIN_ALIGNED_TIME = 500; // minimum time it needs to be at alignment for the pathfinding
                                                          // to end

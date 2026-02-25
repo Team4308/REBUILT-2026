@@ -168,11 +168,11 @@ public class SwerveSubsystem extends SubsystemBase {
       setupPhotonVision();
       swerveDrive.stopOdometryThread(); // Stop the odometry thread while running vision to synchronize updates better.
     }
-    ANGLE_CONTROLLER = Constants.Swerve.Heading.HEADING_PID;
-    TRANSLATION_CONTROLLER = Constants.Swerve.Translation.TRANSLATION_PID;
+    ANGLE_CONTROLLER = Constants.Swerve.Heading.PID;
+    TRANSLATION_CONTROLLER = Constants.Swerve.Translation.PID;
 
     ALIGN_CONTROLLER = new PPHolonomicDriveController(
-        Constants.Swerve.Translation.TRANSLATION_PID, Constants.Swerve.Heading.HEADING_PID);
+        Constants.Swerve.Translation.PID, Constants.Swerve.Heading.PID);
 
     setupPathPlanner();
 
@@ -415,7 +415,7 @@ public class SwerveSubsystem extends SubsystemBase {
     Rotation2d currentHeading = getPose().getRotation();
     Rotation2d targetHeading = targetPose.getRotation();
 
-    double angleDelta = currentHeading.minus(targetHeading).getDegrees();
+    double angleDelta = Math.abs(currentHeading.minus(targetHeading).getDegrees());
 
     boolean headingAligned = angleDelta < Constants.Swerve.Heading.TOLERANCE;
 
