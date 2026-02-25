@@ -94,7 +94,7 @@ public class IndexerSubsystem extends SubsystemBase{
 
     }
 
-    public void runMotorsby2(){ //uh runs "But slower Than normal Something like that" - lingfeng
+    public void  runMotorsAtReduceSpeed(){ //uh runs "But slower Than normal Something like that" - lingfeng
 
         setHopperVelocity(hopperSpeed);
         setIndexerVelocity(indexerSpeed/(Constants.SlowerIndexerSpeed));
@@ -141,7 +141,7 @@ public void setUsingState(boolean using) {
 
             else{
 
-                runMotorsby2();
+                 runMotorsAtReduceSpeed();
 
             }
             
