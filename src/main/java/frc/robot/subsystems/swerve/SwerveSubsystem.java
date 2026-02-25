@@ -220,7 +220,7 @@ public class SwerveSubsystem extends SubsystemBase {
         break;
 
       case ALIGN_TO_FUEL:
-        processAlignToFuelState();
+        alignToFuel();
         break;
 
       default:
@@ -309,26 +309,6 @@ public class SwerveSubsystem extends SubsystemBase {
     Logger.recordOutput("Swerve/FieldLocation", getFieldLocation());
     Logger.recordOutput("Swerve/UnderTrench", getUnderTrench());
     Logger.recordOutput("Swerve/OverBump", getOverBump());
-  }
-
-  public void processAlignToFuelState() {
-    if (vision == null) return;
-
-    Optional<TargetData> target = vision.getClosestTarget("ObjCam_Intake");
-    
-    if (target.isPresent()) {
-      double yawDiff = target.get().angle().getDegrees();
-      swerveDrive.drive(
-          getTargetSpeeds(
-              DoubleUtils.clamp(driver.getLeftTrigger(), 0.0, 1.0),
-              0.0,
-              new Rotation2d(Math.toRadians(getHeading().getDegrees() + yawDiff))
-          )
-      );
-    } else {
-      // Stop the robot if the target is lost
-      swerveDrive.drive(new edu.wpi.first.math.kinematics.ChassisSpeeds());
-    }
   }
 
   private boolean getUnderTrench() {
@@ -488,34 +468,65 @@ public class SwerveSubsystem extends SubsystemBase {
     return new PathPlannerAuto(pathName);
   }
 
-  public Command aimAtTarget(Supplier<Double> joyX, Supplier<Double> joyY) {
+
+  public void alignToFuel() {
+    if (vision == null) return;
+
+    Optional<TargetData> target = vision.getClosestTarget("ObjCam_Intake");
+    
+    if (target.isPresent()) {
+      double yawDiff = target.get().angle().getDegrees();
+      swerveDrive.drive(
+          getTargetSpeeds(
+              DoubleUtils.clamp(driver.getLeftTrigger(), 0.0, 1.0),
+              0.0,
+              new Rotation2d(Math.toRadians(getHeading().getDegrees() + yawDiff))
+          )
+      );
+    } else {
+      // Stop the robot if the target is lost
+      swerveDrive.drive(new edu.wpi.first.math.kinematics.ChassisSpeeds());
+    }
+  }
+
+
+public Command aimAtTarget(Supplier<Double> joyX, Supplier<Double> joyY) {
     return run(() -> {
-      if (vision == null) return;
-      Optional<TargetData> target = vision.getClosestTarget("ObjCam_Intake");
-      if (target.isPresent()) {
-        double yawDiff = target.get().angle().getDegrees();
+      Optional<TargetData> targetOpt = vision.getBestTarget("ObjCam_Intake");
+
+      if (targetOpt.isPresent()) {
+        Rotation2d targetYaw = targetOpt.get().angle(); 
+        Rotation2d targetHeading = getHeading().plus(targetYaw);
+
         swerveDrive.driveFieldOriented(
-            getTargetSpeeds(
-                joyY.get(),
-                joyX.get(),
-                new Rotation2d(
-                    Math.toRadians(getHeading().getDegrees() - yawDiff))));
+            getTargetSpeeds(joyY.get(), joyX.get(), targetHeading)
+        );
+      } else {
+        swerveDrive.driveFieldOriented(
+            getTargetSpeeds(joyY.get(), joyX.get(), getHeading())
+        );
       }
     });
   }
 
   public Command driveTowardsTarget(Supplier<Double> throttle) {
     return run(() -> {
-      if (vision == null) return;
-      Optional<TargetData> target = vision.getClosestTarget("ObjCam_Intake");
-      if (target.isPresent()) {
-        double yawDiff = target.get().angle().getDegrees();
+      Optional<TargetData> targetOpt = vision.getBestTarget("ObjCam_Intake");
+
+      if (targetOpt.isPresent()) {
+        Rotation2d targetYaw = targetOpt.get().angle();
+        Rotation2d targetHeading = getHeading().plus(targetYaw);
+
         swerveDrive.drive(
             getTargetSpeeds(
-                DoubleUtils.clamp(throttle.get(), 0, 1),
-                0,
-                new Rotation2d(
-                    Math.toRadians(getHeading().getDegrees() + yawDiff))));
+                DoubleUtils.clamp(throttle.get(), 0.0, 1.0), 
+                0.0, 
+                targetHeading)
+        );
+      } else {
+        swerveDrive.drive(
+            getTargetSpeeds(0.0, 0.0, getHeading())
+        );
       }
     });
   }
