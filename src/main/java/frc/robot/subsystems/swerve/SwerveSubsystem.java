@@ -489,8 +489,8 @@ public class SwerveSubsystem extends SubsystemBase {
     }
   }
 
-
-public Command aimAtTarget(Supplier<Double> joyX, Supplier<Double> joyY) {
+  // is this meant to be bound to a button or somthing?
+  public Command aimAtTarget(Supplier<Double> joyX, Supplier<Double> joyY) {
     return run(() -> {
       Optional<TargetData> targetOpt = vision.getBestTarget("ObjCam_Intake");
 
@@ -509,6 +509,7 @@ public Command aimAtTarget(Supplier<Double> joyX, Supplier<Double> joyY) {
     });
   }
 
+  // is this meant to be bound to a button or somthing?
   public Command driveTowardsTarget(Supplier<Double> throttle) {
     return run(() -> {
       Optional<TargetData> targetOpt = vision.getBestTarget("ObjCam_Intake");
