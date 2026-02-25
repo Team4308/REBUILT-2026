@@ -53,7 +53,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import frc.robot.Constants;
 import frc.robot.FieldLayout;
 import frc.robot.Robot;
-import frc.robot.subsystems.vision.Vision;
+//import frc.robot.subsystems.vision.Vision;
 import swervelib.SwerveController;
 import swervelib.SwerveDrive;
 import swervelib.SwerveDriveTest;
@@ -75,7 +75,7 @@ public class SwerveSubsystem extends SubsystemBase {
   private final SwerveDrive swerveDrive;
 
   private final boolean usingVision = false;
-  private Vision vision;
+  ///private Vision vision;
 
   private Pose2d targetPose = new Pose2d();
 
@@ -185,7 +185,7 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   public void setupPhotonVision() {
-    vision = new Vision(swerveDrive::getPose, swerveDrive.field);
+   // vision = new Vision(swerveDrive::getPose, swerveDrive.field);
   }
 
   public void setUsingState(boolean using) {
@@ -257,9 +257,9 @@ public class SwerveSubsystem extends SubsystemBase {
   public void periodic() {
     if (usingVision) {
       swerveDrive.updateOdometry();
-      vision.updatePoseEstimation(swerveDrive);
+      //vision.updatePoseEstimation(swerveDrive);
 
-      vision.updateVisionField();
+      //vision.updateVisionField();
     }
 
     if (usingState) {
@@ -458,26 +458,26 @@ public class SwerveSubsystem extends SubsystemBase {
 
   public Command aimAtTarget(Supplier<Double> joyX, Supplier<Double> joyY) {
     return run(() -> {
-      OptionalDouble yawDiff = vision.getBestTarget("INTAKE_CAM").getYaw().get();
-      if (!yawDiff.isEmpty())
-        swerveDrive.driveFieldOriented(
-            getTargetSpeeds(
-                joyY.get(),
-                joyX.get(),
-                new Rotation2d(
-                    Math.toRadians(getHeading().getDegrees() - yawDiff.getAsDouble()))));
+      // OptionalDouble yawDiff = 0; // vision.getBestTarget("INTAKE_CAM").getYaw().get();
+      // if (!yawDiff.isEmpty())
+      //   swerveDrive.driveFieldOriented(
+      //       getTargetSpeeds(
+      //           joyY.get(),
+      //           joyX.get(),
+      //           new Rotation2d(
+      //               Math.toRadians(getHeading().getDegrees() - yawDiff.getAsDouble()))));
     });
   }
 
   public Command driveTowardsTarget(Supplier<Double> throttle) {
     return run(() -> {
-      OptionalDouble yawDiff = vision.getBestTarget("INTAKE_CAM").getYaw().get();
+      // OptionalDouble yawDiff = vision.getBestTarget("INTAKE_CAM").getYaw().get();
       swerveDrive.drive(
           getTargetSpeeds(
               DoubleUtils.clamp(throttle.get(), 0, 1),
               0,
               new Rotation2d(
-                  Math.toRadians(getHeading().getDegrees() + yawDiff.getAsDouble()))));
+                  Math.toRadians(getHeading().getDegrees() + 0 /*  yawDiff.getAsDouble() */ ))));
     });
   }
 

@@ -93,10 +93,10 @@ public class RobotContainer {
 
     driver.LeftTrigger.whileTrue(driveRobotOrientedAngularVelocity);
 
-    driver.M3.whileTrue(drivebase.moveUpLeft());
-    driver.M4.whileTrue(drivebase.moveUpRight());
-    driver.M5.whileTrue(drivebase.moveDownLeft());
-    driver.M6.whileTrue(drivebase.moveDownRight());
+    // driver.M3.whileTrue(drivebase.moveUpLeft());
+    // driver.M4.whileTrue(drivebase.moveUpRight());
+    // driver.M5.whileTrue(drivebase.moveDownLeft());
+    // driver.M6.whileTrue(drivebase.moveDownRight());
 
     drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
 
