@@ -1,4 +1,4 @@
-public class PrepareClimbCommand { 
+public class ReleaseClimbCommand { 
     /*PrepareClimbCommand // this will move the climber to the prepared position and retract the intake
 
 ClimbCommand // This will retract the climber to the climb position assuming it is already extended
@@ -19,13 +19,15 @@ You need to use drivebase.drivetopose() for that.
 AutoAlignRightThenClimbCommand 
  */
 
- // this will move the climber to the prepared position and retract the intake
- public static Command PrepareClimb(Climebersubsystem climber) {
-    return Commands.runOnce(
-                climber::extendClimb,
-                climber
-        );
+ 
 
- }
+ // extend climb and auto retract after 2 seconds
+ public static Command releaseClimb(Climbersubsystem climber) {
+        return Commands.sequence(
+                Commands.runOnce(climber::extendClimb, climber),
+                Commands.waitSeconds(2),
+                Commands.runOnce(climber::retractClimb, climber)
+        );
+    }
 
 }
