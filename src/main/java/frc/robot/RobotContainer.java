@@ -4,9 +4,12 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.auto.NamedCommands;
+import frc.robot.commands.ShootCommand;
 import ca.team4308.absolutelib.control.XBoxWrapper;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.commands.IntakeWhileShooting;
 import frc.robot.subsystems.HoodSubsystem;
 
 public class RobotContainer {
@@ -18,8 +21,16 @@ public class RobotContainer {
   public RobotContainer() {
     m_HoodSubsystem = new HoodSubsystem();
     configureBindings();
+    configureNamedCommands();
   }
+  private void configureNamedCommands(){
 
+    NamedCommands.registerCommand("Shoot", 
+    new ShootCommand());
+
+    NamedCommands.registerCommand("Intake and Shoot", 
+    new IntakeWhileShooting());
+  }
   private void configureBindings() {
       // Toggle shoot/rest
       m_driverController.A.onTrue(
