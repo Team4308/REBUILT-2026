@@ -5,39 +5,39 @@
             "name": "TagCam_FrontLeft",
             "type": "APRILTAG",
             "streamType": "PHOTON",
-            "enabled": true,
-            "transform": { "x": 10.0, "y": 10.0, "z": 8.0, "roll": 0.0, "pitch": 0, "yaw": 45.0 },
+            "enabled": false,
+            "transform": { "x": 10.0, "y": 10.0, "z": 9.325, "roll": 0.0, "pitch": 65, "yaw": 45.0 },
             "resolution": { "width": 320, "height": 240, "fov": 70.0 }
         },
         {
             "name": "TagCam_FrontRight",
             "type": "APRILTAG",
             "streamType": "PHOTON",
-            "enabled": true,
-            "transform": { "x": 10.0, "y": -10.0, "z": 8.0, "roll": 0.0, "pitch": 0, "yaw": -45.0 },
+            "enabled": false,
+            "transform": { "x": 10.0, "y": -10.0, "z": 9.325, "roll": 0.0, "pitch": 65, "yaw": -45.0 },
             "resolution": { "width": 320, "height": 240, "fov": 70.0 }
         },
         {
             "name": "TagCam_BackLeft",
             "type": "APRILTAG",
             "streamType": "PHOTON",
-            "enabled": false,
-            "transform": { "x": -10.0, "y": 10.0, "z": 8.0, "roll": 0.0, "pitch": 0, "yaw": 135.0 },
+            "enabled": true,
+            "transform": { "x": -10.0, "y": 10.0, "z": 9.325, "roll": 0.0, "pitch": 65, "yaw": 135.0 },
             "resolution": { "width": 320, "height": 240, "fov": 70.0 }
         },
         {
             "name": "TagCam_BackRight",
             "type": "APRILTAG",
             "streamType": "PHOTON",
-            "enabled": false,
-            "transform": { "x": -10.0, "y": -10.0, "z": 8.0, "roll": 0.0, "pitch": 0, "yaw": -135.0 },
+            "enabled": true,
+            "transform": { "x": -10.0, "y": -10.0, "z": 9.325, "roll": 0.0, "pitch": 65, "yaw": -135.0 },
             "resolution": { "width": 320, "height": 240, "fov": 70.0 }
         },
         {
             "name": "ObjCam_Intake",
             "type": "OBJECT_DETECTION",
             "streamType": "PHOTON",
-            "enabled": true,
+            "enabled": false,
             "transform": null, 
             "resolution": { "width": 640, "height": 280, "fov": 70.0 }
         },
