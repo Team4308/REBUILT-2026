@@ -9,7 +9,7 @@ public class ReleaseClimbCommand extends Command {
     // extend climb and auto retract after 2 seconds
     // private final Climbersubsystem m_climber;
 
- public releaseClimb(Climbersubsystem climber) {
+ public static Command releaseClimb(Climbersubsystem climber) {
     // this.m_climber = climber;
         return Commands.sequence(
                 Commands.runOnce(climber::extendClimb, climber),
@@ -28,6 +28,7 @@ public class ReleaseClimbCommand extends Command {
 
     @Override
     public boolean isFinished() {
+        return m_climber.isAtTarget();
 
     }
 

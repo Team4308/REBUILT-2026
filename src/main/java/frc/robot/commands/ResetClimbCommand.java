@@ -9,10 +9,10 @@ public class ResetClimbCommand extends Command {
 
     // reset climb to home position
 
-    // private final Climbersubsystem m_climber;
+    private final Climbersubsystem m_climber;
 
- public resetClimbCommand(Climbersubsystem climber) {
-    // this.m_climber = climber;
+ public static Command resetClimbCommand(Climbersubsystem climber) {
+    this.m_climber = climber;
     return Commands.runOnce(
                 climber::retractClimb, 
                 climber
@@ -29,6 +29,7 @@ public class ResetClimbCommand extends Command {
 
     @Override
     public boolean isFinished() {
+        return m_climber.isAtTarget();
 
     }
 

@@ -12,7 +12,7 @@ public class ClimbCommandCommands {
 
     // private final Climbersubsystem m_climb;
 
-    public climbCommand(Climbersubsystem climber) {
+    public  static Command climbCommand(Climbersubsystem climber) {
         // this.m_climber = climber;
         return Commands.runOnce(
                 climber::climb, 
@@ -37,6 +37,6 @@ public class ClimbCommandCommands {
     // Returns true when the command should end.
     @Override
     public boolean isFinished() {
-        return false;
+        return m_climber.isAtTarget();
     }
 }

@@ -13,9 +13,9 @@ public class ToggleClimbCommand {
     // If the climber is climbed, move it to prepare
     // ***didn't find those states in climbersubsystem*** to be solved
 
-    // private final Climbersubsystem m_climber;
+    private final Climbersubsystem m_climber;
 
- public toggleClimb(Climbersubsystem climber) {
+ public static Command toggleClimb(Climbersubsystem climber) {
     // this.m_climber = climber;
         return Commands.runOnce(() -> {
 
@@ -50,6 +50,7 @@ public class ToggleClimbCommand {
 
     @Override
     public boolean isFinished() {
+        return m_climber.isAtTarget();
     }
 
     @Override

@@ -9,7 +9,7 @@ public class PrepareClimbCommand extends Command {
 
     // private final Climbersubsystem m_climber;
 
- public PrepareClimb(Climebersubsystem climber) {
+ public static Command PrepareClimb(Climebersubsystem climber) {
     // this.m_climber = climber;
     return Commands.runOnce(
                 climber::extendClimb,
@@ -27,6 +27,7 @@ public class PrepareClimbCommand extends Command {
 
     @Override
     public boolean isFinished() {
+        return m_climber.isAtTarget();
 
     }
 
