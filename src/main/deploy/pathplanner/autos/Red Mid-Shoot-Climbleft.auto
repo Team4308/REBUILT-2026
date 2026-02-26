@@ -1,0 +1,25 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "Intake and Shoot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red Mid - Climbleft"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": "Starting Left",
+  "choreoAuto": false
+}
