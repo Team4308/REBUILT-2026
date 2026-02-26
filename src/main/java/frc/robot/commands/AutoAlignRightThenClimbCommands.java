@@ -5,30 +5,23 @@ import frc.robot.subsystems.Climbersubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 
-public class AutoAlignLeftThenClimbCommands {
+public class AutoAlignRightThenClimbCommands {
     // AutoAlignRightThenClimbCommand // This will retract the intake, move climbers
     // up, then drive to the right/left side, then do the climbing stuff
     // You need to use drivebase.drivetopose() for that.
 
     // AutoAlignRightThenClimbCommand
 
-    private final Climbersubsystem m_climb;
-    private final DriveSubsystem m_drive;
+    // private final Climbersubsystem m_climb;
+    // private final DriveSubsystem m_drive;
 
-    public autoAlignLeftThenClimb (Climbersubsystem climber, DriveSubsystem drive) (
-        this.m_climber = climber;
-        this.m_drive = drive;
-        
-            m_climb climber,
-            m_drive drive,
-            Pose2d rightPose
-    ) {
-       // return Commands.sequence(
-            // ***To be solved***
-                // Commands.runOnce(climber::retractClimb, climber),
-                // drive.driveToPose(rightPose),
-                // Commands.runOnce(climber::climb, climber)
-        //);
+    public autoAlignLeftThenClimb (Climbersubsystem climber, DriveSubsystem drive, Pose2d rightPose) 
+    {
+       return Commands.sequence(
+                Commands.runOnce(climber::retractClimb, climber),
+                drive.driveToPose(rightPose),
+                Commands.runOnce(climber::climb, climber)
+        );
     }
 
     @Override

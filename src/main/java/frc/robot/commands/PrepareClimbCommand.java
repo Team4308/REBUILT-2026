@@ -7,10 +7,10 @@ import edu.wpi.first.wpilibj2.command.Commands;
 public class PrepareClimbCommand extends Command {
     // this will move the climber to the prepared position and retract the intake
 
-    private final Climbersubsystem m_climber;
+    // private final Climbersubsystem m_climber;
 
  public PrepareClimb(Climebersubsystem climber) {
-    this.m_climber = climber;
+    // this.m_climber = climber;
     return Commands.runOnce(
                 climber::extendClimb,
                 climber

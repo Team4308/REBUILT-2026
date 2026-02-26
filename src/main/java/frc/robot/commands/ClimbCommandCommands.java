@@ -10,11 +10,10 @@ public class ClimbCommandCommands {
     // This will retract the climber to the climb position assuming it is already
     // extended
 
-    private final Climbersubsystem m_climb;
-    private final DriveSubsystem m_drive;
+    // private final Climbersubsystem m_climb;
 
     public climbCommand(Climbersubsystem climber) {
-        this.m_climber = climber;
+        // this.m_climber = climber;
         return Commands.runOnce(
                 climber::climb, 
                 climber
