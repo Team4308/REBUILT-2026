@@ -1,32 +1,38 @@
-public class ResetClimbCommand { 
-    /*PrepareClimbCommand // this will move the climber to the prepared position and retract the intake
 
-ClimbCommand // This will retract the climber to the climb position assuming it is already extended
+package frc.robot.commands;
 
-ToggleClimbCommand 
-If the climber is retracted, prepare
-If the climber is prepared, climb
-If the climber is climbed, move it to prepare
+import frc.robot.subsystems.Climbersubsystem;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 
-resetclimberCommand
-Just move the climber to home position
+public class ResetClimbCommand extends Command {
 
-ReleaseClimbCommand // This will move the climber to the top, then wait some amount of time(2 seconds for now), then automatically retract to the bottom.
+    // reset climb to home position
 
-AutoAlignLeftThenClimbCommand // This will retract the intake, move climbers up, then drive to the right/left side, then do the climbing stuff
-You need to use drivebase.drivetopose() for that.
+    private final Climbersubsystem m_climber;
 
-AutoAlignRightThenClimbCommand 
- */
-
-
-
- // reset climb to home position
- public static Command resetClimbCommand(Climbersubsystem climber) {
+ public resetClimbCommand(Climbersubsystem climber) {
+    this.m_climber = climber;
     return Commands.runOnce(
                 climber::retractClimb, 
                 climber
         );
- } 
+ }
 
+    @Override
+    public void initialize() {
+    }
+
+    @Override
+    public void execute() {
+    }
+
+    @Override
+    public boolean isFinished() {
+
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+    }
 }

@@ -1,31 +1,36 @@
-public class PrepareClimbCommand { 
-    /*PrepareClimbCommand // this will move the climber to the prepared position and retract the intake
+package frc.robot.commands;
 
-ClimbCommand // This will retract the climber to the climb position assuming it is already extended
+import frc.robot.subsystems.Climbersubsystem;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 
-ToggleClimbCommand 
-If the climber is retracted, prepare
-If the climber is prepared, climb
-If the climber is climbed, move it to prepare
+public class PrepareClimbCommand extends Command {
+    // this will move the climber to the prepared position and retract the intake
 
-resetclimberCommand
-Just move the climber to home position
+    private final Climbersubsystem m_climber;
 
-ReleaseClimbCommand // This will move the climber to the top, then wait some amount of time(2 seconds for now), then automatically retract to the bottom.
-
-AutoAlignLeftThenClimbCommand // This will retract the intake, move climbers up, then drive to the right/left side, then do the climbing stuff
-You need to use drivebase.drivetopose() for that.
-
-AutoAlignRightThenClimbCommand 
- */
-
- // this will move the climber to the prepared position and retract the intake
- public static Command PrepareClimb(Climebersubsystem climber) {
+ public PrepareClimb(Climebersubsystem climber) {
+    this.m_climber = climber;
     return Commands.runOnce(
                 climber::extendClimb,
                 climber
         );
-
  }
 
+    @Override
+    public void initialize() {
+    }
+
+    @Override
+    public void execute() {
+    }
+
+    @Override
+    public boolean isFinished() {
+
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+    }
 }

@@ -1,32 +1,22 @@
-public class ToggleClimbCommand { 
-    /*PrepareClimbCommand // this will move the climber to the prepared position and retract the intake
 
-ClimbCommand // This will retract the climber to the climb position assuming it is already extended
+package frc.robot.commands;
 
-ToggleClimbCommand 
-If the climber is retracted, prepare
-If the climber is prepared, climb
-If the climber is climbed, move it to prepare
+import frc.robot.subsystems.Climbersubsystem;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 
-resetclimberCommand
-Just move the climber to home position
+public class ToggleClimbCommand {
 
-ReleaseClimbCommand // This will move the climber to the top, then wait some amount of time(2 seconds for now), then automatically retract to the bottom.
+    // ToggleClimbCommand
+    // If the climber is retracted, prepare
+    // If the climber is prepared, climb
+    // If the climber is climbed, move it to prepare
+    // ***didn't find those states in climbersubsystem*** to be solved
 
-AutoAlignLeftThenClimbCommand // This will retract the intake, move climbers up, then drive to the right/left side, then do the climbing stuff
-You need to use drivebase.drivetopose() for that.
+    private final Climbersubsystem m_climber;
 
-AutoAlignRightThenClimbCommand 
- */
-
- 
-
-// ToggleClimbCommand 
-// If the climber is retracted, prepare
-// If the climber is prepared, climb
-// If the climber is climbed, move it to prepare
-// ***didn't find those states in climbersubsystem*** to be solved
- public static Command toggleClimb(Climbersubsystem climber) {
+ public toggleClimb(Climbersubsystem climber) {
+    this.m_climber = climber;
         return Commands.runOnce(() -> {
 
             switch (climber.getState()) {
@@ -50,5 +40,19 @@ AutoAlignRightThenClimbCommand
         }, climber);
     }
 
-    
+    @Override
+    public void initialize() {
+    }
+
+    @Override
+    public void execute() {
+    }
+
+    @Override
+    public boolean isFinished() {
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+    }
 }

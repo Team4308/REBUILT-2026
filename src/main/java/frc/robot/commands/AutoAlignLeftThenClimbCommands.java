@@ -1,43 +1,27 @@
-public class AutoAlignLeftThenClimbCommands { 
-    /*PrepareClimbCommand // this will move the climber to the prepared position and retract the intake
 
-ClimbCommand // This will retract the climber to the climb position assuming it is already extended
+package frc.robot.commands;
 
-ToggleClimbCommand 
-If the climber is retracted, prepare
-If the climber is prepared, climb
-If the climber is climbed, move it to prepare
+import frc.robot.subsystems.Climbersubsystem;
+import frc.robot.subsystems.DriveSubsystem;
+import edu.wpi.first.wpilibj2.command.Command;
 
-resetclimberCommand
-Just move the climber to home position
+/** An example command that uses an example subsystem. */
+public class AutoAlignLeftThenClimbCommands {
+    // AutoAlignLeftThenClimbCommand // This will retract the intake, move climbers
+    // up, then drive to the right/left side, then do the climbing stuff
+    // You need to use drivebase.drivetopose() for that.
 
-ReleaseClimbCommand // This will move the climber to the top, then wait some amount of time(2 seconds for now), then automatically retract to the bottom.
+    // AutoAlignRightThenClimbCommand
 
-AutoAlignLeftThenClimbCommand // This will retract the intake, move climbers up, then drive to the right/left side, then do the climbing stuff
-You need to use drivebase.drivetopose() for that.
+    private final Climbersubsystem m_climb;
+    private final DriveSubsystem m_drive;
 
-AutoAlignRightThenClimbCommand 
- */
+    public autoAlignLeftThenClimb (Climbersubsystem climber, DriveSubsystem drive) (
+        this.m_climber = climber;
+        this.m_drive = drive;
 
-  
-
- 
-
-// ToggleClimbCommand 
-// If the climber is retracted, prepare
-// If the climber is prepared, climb
-// If the climber is climbed, move it to prepare
-// ***didn't find those states in climbersubsystem*** to be solved
-
-
-    
-// AutoAlignLeftThenClimbCommand // This will retract the intake, move climbers up, then drive to the right/left side, then do the climbing stuff
-// You need to use drivebase.drivetopose() for that.
-
-// AutoAlignRightThenClimbCommand 
-     public static Command autoAlignLeftThenClimb(
-            Climbersubsystem climber,
-            DriveSubsystem drive,
+            m_climb climber,
+            m_drive drive,
             Pose2d leftPose
     ) {
        // return Commands.sequence(
@@ -47,5 +31,24 @@ AutoAlignRightThenClimbCommand
                 // Commands.runOnce(climber::climb, climber)
         //);
     }
-    
+
+    @Override
+    public void initialize() {
+    }
+
+    // Called every time the scheduler runs while the command is scheduled.
+    @Override
+    public void execute() {
+    }
+
+    // Called once the command ends or is interrupted.
+    @Override
+    public void end(boolean interrupted) {
+    }
+
+    // Returns true when the command should end.
+    @Override
+    public boolean isFinished() {
+        return false;
+    }
 }

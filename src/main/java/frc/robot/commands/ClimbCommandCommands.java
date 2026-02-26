@@ -1,32 +1,43 @@
-public class ClimbCommandCommands { 
-    /*PrepareClimbCommand // this will move the climber to the prepared position and retract the intake
 
-ClimbCommand // This will retract the climber to the climb position assuming it is already extended
+package frc.robot.commands;
 
-ToggleClimbCommand 
-If the climber is retracted, prepare
-If the climber is prepared, climb
-If the climber is climbed, move it to prepare
+import frc.robot.subsystems.Climbersubsystem;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 
-resetclimberCommand
-Just move the climber to home position
+public class ClimbCommandCommands {
 
-ReleaseClimbCommand // This will move the climber to the top, then wait some amount of time(2 seconds for now), then automatically retract to the bottom.
+    // This will retract the climber to the climb position assuming it is already
+    // extended
 
-AutoAlignLeftThenClimbCommand // This will retract the intake, move climbers up, then drive to the right/left side, then do the climbing stuff
-You need to use drivebase.drivetopose() for that.
+    private final Climbersubsystem m_climb;
+    private final DriveSubsystem m_drive;
 
-AutoAlignRightThenClimbCommand 
- */
-
- 
-
-// This will retract the climber to the climb position assuming it is already extended
- public static Command climbCommand(Climbersubsystem climber) {
-    return Commands.runOnce(
+    public climbCommand(Climbersubsystem climber) {
+        this.m_climber = climber;
+        return Commands.runOnce(
                 climber::climb, 
                 climber
         );
- } 
+    }
 
+    @Override
+    public void initialize() {
+    }
+
+    // Called every time the scheduler runs while the command is scheduled.
+    @Override
+    public void execute() {
+    }
+
+    // Called once the command ends or is interrupted.
+    @Override
+    public void end(boolean interrupted) {
+    }
+
+    // Returns true when the command should end.
+    @Override
+    public boolean isFinished() {
+        return false;
+    }
 }
