@@ -9,7 +9,7 @@ public class Constants {
     public static final class Hood {
         public static final int HoodMotor = 10; // CAN ID for the hood motor
         public static final double kToleranceDegrees = 2.0; // Tolerance for position control
-        public static final double TOTAL_GEAR_RATIO = 50.0 * (40.0 / 12.0); // Gear ratio
+        public static final double TOTAL_GEAR_RATIO = 40.0 / 12.0; // Gear ratio
         public static final double FORWARD_SOFT_LIMIT_ANGLE = 82.0;
         public static final double REVERSE_SOFT_LIMIT_ANGLE = 47.0;
         public static final double ampThreshold = 20;
