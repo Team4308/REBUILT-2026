@@ -8,11 +8,13 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Util.TrajectoryCalculations;
 
+import java.io.Serial;
 import java.util.function.Supplier;
 
 public class HoodSubsystem extends SubsystemBase {
@@ -33,7 +35,7 @@ public class HoodSubsystem extends SubsystemBase {
     }
 
     public double getHoodAngle() {
-        return (m_hoodMotor.getPosition().getValueAsDouble() / Constants.Hood.TOTAL_GEAR_RATIO) * 360.0;
+        return (m_hoodMotor.getPosition().getValueAsDouble() * Constants.Hood.TOTAL_GEAR_RATIO) * 360.0;
     }
 
     public void setHoodAngle(double angle) {
@@ -79,31 +81,28 @@ public class HoodSubsystem extends SubsystemBase {
 
     //States for Hood
     public enum RobotState {
-                REST,
-                PASS_RIGHT,
-                PASS_LEFT,
-                SHOOT,
+        REST,
+        PASS_RIGHT,
+        PASS_LEFT,
+        SHOOT,
     }   
 
     private RobotState currentState = RobotState.REST;
 
     private final TrajectoryCalculations trajectory;
 
-            public void setState( RobotState state) {
-                this.currentState = state;
-            }
+    public void setState(RobotState state) {
+        this.currentState = state;
+    }
 
 
-            public RobotState getState() {
-                return currentState;
-            }
+    public RobotState getState() {
+        return currentState;
+    }
         
     
 
-    boolean underTrench = NetworkTableInstance.getDefault()
-    .getTable("AdvantageKit/RealOutputs")
-    .getEntry("Swerve/UnderTrench")
-    .getBoolean(false);
+    boolean underTrench = false;
 
     public void stopMotors() {
             m_hoodMotor.setVoltage(0);
@@ -111,15 +110,11 @@ public class HoodSubsystem extends SubsystemBase {
 
 @Override
 public void periodic() {
-    underTrench = NetworkTableInstance.getDefault()
-    .getTable("AdvantageKit/RealOutputs")
-    .getEntry("Swerve/UnderTrench")
-    .getBoolean(false);
-
+    underTrench =false;
     // Safety override: hood must retract under trench
-    if (underTrench) {
+    if (false) {
         setHoodAngle(Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE);
-    }else if(trajectory.suppliersAreSet()){
+    }
 
     switch (currentState) {
 
@@ -155,7 +150,8 @@ public void periodic() {
         );
 
         m_hoodMotor.setVoltage(pidOutput + ffVolts);
-        Logger.recordOutput("Subsystems/Hood/TargetAngle", targetAngle);
-        Logger.recordOutput("Subsystems/Hood/CurrentAngle", currentAngle);
+        SmartDashboard.putNumber("Subsystems/Hood/TargetAngle", targetAngle);
+        SmartDashboard.putNumber("Subsystems/Hood/CurrentAngle", currentAngle);
+        SmartDashboard.putNumber("Subsystems/Hood/Voltage", ffVolts);
     }
-}}
+}

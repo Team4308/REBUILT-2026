@@ -23,7 +23,7 @@ public class Robot extends LoggedRobot {
     Logger.recordMetadata("REBUILT-2026", "FRC-4308"); // Set a metadata value
 
     if (isReal()) {
-        Logger.addDataReceiver(new WPILOGWriter()); // Log to a USB stick ("/U/logs")
+        //Logger.addDataReceiver(new WPILOGWriter()); // Log to a USB stick ("/U/logs")
         Logger.addDataReceiver(new NT4Publisher()); // Publish data to NetworkTables
     } else {
         setUseTiming(false); // Run as fast as possible
@@ -74,7 +74,9 @@ public class Robot extends LoggedRobot {
   }
 
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+    m_robotContainer.periodic();
+  }
 
   @Override
   public void teleopExit() {}
