@@ -1,5 +1,7 @@
 package frc.robot;
 
+import com.pathplanner.lib.auto.NamedCommands;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -21,6 +23,8 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
+
+    NamedCommands.registerCommand("Shoot", m_turretSubsystem.aimAtHub(), m_HoodSubsystem.setState(HoodSubsystem.RobotState.SHOOT),m_shooterCommand.setState(ShooterSubsystem.ShooterState.SHOOTING));
 
     // Default command: right trigger controls shooter speed continuously
     m_shooterSubsystem.setDefaultCommand(m_shooterCommand);

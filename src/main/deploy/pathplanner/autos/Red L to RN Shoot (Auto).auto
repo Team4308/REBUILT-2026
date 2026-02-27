@@ -13,13 +13,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Red L to RN (Shoot)"
+            "pathName": "Red L to RN(Shoot)"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": null,
+  "folder": "Disruption Autos",
   "choreoAuto": false
 }
