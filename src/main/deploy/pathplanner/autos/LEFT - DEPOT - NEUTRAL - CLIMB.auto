@@ -11,9 +11,21 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "Intake and Shoot"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "DEPOT to NEUTRAL"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot"
           }
         },
         {
