@@ -9,13 +9,13 @@ public class PrepareClimbCommand extends Command {
 
     // private final Climbersubsystem m_climber;
 
- public static Command PrepareClimb(Climebersubsystem climber) {
-    // this.m_climber = climber;
-    return Commands.runOnce(
+    public static Command PrepareClimb(Climebersubsystem climber) {
+        // this.m_climber = climber;
+        return Commands.runOnce(
                 climber::extendClimb,
                 climber
         );
- }
+    }
 
     @Override
     public void initialize() {
