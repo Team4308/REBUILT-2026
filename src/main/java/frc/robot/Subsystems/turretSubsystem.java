@@ -34,27 +34,19 @@ import ca.team4308.absolutelib.subsystems.Arm;
 import frc.robot.Util.TrajectoryCalculations;
 import java.util.function.Supplier;
 
-import ca.team4308.absolutelib.control.XBoxWrapper;
-
-import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.XboxController;
-
-import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.TimedRobot;
-
-import frc.robot.RobotState;
-
-
+import frc.robot.Robot;
 
 public class turretSubsystem extends SubsystemBase {
+
+    public enum RobotState {
+        aimAtHub,
+        aimAtPassingZone,
+        defaultTurret
+    }
 
     private final TalonFX driveMotor;
     private final CANcoder canCoder1;
     private final CANcoder canCoder2;
-
-    Joystick driver = new Joystick(0); 
-    double x = driver.getRawAxis(0); 
-    boolean pressed = driver.getRawButton(1);
 
     //(85/17)(40/31):1
     //(85/17)(40/33):1
@@ -156,28 +148,47 @@ public class turretSubsystem extends SubsystemBase {
     }
 
     /* States */
-    
-    private RobotState currentState;
+
+    private RobotState currentState = RobotState.defaultTurret;
+
+    private boolean stateManagerEnabled = true;
+
+    public RobotState getCurrentState() {
+        return currentState;
+    }
+
+    public void switchState(RobotState newState) {
+        currentState = newState;
+    }
 
     public void periodic() {
-        switch(currentState) {
+        if (!stateManagerEnabled) {
+            return;
+        }   
+        
+        switch(getCurrentState()) {
             case aimAtHub:
-                aimAtHub();
+                aimAtHub().schedule();
                 break;
 
             case aimAtPassingZone:
                 TrajectoryCalculations trajCalc = new TrajectoryCalculations();
                 double hubDegrees = trajCalc.getNeededYaw();
-                aimAtPassingZone(hubDegrees); //is this correct?
+                aimAtPassingZone(hubDegrees).schedule(); //is this correct?
                 break;
 
             case defaultTurret:
-                resetTurret();
+                resetTurret().schedule();
                 break;
         }
     }
 
-    /*
-    public void setStateBased(boolean using) {}
-    */  
+    
+    public void setStateBased(boolean using) {
+        this.stateManagerEnabled = using;
+        if (!using) {
+            driveMotor.set(0);// If we disable it, we might want to stop the motor immediately
+        }
+    }
+    
 }
