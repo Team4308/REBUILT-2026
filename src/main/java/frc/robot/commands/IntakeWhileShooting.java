@@ -18,13 +18,13 @@ public class IntakeWhileShooting extends Command {
         m_IntakeSubsystem.setRollerSpeed(Constants.Intake.ROLLER_INTAKE_RPM);
         m_IntakeSubsystem.setIntakeAngle(Constants.Intake.INTAKE_ANGLE_DEG);
 
-        if (m_SwerveSubsystem.getFieldLocation == "AllianceZone") {
+        if (m_SwerveSubsystem.getFieldLocation.equals("AllianceZone")) {
             m_IndexerSubsystem.setState(IndexerSubsystem.State.SHOOTING);
             m_ShooterSubsystem.setState(ShooterState.SHOOTING);
             m_HoodSubsystem.setState(RobotState.SHOOT);
             m_TurretSubsystem.setState(RobotState.aimAtHub);
 
-        } else if (m_SwerveSubsystem.getFieldLocation == "NeutralZone") {
+        } else if (m_SwerveSubsystem.getFieldLocation.equals("NeutralZone")) {
             m_IndexerSubsystem.setState(IndexerSubsystem.State.SHOOTING);
             m_ShooterSubsystem.setState(ShooterState.PASSING);
             m_TurretSubsystem.setState(RobotState.aimAtPassingZone);
@@ -43,13 +43,13 @@ public class IntakeWhileShooting extends Command {
     @Override
     public void execute() {
 
-        if (m_SwerveSubsystem.getFieldLocation == "AllianceZone") {
+        if (m_SwerveSubsystem.getFieldLocation.equals("AllianceZone")) {
             m_IndexerSubsystem.setState(IndexerSubsystem.State.SHOOTING);
             m_ShooterSubsystem.setState(ShooterState.SHOOTING);
             m_HoodSubsystem.setState(RobotState.SHOOT);
             m_TurretSubsystem.setState(RobotState.aimAtHub);
 
-        } else if (m_SwerveSubsystem.getFieldLocation == "NeutralZone") {
+        } else if (m_SwerveSubsystem.getFieldLocation.equals("NeutralZone")) {
             m_IndexerSubsystem.setState(IndexerSubsystem.State.SHOOTING);
             m_ShooterSubsystem.setState(ShooterState.PASSING);
             m_TurretSubsystem.setState(RobotState.aimAtPassingZone);
