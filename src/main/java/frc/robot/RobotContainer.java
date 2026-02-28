@@ -12,6 +12,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 
 import ca.team4308.absolutelib.control.XBoxWrapper;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -29,21 +30,45 @@ import frc.robot.subsystems.IndexerSubsystem;
 
 public class RobotContainer {
 
-  private final XBoxWrapper driver = new XBoxWrapper(Ports.Joysticks.DRIVER);
+  private final XBoxWrapper driver = new XBoxWrapper(0);
 
   private final IndexerSubsystem indexer = new IndexerSubsystem();
+
+  private double targetSpeedHopper = 0.0;
+  private double targetSpeedIndexer = 0.0;
 
   public RobotContainer() {
     configureBindings();
   }
 
   private void configureBindings() {
-    driver.A.onTrue(
-        Commands.runOnce(indexer::runMotors, indexer)
-  );
+    driver.A.onTrue(new InstantCommand(() -> targetSpeedHopper = 0.0));
+    driver.B.onTrue(new InstantCommand(() -> targetSpeedIndexer = 0.0));
+    driver.X.onTrue(new InstantCommand(() -> targetSpeedHopper = 100.0));
+    driver.Y.onTrue(new InstantCommand(() -> targetSpeedIndexer = 100.0));
+    driver.povUp.onTrue(new InstantCommand(() -> targetSpeedHopper = 500.0));
+    driver.povDown.onTrue(new InstantCommand(() -> targetSpeedIndexer = 500.0));
+  }
+
+  public void periodic() {
+    targetSpeedHopper -= driver.getLeftY() * 10;
+
+    targetSpeedHopper = MathUtil.clamp(
+        targetSpeedHopper,
+        0.0,
+        1900.0);
+    indexer.setHopperSpeed(targetSpeedHopper);
+
+    targetSpeedIndexer -= driver.getRightY() * 10;
+    targetSpeedIndexer = MathUtil.clamp(
+        targetSpeedIndexer,
+        0.0,
+        1900.0);
+    indexer.setIndexerSpeed(targetSpeedIndexer);
   }
 
   public Command getAutonomousCommand() {
     return Commands.print("No autonomous command configured");
   }
+
 }

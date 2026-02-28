@@ -1,28 +1,25 @@
 package frc.robot;
 
-import com.ctre.phoenix6.configs.Slot0Configs;
-
 public class Constants {
-    public static double IndexerSpeed;
-    public static double HopperSpeed;
-    public static double KrakenGearRatio;
-    public static double FalconGearRatio;
-    public static int HopperMotorId;
-    public static double HopperMotorConfigsKs;
-    public static double HopperMotorConfigsKv;
-    public static double HopperMotorConfigsKp;
-    public static double HopperMotorConfigsKi;
-    public static double HopperMotorConfigsKd;
+    public static double IndexerSpeed = 100;
+    public static double HopperSpeed = 100;
+    public static double KrakenGearRatio = 1;
+    public static double FalconGearRatio = 1;
+    public static int HopperMotorId = 14;
+    public static double HopperMotorConfigsKs = 0.1;
+    public static double HopperMotorConfigsKv = 0.12;
+    public static double HopperMotorConfigsKp = 0.11;
+    public static double HopperMotorConfigsKi = 0;
+    public static double HopperMotorConfigsKd = 0;
 
-    public static int IndexerMotorId;
-    public static double IndexerMotorConfigsKs;
-    public static double IndexerMotorConfigsKv;
-    public static double IndexerMotorConfigsKp;
-    public static double IndexerMotorConfigsKi;
-    public static double IndexerMotorConfigsKd;
-   
-    public static int BeambreakSensor;
-    public static double SlowerIndexerSpeed;
-    
+    public static int IndexerMotorId = 15;
+    public static double IndexerMotorConfigsKs = 0.1;
+    public static double IndexerMotorConfigsKv = 0.12;
+    public static double IndexerMotorConfigsKp = 0.11;
+    public static double IndexerMotorConfigsKi = 0;
+    public static double IndexerMotorConfigsKd = 0;
+
+    public static int BeambreakSensor = 1;
+    public static double SlowerIndexerSpeed = 50;
 
 }
