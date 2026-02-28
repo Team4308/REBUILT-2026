@@ -1,26 +1,22 @@
 package frc.robot.subsystems;
 
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.NT4Publisher;
+
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.mechanisms.swerve.LegacySwerveRequest.Idle;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-
-import ca.team4308.absolutelib.math.trajectories.shooter.ShooterSystem;
-import ca.team4308.absolutelib.subsystems.Arm;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.ArmFeedforward;
-import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.RobotState;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Util.TrajectoryCalculations;
-import swervelib.simulation.ironmaple.simulation.IntakeSimulation.IntakeSide;
 
+import java.io.Serial;
 import java.util.function.Supplier;
 
 public class HoodSubsystem extends SubsystemBase {
@@ -31,6 +27,7 @@ public class HoodSubsystem extends SubsystemBase {
     private double targetAngle = 0;
     
     public HoodSubsystem() {
+        trajectory = new TrajectoryCalculations();
         var talonFXConfigs = new TalonFXConfiguration();
         talonFXConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         talonFXConfigs.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
@@ -78,36 +75,85 @@ public class HoodSubsystem extends SubsystemBase {
         return run(this::resetHood).until(() -> m_hoodMotor.getSupplyCurrent().getValueAsDouble() > 20.0).andThen(runOnce(() -> m_hoodMotor.setPosition(0)));
     }
 
-    // The following aimAtHubCommand, aimAtPassingAngle, and aimAtPassingCommand are redundant
-    // I left them here in case you need them for some utility but otherwise all of their jobs 
-    // are completed in StateManager.java
+    // The following aimAtHubCommand
     // I removed aimAtHub bcuz it was litterally just setHoodAngle copy-pasted
     public Command aimAtHubCommand(Supplier<Double> pitchSupplier) {
         return run(() -> setHoodAngle(pitchSupplier.get()));
     }
-    public void aimAtPassingZone() { setHoodAngle( Constants.Hood.kPassingAngle ); }
-    public Command aimAtPassingZoneCommand() { return run(this::aimAtPassingZone); }            
 
-            
+    //States for Hood
+    public enum RobotState {
+        REST,
+        PASS_RIGHT,
+        PASS_LEFT,
+        SHOOT,
+    }   
 
-    @Override
-    public void periodic() {
-        // IMPORTANT: Update this to whatever the locationUtil file is actually called
-        if(LocationUtil.GetIsUnderTrench()) {
-            setHoodAngle(Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE); 
+    private RobotState currentState = RobotState.REST;
+
+    private final TrajectoryCalculations trajectory;
+
+    public void setState(RobotState state) {
+        this.currentState = state;
+    }
+
+
+    public RobotState getState() {
+        return currentState;
+    }
+        
+    
+
+    boolean underTrench = false;
+
+    public void stopMotors() {
+            m_hoodMotor.setVoltage(0);
         }
+
+@Override
+public void periodic() {
+    underTrench = false;
+    // Safety override: hood must retract under trench
+    if (underTrench) {
+        setHoodAngle(Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE);
+    }
+
+    switch (currentState) {
+
+        case REST:
+            setHoodAngle(Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE);
+            break;    
+
+        case SHOOT:
+            trajectory.setTargetSupplier(() -> {return Constants.Hood.HUB;});
+            trajectory.updateShot();
+            setHoodAngle(trajectory.getNeededPitch());
+            break;
+            
+        case PASS_RIGHT:
+            trajectory.setTargetSupplier(() -> {return Constants.Hood.kPASS_RIGHT;});
+            trajectory.updateShot();
+            setHoodAngle(trajectory.getNeededPitch());
+            break;  
+
+        case PASS_LEFT:
+            trajectory.setTargetSupplier(() -> {return Constants.Hood.kPASS_LEFT;});
+            trajectory.updateShot();
+            setHoodAngle(trajectory.getNeededPitch());
+            break;    
+
+    }
+
         double currentAngle = getHoodAngle();
         double pidOutput = Constants.Hood.pidController.calculate(currentAngle, targetAngle);
-        double ffVolts = Constants.Hood.feedforward.calculate(Units.degreesToRadians(currentAngle), Constants.Hood.pidController.getSetpoint().velocity);
+        double ffVolts = Constants.Hood.feedforward.calculate(
+                Units.degreesToRadians(currentAngle),
+                Constants.Hood.pidController.getSetpoint().velocity
+        );
 
         m_hoodMotor.setVoltage(pidOutput + ffVolts);
-
-        Logger.recordOutput("Subsystems/Hood/TargetAngle", targetAngle);
-        Logger.recordOutput("Subsystems/Hood/CurrentAngle", currentAngle);
-    }
-    
-    public void stopMotors() {
-        m_hoodMotor.setVoltage(0);
-        m_hoodMotor.setPosition(0); 
+        SmartDashboard.putNumber("Subsystems/Hood/TargetAngle", targetAngle);
+        SmartDashboard.putNumber("Subsystems/Hood/CurrentAngle", currentAngle);
+        SmartDashboard.putNumber("Subsystems/Hood/Voltage", ffVolts);
     }
 }

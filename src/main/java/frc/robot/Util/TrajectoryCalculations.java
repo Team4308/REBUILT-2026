@@ -32,7 +32,28 @@ public class TrajectoryCalculations {
     private Supplier<Double> currentRPMsupply = null;
     private double shooterHeightMeters = 0.5;
     private Translation2d shooterOffset = new Translation2d(0.1,0.1);
-    private Translation3d hub = new Translation3d(4.0, 0.0,2.1);
+    private Supplier<Translation3d> targetSupplier = () -> new Translation3d(4.0, 0.0, 2.1); // default: center hub
+
+
+    // Setters
+    public void setPoseSupplier(Supplier<Pose2d> supplier) {
+        this.poseSupplier = supplier;
+    }
+
+    public void setChassisSupplier(Supplier<ChassisSpeeds> supplier) {
+        this.chassisSupplier = supplier;
+    }
+
+    public void setCurrentRPMsupply(Supplier<Double> supplier) {
+        this.currentRPMsupply = supplier;
+    }
+    
+    public boolean suppliersAreSet() {
+        return poseSupplier != null && chassisSupplier != null && currentRPMsupply != null;
+    }
+    public void setTargetSupplier(Supplier<Translation3d> supplier) {
+        this.targetSupplier = supplier;
+    }
 
     public TrajectoryCalculations() {
         super();
@@ -73,23 +94,23 @@ public class TrajectoryCalculations {
     public double getNeededPitch() {
         return shooterSystem.getLastTrajectoryResult().getPitchAngleDegrees();
     }
+    
+
 
     public double getNeededRPM(){
-        return shooterSystem.getLastTrajectoryResult().getRecommendedRpm();
+        return (shooterSystem.getLastTrajectoryResult().getRecommendedRpm());
     }
-
     public void updateShot(){
         Pose2d pose = poseSupplier.get();
         Rotation2d rot = pose.getRotation();
         double worldOffsetX = shooterOffset.getX() * rot.getCos() - shooterOffset.getY() * rot.getSin();
-        double worldOffsetY = shooterOffset.getY() * rot.getSin() + shooterOffset.getX() * rot.getCos();
+        double worldOffsetY = shooterOffset.getX() * rot.getSin() + shooterOffset.getY() * rot.getCos();
         double shooterX = pose.getX() + worldOffsetX;
         double shooterY = pose.getY() + worldOffsetY;
-        
 
-        double dx = hub.getX() - shooterX;
-        double dy = hub.getY() - shooterY;
-        double yawRad = Math.atan2(dx, dy);
+        double dx = targetSupplier.get().getX() - shooterX;
+        double dy = targetSupplier.get().getY() - shooterY;
+        double yawRad = Math.atan2(dy, dx);
         lastDistantMeter = Math.hypot(dx, dy);
         targetYawDegrees = Math.toDegrees(yawRad);
         double vx = 0, vy = 0;
@@ -105,7 +126,7 @@ public class TrajectoryCalculations {
             ShotInput.builder()
                 .shooterPositionMeters(shooterX, shooterY, shooterHeightMeters)
                 .shooterYawRadians(yawRad)
-                .targetPositionMeters(hub.getX(), hub.getY(), hub.getZ())
+                .targetPositionMeters(targetSupplier.get().getX(), targetSupplier.get().getY(), targetSupplier.get().getZ())
                 .targetRadiusMeters(0.45)
                 .includeAirResistance(true)
                 .robotVelocity(vx, vy)
@@ -115,6 +136,6 @@ public class TrajectoryCalculations {
         currentShot = shooterSystem.calculate(lastDistantMeter, measuredRPM, vx, vy, yawRad);
     }   
 
-    
+
 
 }
