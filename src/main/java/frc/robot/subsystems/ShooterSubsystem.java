@@ -30,10 +30,17 @@ public class ShooterSubsystem extends AbsoluteSubsystem {
 
     public double rpm;
 
-    public String state;
-    public boolean using;
+    public enum ShooterState {
+        IDLE,
+        SHOOTING,
+        PASSING,
+    }
 
-    boolean underTrench = NetworkTableInstance.getDefault().getTable("AdvantageKit/RealOutputs").getEntry("Swerve/UnderTrench").getBoolean(false);
+    private ShooterState currentState = ShooterState.IDLE;
+    public boolean usingStateBased;
+
+    boolean underTrench = NetworkTableInstance.getDefault().getTable("AdvantageKit/RealOutputs")
+            .getEntry("Swerve/UnderTrench").getBoolean(false);
 
     public ShooterSubsystem() {
         rightMotor = new TalonFX(Constants.Mapping.ShooterMotor.kMotor1);
@@ -45,8 +52,7 @@ public class ShooterSubsystem extends AbsoluteSubsystem {
         rightConfiguration = new TalonFXConfiguration();
         leftConfiguration = new TalonFXConfiguration();
 
-        state = "none";
-        using = false;
+        usingStateBased = false;
 
         // ask if this is necessary
         // rightConfiguration.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
@@ -76,6 +82,7 @@ public class ShooterSubsystem extends AbsoluteSubsystem {
         double leftError = Math.abs(leftRpm - leftVelocity.Velocity);
         return rightError < Constants.Shooter.kRPMTolerance && leftError < Constants.Shooter.kRPMTolerance;
     }
+
     public void stopMotors() {
         setTargetSpeed(0);
     }
@@ -93,41 +100,31 @@ public class ShooterSubsystem extends AbsoluteSubsystem {
     } // same as setshooterspeed but if the timeout runs out first, it will finish
       // anyways
 
-    public void setState(String state) {
-        this    .state = state;
-    } // sets the current state
-
     public void setStateBased(boolean using) {
-        this.using = using;
+        this.usingStateBased = using;
     } // turns on/off the state manager
 
     @Override
     public Sendable log() {
         return builder -> {
-        builder.addDoubleProperty("Target RPM", this::getRPM, null);
-        builder.addDoubleProperty("Right Motor RPM", () -> rightMotor.getVelocity().getValue().in(edu.wpi.first.units.Units.RPM), null);
-        builder.addDoubleProperty("Left Motor RPM", () -> leftMotor.getVelocity().getValue().in(edu.wpi.first.units.Units.RPM), null);
-        builder.addBooleanProperty("At Target Speed", this::isAtTargetSpeed, null);
-        builder.addStringProperty("State", () -> this.state, null);
-        }; // publishes live shooter data 
+            builder.addDoubleProperty("Target RPM", this::getRPM, null);
+            builder.addDoubleProperty("Right Motor RPM",
+                    () -> rightMotor.getVelocity().getValue().in(edu.wpi.first.units.Units.RPM), null);
+            builder.addDoubleProperty("Left Motor RPM",
+                    () -> leftMotor.getVelocity().getValue().in(edu.wpi.first.units.Units.RPM), null);
+            builder.addBooleanProperty("At Target Speed", this::isAtTargetSpeed, null);
+            builder.addStringProperty("State", () -> this.currentState.toString(), null);
+        }; // publishes live shooter data
     }
 
     public void selectProfileSlot(int i) {
         rightVelocity.Slot = i;
         leftVelocity.Slot = i;
-    } // switches  PID slot
+    } // switches PID slot
 
     public double getRPM() {
         return this.rpm;
     }
-
-    public enum ShooterState {
-        IDLE, 
-        SHOOTING, 
-        PASSING,
-    }
-
-    private ShooterState currentState = ShooterState.IDLE;
 
     public ShooterState getState() {
         return currentState;
@@ -148,33 +145,35 @@ public class ShooterSubsystem extends AbsoluteSubsystem {
                 this);
     } // same as previous, but it runs until interrupted.
 
-public void setShooterSpeedHub() {
+    public void setShooterSpeedHub() {
         setTargetSpeed(Constants.Shooter.kMaxRPM);
     }
 
     public Command setShooterSpeedHubCommand() {
         return Commands.run(() -> setShooterSpeedHub(), this);
     }
-    
+
     @Override
     public void periodic() {
-        underTrench = NetworkTableInstance.getDefault().getTable("AdvantageKit/RealOutputs").getEntry("Swerve/UnderTrench").getBoolean(false);
-        if (underTrench) {
-            currentState = ShooterState.IDLE;
-        } else {
-            switch (currentState) {
-                case IDLE:
-                    stopMotors();
-                    break;
-                case SHOOTING:
-                    setShooterSpeedHub();
-                    break;
-                case PASSING:
-                    setShooterSpeedPass();
-                    break;
+        if (usingStateBased) {
+            underTrench = NetworkTableInstance.getDefault().getTable("AdvantageKit/RealOutputs")
+                    .getEntry("Swerve/UnderTrench").getBoolean(false);
+            if (underTrench) {
+                currentState = ShooterState.IDLE;
+            } else {
+                switch (currentState) {
+                    case IDLE:
+                        stopMotors();
+                        break;
+                    case SHOOTING:
+                        setShooterSpeedHub();
+                        break;
+                    case PASSING:
+                        setShooterSpeedPass();
+                        break;
+                }
             }
         }
-    
     }
 
 }

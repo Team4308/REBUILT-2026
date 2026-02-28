@@ -2,8 +2,10 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.NamedCommands;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.commands.ShooterCommand;
@@ -14,9 +16,10 @@ public class RobotContainer {
 
   private final ShooterSubsystem m_shooterSubsystem = new ShooterSubsystem();
   private final ShooterCommand m_shooterCommand = new ShooterCommand(
-    m_shooterSubsystem,
-    () -> m_driverController.getRightTriggerAxis() * Constants.Shooter.kMaxRPM
-  );
+      m_shooterSubsystem,
+      () -> m_driverController.getRightTriggerAxis() * Constants.Shooter.kMaxRPM);
+
+  private double targetSpeed = 0;
 
   public RobotContainer() {
     configureBindings();
@@ -24,25 +27,29 @@ public class RobotContainer {
 
   private void configureBindings() {
 
-    NamedCommands.registerCommand("Shoot", m_turretSubsystem.aimAtHub(), m_HoodSubsystem.setState(HoodSubsystem.RobotState.SHOOT),m_shooterCommand.setState(ShooterSubsystem.ShooterState.SHOOTING));
+    // NamedCommands.registerCommand("Shoot", m_turretSubsystem.aimAtHub(),
+    // m_HoodSubsystem.setState(HoodSubsystem.RobotState.SHOOT),m_shooterCommand.setState(ShooterSubsystem.ShooterState.SHOOTING));
 
     // Default command: right trigger controls shooter speed continuously
     m_shooterSubsystem.setDefaultCommand(m_shooterCommand);
 
-    // Hold A: spin up to hub speed
-    m_driverController.a()
-        .whileTrue(m_shooterCommand.setShooterSpeedHubCommand())
-        .onFalse(Commands.runOnce(() -> m_shooterSubsystem.stopMotors(), m_shooterSubsystem));
+    m_driverController.a().onTrue(new InstantCommand(() -> targetSpeed = 0));
 
-    // Hold B: spin up to pass speed
-    m_driverController.b()
-        .whileTrue(m_shooterCommand.setShooterSpeedPassCommand())
-        .onFalse(Commands.runOnce(() -> m_shooterSubsystem.stopMotors(), m_shooterSubsystem));
+    m_driverController.b().onTrue(new InstantCommand(() -> targetSpeed = 1000));
 
-    // Hold X: spin up to a custom RPM with a 3 second timeout
-    m_driverController.x()
-        .whileTrue(m_shooterCommand.setShooterSpeed(
-            () -> Constants.Shooter.kMaxRPM, 3.0));
+    m_driverController.x().onTrue(new InstantCommand(() -> targetSpeed = 3000));
+
+    m_driverController.y().onTrue(new InstantCommand(() -> targetSpeed = 1500));
+  }
+
+  public void periodic() {
+    targetSpeed -= m_driverController.getLeftY() * 10;
+
+    targetSpeed = MathUtil.clamp(
+        targetSpeed,
+        Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE,
+        Constants.Hood.FORWARD_SOFT_LIMIT_ANGLE);
+    m_shooterSubsystem.setTargetSpeed(targetSpeed);
   }
 
   public Command getAutonomousCommand() {
