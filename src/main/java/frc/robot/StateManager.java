@@ -3,7 +3,6 @@ package frc.robot;
 import ca.team4308.absolutelib.math.trajectories.shooter.ShooterSystem;
 import ca.team4308.absolutelib.subsystems.Arm;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Subsystems.turretSubsystem;
 import frc.robot.Util.TrajectoryCalculations;
 import frc.robot.subsystems.*;
 
@@ -15,23 +14,23 @@ import frc.robot.subsystems.*;
  * All the hood methods and constants are correct, no need to change
  */
 public class StateManager extends SubsystemBase {
-
     public enum RobotState {
-        ActiveTeleopAllianceZone,
-        ActiveTeleopNeutralZone,
-        ActiveTeleopOpponentZone,
-        InactiveTeleopAllianceZone,
-        InactiveTeleopNeutralZone,
-        InactiveTeleopOpponentZone,
-        EndgameTeleopAllianceZone,
-        EndgameTeleopNeutralZone,
-        EndgameTeleopOpponentZone,
-        Home
+                ActiveTeleopAllianceZone,
+                ActiveTeleopNeutralZone,
+                ActiveTeleopOpponentZone,
+                InactiveTeleopAllianceZone,
+                InactiveTeleopNeutralZone,
+                InactiveTeleopOpponentZone,
+                EndgameTeleopAllianceZone,
+                EndgameTeleopNeutralZone,
+                EndgameTeleopOpponentZone,
+                Home
     }
 
+    
     private final HoodSubsystem hood;
     private final ShooterSubsystem shooter;
-    private final turretSubsystem turret;
+    private final TurretSubsystem turret;
     private final IntakeSubsystem intake;
     private final DriveSubsystem drive;
     private final Arm arm;
@@ -39,20 +38,21 @@ public class StateManager extends SubsystemBase {
 
     private final TrajectoryCalculations trajectory;
 
-    public void setState(StateManager.RobotState state) {
-        this.currentState = state;
-    }
+            public void setState(StateManager.RobotState state) {
+                this.currentState = state;
+            }
 
-    public RobotState getState() {
-        return currentState;
-    }
+
+            public RobotState getState() {
+                return currentState;
+            }
 
     public StateManager(
-            HoodSubsystem hood,
-            ShooterSubsystem shooter,
-            turretSubsystem turret,
-            IntakeSubsystem intake,
-            DriveSubsystem drive
+        HoodSubsystem hood,
+        ShooterSubsystem shooter,
+        TurretSubsystem turret,
+        IntakeSubsystem intake,
+        DriveSubsystem drive
     ) {
         this.hood = hood;
         this.shooter = shooter;
@@ -82,15 +82,15 @@ public class StateManager extends SubsystemBase {
                 hood.setHoodAngle(trajectory.getNeededPitch());
                 turret.setYaw(trajectory.getNeededYaw());
                 shooter.setTargetRPM(trajectory.getNeededRPM());
-                break;
+                break;    
 
             case ActiveTeleopNeutralZone:
                 intake.runIntake();
                 hood.setHoodAngle(Constants.Hood.kPassingAngle);
                 turret.aimAtPassingSide();
                 shooter.setTargetRPM(Constants.Shooter.kPassingRPM);
-                break;
-
+                break;     
+                       
             case ActiveTeleopOpponentZone:
                 intake.runIntake();
                 hood.setHoodAngle(Constants.Hood.kPassingAngle);
@@ -127,6 +127,6 @@ public class StateManager extends SubsystemBase {
                 turret.setSafeAngle();
                 hood.setHoodAngle(Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE);
                 break;
+
         }
-    }
 }
