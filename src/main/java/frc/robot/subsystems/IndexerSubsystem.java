@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
+import org.littletonrobotics.junction.Logger;
 
 public class IndexerSubsystem extends SubsystemBase{
     
@@ -154,6 +155,9 @@ public void setUsingState(boolean using) {
 
             }
         }
+
+        Logger.recordOutput("Indexer/HopperSpeed", hopperSpeed);
+        Logger.recordOutput("Indexer/IndexerSpeed", indexerSpeed);
     }
 
     public void setState(State newState) {
