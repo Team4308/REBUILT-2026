@@ -156,8 +156,8 @@ public void setUsingState(boolean using) {
             }
         }
 
-        Logger.recordOutput("Indexer/HopperSpeed", hopperSpeed);
-        Logger.recordOutput("Indexer/IndexerSpeed", indexerSpeed);
+        Logger.recordOutput("Subsystems/Indexer/HopperSpeed", hopperSpeed);
+        Logger.recordOutput("Subsystems/Indexer/IndexerSpeed", indexerSpeed);
     }
 
     public void setState(State newState) {
