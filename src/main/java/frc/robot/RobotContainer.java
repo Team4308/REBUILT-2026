@@ -18,44 +18,42 @@ public class RobotContainer {
 
   private final XBoxWrapper m_driverController = new XBoxWrapper(Constants.Hood.kDriverControllerPort);
   double targetAngle = 8;
+
   public RobotContainer() {
     m_HoodSubsystem = new HoodSubsystem();
     configureBindings();
   }
 
   private void configureBindings() {
-      // Toggle shoot/rest
-      m_driverController.A.onTrue(
-        new InstantCommand(()->m_HoodSubsystem.setHoodAngle(8))
-      );
+    // Toggle shoot/rest
+    m_driverController.A.onTrue(
+        new InstantCommand(() -> targetAngle = 8));
 
-      // Pass presets
-      m_driverController.X.onTrue(
-          new InstantCommand(()->m_HoodSubsystem.setHoodAngle(53))
-      );
+    // Pass presets
+    m_driverController.X.onTrue(
+        new InstantCommand(() -> targetAngle = 40));
 
-      m_driverController.Y.onTrue(
-          new InstantCommand(()->m_HoodSubsystem.setHoodAngle(30))
-      );
+    m_driverController.Y.onTrue(
+        new InstantCommand(() -> targetAngle = 30));
 
-      // Reset hood
-      m_driverController.B.onTrue(
-          m_HoodSubsystem.resetHoodCommand()
-      );
-      // Emergency stop
-      m_driverController.Back.onTrue(
-          Commands.runOnce(() -> m_HoodSubsystem.stopMotors())
-      );
+    // Reset hood
+    m_driverController.B.onTrue(
+        m_HoodSubsystem.resetHoodCommand());
+    // Emergency stop
+    m_driverController.Back.onTrue(
+        Commands.runOnce(() -> m_HoodSubsystem.stopMotors()));
   }
-  public void periodic(){
-    targetAngle += m_driverController.getLeftY() * 2;
+
+  public void periodic() {
+    targetAngle -= m_driverController.getLeftY() / 2;
+
     targetAngle = MathUtil.clamp(
-            targetAngle,
-            Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE,
-            Constants.Hood.FORWARD_SOFT_LIMIT_ANGLE
-        );
-    
+        targetAngle,
+        Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE,
+        Constants.Hood.FORWARD_SOFT_LIMIT_ANGLE);
+    m_HoodSubsystem.setHoodAngle(targetAngle);
   }
+
   public Command getAutonomousCommand() {
     return Commands.print("No autonomous command configured");
   }
