@@ -3,8 +3,8 @@ package frc.robot;
 public class Constants {
     public static double IndexerSpeed = 100;
     public static double HopperSpeed = 100;
-    public static double KrakenGearRatio = 1;
-    public static double FalconGearRatio = 1;
+    public static double IndexerGearRatio = 5 / 3;
+    public static double HopperGearRatio = 1;
     public static int HopperMotorId = 14;
     public static double HopperMotorConfigsKs = 0.1;
     public static double HopperMotorConfigsKv = 0.12;
