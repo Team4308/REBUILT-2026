@@ -182,6 +182,10 @@ public class ShooterSubsystem extends AbsoluteSubsystem {
                 }
             }
         }
+
+        Logger.recordOutput("Subsystems/Shooter/TargetRPM", this::getRPM);
+        Logger.recordOutput("Subsystems/Shooter/CurRPM",
+                () -> rightMotor.getVelocity().getValue().in(edu.wpi.first.units.Units.RPM));
     }
 
 }
