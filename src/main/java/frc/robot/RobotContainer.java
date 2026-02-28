@@ -47,8 +47,8 @@ public class RobotContainer {
 
     targetSpeed = MathUtil.clamp(
         targetSpeed,
-        Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE,
-        Constants.Hood.FORWARD_SOFT_LIMIT_ANGLE);
+        0.0,
+        Constants.Shooter.kMaxRPM);
     m_shooterSubsystem.setTargetSpeed(targetSpeed);
   }
 

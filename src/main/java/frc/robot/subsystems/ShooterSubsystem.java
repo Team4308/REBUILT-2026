@@ -2,10 +2,15 @@ package frc.robot.subsystems;
 
 import java.util.function.Supplier;
 
+import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.controls.Follower;
 
 import ca.team4308.absolutelib.wrapper.AbsoluteSubsystem;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -22,8 +27,7 @@ public class ShooterSubsystem extends AbsoluteSubsystem {
     private final TalonFXConfiguration rightConfiguration;
     private final TalonFXConfiguration leftConfiguration;
 
-    final VelocityVoltage rightVelocity;
-    final VelocityVoltage leftVelocity;
+    final VelocityVoltage velocityVoltage;
 
     public double bottomMultiplier;
     public double topMultiplier;
@@ -46,41 +50,46 @@ public class ShooterSubsystem extends AbsoluteSubsystem {
         rightMotor = new TalonFX(Constants.Mapping.ShooterMotor.kMotor1);
         leftMotor = new TalonFX(Constants.Mapping.ShooterMotor.kMotor2);
 
-        rightVelocity = new VelocityVoltage(0);
-        leftVelocity = new VelocityVoltage(0);
+        velocityVoltage = new VelocityVoltage(0);
 
         rightConfiguration = new TalonFXConfiguration();
         leftConfiguration = new TalonFXConfiguration();
 
         usingStateBased = false;
 
-        // ask if this is necessary
-        // rightConfiguration.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+        rightConfiguration.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         rightConfiguration.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-        // leftConfiguration.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+        leftConfiguration.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         leftConfiguration.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
+        leftMotor.setControl(new Follower(rightMotor.getDeviceID(), MotorAlignmentValue.Opposed));
+
+        var slot0Configs = new Slot0Configs();
+        slot0Configs.kS = 0.1; // Add 0.1 V output to overcome static friction
+        slot0Configs.kV = 0.12; // A velocity target of 1 rps results in 0.12 V output
+        slot0Configs.kP = 0.11; // An error of 1 rps results in 0.11 V output
+        slot0Configs.kI = 0; // no output for integrated error
+        slot0Configs.kD = 0; // no output for error derivative
+
         rightMotor.getConfigurator().apply(rightConfiguration);
+        rightMotor.getConfigurator().apply(slot0Configs);
+
         leftMotor.getConfigurator().apply(leftConfiguration);
+        leftMotor.getConfigurator().apply(slot0Configs);
 
         rpm = 0;
-
     }
 
     public void setTargetSpeed(double rpm) {
         this.rpm = rpm;
-        rightVelocity.Velocity = rpm * Constants.Shooter.topMultiplier;
-        leftVelocity.Velocity = rpm * Constants.Shooter.bottomMultiplier;
-        rightMotor.setControl(rightVelocity);
-        leftMotor.setControl(leftVelocity);
+        velocityVoltage.Velocity = rpm * 60;
+        rightMotor.setControl(velocityVoltage);
     }
 
     public boolean isAtTargetSpeed() {
         double rightRpm = rightMotor.getVelocity().getValue().in(edu.wpi.first.units.Units.RPM);
-        double leftRpm = leftMotor.getVelocity().getValue().in(edu.wpi.first.units.Units.RPM);
-        double rightError = Math.abs(rightRpm - rightVelocity.Velocity);
-        double leftError = Math.abs(leftRpm - leftVelocity.Velocity);
-        return rightError < Constants.Shooter.kRPMTolerance && leftError < Constants.Shooter.kRPMTolerance;
+        double error = Math.abs(rightRpm - velocityVoltage.Velocity);
+        return error < Constants.Shooter.kRPMTolerance;
     }
 
     public void stopMotors() {
@@ -118,8 +127,7 @@ public class ShooterSubsystem extends AbsoluteSubsystem {
     }
 
     public void selectProfileSlot(int i) {
-        rightVelocity.Slot = i;
-        leftVelocity.Slot = i;
+        velocityVoltage.Slot = i;
     } // switches PID slot
 
     public double getRPM() {
@@ -177,37 +185,3 @@ public class ShooterSubsystem extends AbsoluteSubsystem {
     }
 
 }
-
-/*
- * Necessary functions
- * void setTargetSpeed(double rpm) {} // sets the target speed of the motors to
- * rpm DONE
- * 
- * boolean isAtTargetSpeed() {} // returns whether the target speed is within x
- * rpm of the target (x in Constants.java) DONE
- * 
- * Command setShooterSpeed(Supplier<Double> rpm) {} // sets the speed to rpm,
- * and runs until it has reached the target DONE
- * 
- * Command setShooterSpeed(Supplier<Double>, double timeoutMs) {} // same as
- * setshooterspeed but if the timeout runs out first, it will finish anyways
- * DONE
- * 
- * void stopMotors() {} // sets target to 0, and stops motors DONE
- * 
- * void setShooterSpeedHub() {} // sets the shooter’s speed to the correct speed
- * to target to the hub. Ask nicholas for how to do this DONE
- * Command setShooterSpeedHub() {} // same as previous, but it runs until
- * interrupted. DONE
- * 
- * void setShooterSpeedPass() {} // sets the shooter’s speed to the correct
- * speed to pass to our zone. Specific location will be in strategy
- * Command setShooterSpeedPass() {} // same as previous, but it runs until
- * interrupted. lingfeng said 50% DONE
- * 
- * void setState(String state) {} // sets the current state DONE
- * 
- * void setStateBased(boolean using) {} // turns on/off the state manager Done
- * 
- * make function to turn RPM to percent 0-1, krakens have 3000 max rpm.
- */
