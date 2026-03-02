@@ -219,10 +219,6 @@ public class SwerveSubsystem extends SubsystemBase {
         lock();
         break;
 
-      case ALIGN_TO_FUEL:
-        alignToFuel();
-        break;
-
       default:
         driveFieldOriented(driveAngularVelocity);
         break;
@@ -486,26 +482,6 @@ public class SwerveSubsystem extends SubsystemBase {
     return new PathPlannerAuto(pathName);
   }
 
-  public void alignToFuel() {
-    if (vision == null)
-      return;
-
-    Optional<TargetData> target = vision.getClosestTarget("ObjCam_Intake");
-
-    if (target.isPresent()) {
-      double yawDiff = target.get().angle().getDegrees();
-      swerveDrive.drive(
-          getTargetSpeeds(
-              DoubleUtils.clamp(driver.getLeftTrigger(), 0.0, 1.0),
-              0.0,
-              new Rotation2d(Math.toRadians(getHeading().getDegrees() + yawDiff))));
-    } else {
-      // Stop the robot if the target is lost
-      swerveDrive.drive(new edu.wpi.first.math.kinematics.ChassisSpeeds());
-    }
-  }
-
-  // is this meant to be bound to a button or somthing?
   public Command aimAtTarget(Supplier<Double> joyX, Supplier<Double> joyY) {
     return run(() -> {
       Optional<TargetData> targetOpt = vision.getBestTarget("ObjCam_Intake");
@@ -523,7 +499,6 @@ public class SwerveSubsystem extends SubsystemBase {
     });
   }
 
-  // is this meant to be bound to a button or somthing?
   public Command driveTowardsTarget(Supplier<Double> throttle) {
     return run(() -> {
       Optional<TargetData> targetOpt = vision.getBestTarget("ObjCam_Intake");

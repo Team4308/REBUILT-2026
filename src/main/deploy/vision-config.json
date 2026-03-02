@@ -37,7 +37,7 @@
             "name": "ObjCam_Intake",
             "type": "OBJECT_DETECTION",
             "streamType": "PHOTON",
-            "enabled": false,
+            "enabled": true,
             "transform": null, 
             "resolution": { "width": 640, "height": 280, "fov": 70.0 }
         },
