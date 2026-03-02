@@ -74,11 +74,11 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   public Command intake() {
-    return moveIntakeToAngle(Constants.Intake.INTAKE_ANGLE_DEG);
+    return moveIntakeToAngle(Constants.Intake.INTAKE_ANGLE_DEG).alongWith(setRollerSpeed(() -> Constants.Intake.ROLLER_INTAKE_RPM));
   }
 
   public Command retract() {
-    return moveIntakeToAngle(Constants.Intake.RETRACTED_ANGLE_DEG).until(() -> isAtAngle());
+    return (moveIntakeToAngle(Constants.Intake.RETRACTED_ANGLE_DEG).alongWith(run(() -> stopRoller()))).until(() -> isAtAngle());
   }
 
   public Command retract(double timeoutMs) {
@@ -86,8 +86,8 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   public Command agitate() {
-    return moveIntakeToAngle(Constants.Intake.AGITATE_HIGH_DEG).until(() -> isAtAngle()).andThen(
-      moveIntakeToAngle(Constants.Intake.AGITATE_LOW_DEG).until(() -> isAtAngle())).repeatedly();
+    return (moveIntakeToAngle(Constants.Intake.AGITATE_HIGH_DEG).until(() -> isAtAngle()).andThen(
+      moveIntakeToAngle(Constants.Intake.AGITATE_LOW_DEG).until(() -> isAtAngle()))).repeatedly();
   }
 
   /* ---------------- States ----------------- */
