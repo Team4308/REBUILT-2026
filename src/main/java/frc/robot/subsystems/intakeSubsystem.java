@@ -3,8 +3,12 @@ package frc.robot.subsystems;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+
+import java.util.function.Supplier;
+
 import com.ctre.phoenix6.configs.*;
 
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -18,6 +22,14 @@ public class IntakeSubsystem extends SubsystemBase {
 
   private double targetAngleDeg = Constants.Intake.RETRACTED_ANGLE_DEG;
 
+  private enum state {
+    REST,
+    SHOOTING,
+    INTAKING
+  }
+  private state currentState = state.REST;
+  private boolean stateBased = false;
+
   public IntakeSubsystem() {
     configureRoller();
     configurePivot();
@@ -30,7 +42,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
   public void setRollerSpeed(double rpm) {
     roller.setControl(
-        rollerRequest.withVelocity(rpm / 60.0));
+        rollerRequest.withVelocity(rpm * 60.0));
   }
 
   public void stopRoller() {
@@ -49,6 +61,43 @@ public class IntakeSubsystem extends SubsystemBase {
     double currentDeg = rotToDeg(pivot.getPosition().getValueAsDouble());
     return Math.abs(currentDeg - targetAngleDeg)
         < Constants.Intake.ANGLE_TOLERANCE_DEG;
+  }
+
+  /* --------------- Commands ---------------- */
+
+  public Command setRollerSpeed(Supplier<Double> rpmSupplier) {
+    return run(() -> setRollerSpeed(rpmSupplier.get()));
+  }
+
+  public Command moveIntakeToAngle(double targetAngle) {
+    return run(() -> setIntakeAngle(targetAngle)).until(() -> isAtAngle());
+  }
+
+  public Command intake() {
+    return moveIntakeToAngle(Constants.Intake.INTAKE_ANGLE_DEG);
+  }
+
+  public Command retract() {
+    return moveIntakeToAngle(Constants.Intake.RETRACTED_ANGLE_DEG).until(() -> isAtAngle());
+  }
+
+  public Command retract(double timeoutMs) {
+    return retract().withTimeout(timeoutMs / 1000);
+  }
+
+  public Command agitate() {
+    return moveIntakeToAngle(Constants.Intake.AGITATE_HIGH_DEG).until(() -> isAtAngle()).andThen(
+      moveIntakeToAngle(Constants.Intake.AGITATE_LOW_DEG).until(() -> isAtAngle())).repeatedly();
+  }
+
+  /* ---------------- States ----------------- */
+
+  public void setState(state s) {
+    currentState = s;
+  }
+
+  public void setStateBased(boolean using) {
+    stateBased = using;
   }
 
   /* ---------------- Helpers ---------------- */
@@ -89,6 +138,20 @@ public class IntakeSubsystem extends SubsystemBase {
   private double rotToDeg(double rot) {
     return rot / Constants.Intake.PIVOT_GEAR_RATIO * 360.0;
   }
+
+  /* ---------------- Periodic --------------- */
+
+  @Override
+  public void periodic() {
+    if (stateBased) {
+      switch (currentState) {
+        case REST:
+          retract();
+        case SHOOTING:
+          agitate();
+        case INTAKING:
+          intake();
+      }
+    }
+  }
 }
-
-
