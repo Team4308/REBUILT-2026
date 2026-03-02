@@ -19,7 +19,6 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.Util.FuelSim;
 import frc.robot.subsystems.swerve.SwerveSubsystem;
 import java.io.File;
-import java.util.ArrayList;
 
 import swervelib.SwerveInputStream;
 
@@ -97,6 +96,9 @@ public class RobotContainer {
     // driver.M4.whileTrue(drivebase.moveUpRight());
     // driver.M5.whileTrue(drivebase.moveDownLeft());
     // driver.M6.whileTrue(drivebase.moveDownRight());
+
+    driver.RightTrigger.whileTrue(drivebase.driveTowardsTarget(driver::getRightTrigger));
+    driver.RB.whileTrue(drivebase.aimAtTarget(() -> driver.getLeftY() * -1, () -> driver.getLeftX() * -1));
 
     drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
 

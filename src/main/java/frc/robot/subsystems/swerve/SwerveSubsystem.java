@@ -75,7 +75,7 @@ public class SwerveSubsystem extends SubsystemBase {
   private final SwerveDrive swerveDrive;
 
   private final boolean usingVision = false;
-  ///private Vision vision;
+  /// private Vision vision;
 
   private Pose2d targetPose = new Pose2d();
 
@@ -185,7 +185,7 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   public void setupPhotonVision() {
-   // vision = new Vision(swerveDrive::getPose, swerveDrive.field);
+    // vision = new Vision(swerveDrive::getPose, swerveDrive.field);
   }
 
   public void setUsingState(boolean using) {
@@ -257,9 +257,9 @@ public class SwerveSubsystem extends SubsystemBase {
   public void periodic() {
     if (usingVision) {
       swerveDrive.updateOdometry();
-      //vision.updatePoseEstimation(swerveDrive);
+      // vision.updatePoseEstimation(swerveDrive);
 
-      //vision.updateVisionField();
+      // vision.updateVisionField();
     }
 
     if (usingState) {
@@ -291,6 +291,7 @@ public class SwerveSubsystem extends SubsystemBase {
     Logger.recordOutput("Swerve/Velocity", getRobotVelocity());
 
     Logger.recordOutput("Swerve/FieldLocation", getFieldLocation());
+    Logger.recordOutput("Swerve/FieldSide", getFieldSide());
     Logger.recordOutput("Swerve/UnderTrench", getUnderTrench());
     Logger.recordOutput("Swerve/OverBump", getOverBump());
   }
@@ -332,6 +333,23 @@ public class SwerveSubsystem extends SubsystemBase {
       }
     }
     return "NeutralZone";
+  }
+
+  private String getFieldSide() {
+    Pose2d curPose = swerveDrive.getPose();
+    if (getAlliance() == Alliance.Blue) {
+      if (curPose.getY() < FieldLayout.kFieldLength / 2.0) {
+        return "Left";
+      } else {
+        return "Right";
+      }
+    } else {
+      if (curPose.getY() < FieldLayout.kFieldLength / 2.0) {
+        return "Right";
+      } else {
+        return "Left";
+      }
+    }
   }
 
   private void clearDriverField() {
@@ -458,14 +476,14 @@ public class SwerveSubsystem extends SubsystemBase {
 
   public Command aimAtTarget(Supplier<Double> joyX, Supplier<Double> joyY) {
     return run(() -> {
-      // OptionalDouble yawDiff = 0; // vision.getBestTarget("INTAKE_CAM").getYaw().get();
-      // if (!yawDiff.isEmpty())
-      //   swerveDrive.driveFieldOriented(
-      //       getTargetSpeeds(
-      //           joyY.get(),
-      //           joyX.get(),
-      //           new Rotation2d(
-      //               Math.toRadians(getHeading().getDegrees() - yawDiff.getAsDouble()))));
+      OptionalDouble yawDiff = vision.getBestTarget("INTAKE_CAM").getYaw().get();
+      if (!yawDiff.isEmpty())
+        swerveDrive.driveFieldOriented(
+            getTargetSpeeds(
+                joyY.get(),
+                joyX.get(),
+                new Rotation2d(
+                    Math.toRadians(getHeading().getDegrees() - yawDiff.getAsDouble()))));
     });
   }
 
@@ -477,7 +495,7 @@ public class SwerveSubsystem extends SubsystemBase {
               DoubleUtils.clamp(throttle.get(), 0, 1),
               0,
               new Rotation2d(
-                  Math.toRadians(getHeading().getDegrees() + 0 /*  yawDiff.getAsDouble() */ ))));
+                  Math.toRadians(getHeading().getDegrees() + 0 /* yawDiff.getAsDouble() */ ))));
     });
   }
 
@@ -590,70 +608,73 @@ public class SwerveSubsystem extends SubsystemBase {
 
   /**
    * Move up one zone on the left side
+   * 
+   * @param side which side to move from
    */
-  public Command moveUpLeft() {
-    return Commands.runOnce(() -> {
-      String zone = getFieldLocation();
+  public Command moveUpTrench(Supplier<String> side) {
+    if (side.get().equals("Left")) {
+      return Commands.runOnce(() -> {
+        String zone = getFieldLocation();
 
-      if (zone.equals("AllianceZone")) {
-        targetPose = FieldLayout.getNeutralLeft();
-      } else if (zone.equals("NeutralZone")) {
-        targetPose = FieldLayout.getOpponentLeftPose();
-      } else {
-        targetPose = null;
-      }
-    }, this).andThen(driveToPoseObjAvoid(() -> targetPose));
+        if (zone.equals("AllianceZone")) {
+          targetPose = FieldLayout.getNeutralLeft();
+        } else if (zone.equals("NeutralZone")) {
+          targetPose = FieldLayout.getOpponentLeftPose();
+        } else {
+          targetPose = null;
+        }
+      }, this).andThen(driveToPoseObjAvoid(() -> targetPose));
+    } else if (side.equals("Right")) {
+      return Commands.runOnce(() -> {
+        String zone = getFieldLocation();
+
+        if (zone.equals("AllianceZone")) {
+          targetPose = FieldLayout.getNeutralRight();
+        } else if (zone.equals("NeutralZone")) {
+          targetPose = FieldLayout.getOpponentRightPose();
+        } else {
+          targetPose = null;
+        }
+      }, this).andThen(driveToPoseObjAvoid(() -> targetPose));
+    } else {
+      return Commands.none();
+    }
   }
 
   /**
-   * Move up one zone on the right side
+   * move down one zone on one side
+   *
+   * @param side which side to move from
+   * @return
    */
-  public Command moveUpRight() {
-    return Commands.runOnce(() -> {
-      String zone = getFieldLocation();
+  public Command moveDownTrench(Supplier<String> side) {
+    if (side.get().equals("Left")) {
+      return Commands.runOnce(() -> {
+        String zone = getFieldLocation();
 
-      if (zone.equals("AllianceZone")) {
-        targetPose = FieldLayout.getNeutralRight();
-      } else if (zone.equals("NeutralZone")) {
-        targetPose = FieldLayout.getOpponentRightPose();
-      } else {
-        targetPose = null;
-      }
-    }, this).andThen(driveToPoseObjAvoid(() -> targetPose));
-  }
+        if (zone.equals("NeutralZone")) {
+          targetPose = FieldLayout.getAllianceLeftPose();
+        } else if (zone.equals("OpponentZone")) {
+          targetPose = FieldLayout.getNeutralLeft();
+        } else {
+          targetPose = null;
+        }
+      }, this).andThen(driveToPoseObjAvoid(() -> targetPose));
+    } else if (side.equals("Right")) {
+      return Commands.runOnce(() -> {
+        String zone = getFieldLocation();
 
-  /**
-   * Move down one zone on the left side
-   */
-  public Command moveDownLeft() {
-    return Commands.runOnce(() -> {
-      String zone = getFieldLocation();
-
-      if (zone.equals("OpponentZone")) {
-        targetPose = FieldLayout.getNeutralLeft();
-      } else if (zone.equals("NeutralZone")) {
-        targetPose = FieldLayout.getAllianceLeftPose();
-      } else {
-        targetPose = null;
-      }
-    }, this).andThen(driveToPoseObjAvoid(() -> targetPose));
-  }
-
-  /**
-   * Move down one zone on the right side
-   */
-  public Command moveDownRight() {
-    return Commands.runOnce(() -> {
-      String zone = getFieldLocation();
-
-      if (zone.equals("OpponentZone")) {
-        targetPose = FieldLayout.getNeutralRight();
-      } else if (zone.equals("NeutralZone")) {
-        targetPose = FieldLayout.getAllianceRightPose();
-      } else {
-        targetPose = null;
-      }
-    }, this).andThen(driveToPoseObjAvoid(() -> targetPose));
+        if (zone.equals("NeutralZone")) {
+          targetPose = FieldLayout.getAllianceRightPose();
+        } else if (zone.equals("OpponentZone")) {
+          targetPose = FieldLayout.getNeutralRight();
+        } else {
+          targetPose = null;
+        }
+      }, this).andThen(driveToPoseObjAvoid(() -> targetPose));
+    } else {
+      return Commands.none();
+    }
   }
 
   // SysID Drive Motors Characterization
