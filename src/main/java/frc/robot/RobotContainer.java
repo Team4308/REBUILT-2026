@@ -22,24 +22,23 @@ public class RobotContainer {
   private double targetSpeed = 0;
 
   public RobotContainer() {
+
     configureBindings();
   }
 
   private void configureBindings() {
-
     // NamedCommands.registerCommand("Shoot", m_turretSubsystem.aimAtHub(),
     // m_HoodSubsystem.setState(HoodSubsystem.RobotState.SHOOT),m_shooterCommand.setState(ShooterSubsystem.ShooterState.SHOOTING));
 
     // Default command: right trigger controls shooter speed continuously
     m_shooterSubsystem.setDefaultCommand(m_shooterCommand);
 
-    m_driverController.a().onTrue(new InstantCommand(() -> targetSpeed = 0));
+    m_driverController.a().whileTrue(m_shooterCommand.setShooterSpeed(() -> 0.0));
 
-    m_driverController.b().onTrue(new InstantCommand(() -> targetSpeed = 1000));
+    m_driverController.b().whileTrue(m_shooterCommand.setShooterSpeed(() -> 1000.0));
 
-    m_driverController.x().onTrue(new InstantCommand(() -> targetSpeed = 3000));
-
-    m_driverController.y().onTrue(new InstantCommand(() -> targetSpeed = 1500));
+    m_driverController.x().whileTrue(m_shooterCommand.setShooterSpeed(() -> 3000.0));
+    m_driverController.y().whileTrue(m_shooterCommand.setShooterSpeed(() -> 5500.0));
   }
 
   public void periodic() {
@@ -49,7 +48,6 @@ public class RobotContainer {
         targetSpeed,
         0.0,
         Constants.Shooter.kMaxRPM);
-    m_shooterSubsystem.setTargetSpeed(targetSpeed);
   }
 
   public Command getAutonomousCommand() {
