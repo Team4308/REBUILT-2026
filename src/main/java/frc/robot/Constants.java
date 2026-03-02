@@ -3,18 +3,12 @@ package frc.robot;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.path.PathConstraints;
 
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 import swervelib.math.Matter;
 
 public final class Constants {
-
   public static final double ROBOT_MASS = Units.lbsToKilograms(140);
   public static final Matter CHASSIS = new Matter(
       new Translation3d(Units.inchesToMeters(0.4), Units.inchesToMeters(0.4), Units.inchesToMeters(7.2)),
@@ -23,6 +17,26 @@ public final class Constants {
   public static final double MAX_SPEED = Units.feetToMeters(15.1);
 
   public static final double BOT_WIDTH = Units.inchesToMeters(35);
+
+  public static final class VisionConstants {
+    // GLOBAL CONFIG
+    public static final String EXPERIMENTAL_ROOT = "Experimental";
+
+    // CONFIDENCE CALCULATIONS
+    public static final double SINGLE_TAG_STD_DEV = 1.0;
+    public static final double MULTI_TAG_STD_DEV = 0.5;
+    public static final double MAX_AMBIGUITY = 0.5; 
+    
+    // SIMULATION PHYSICS
+    public static final double SIM_FPS = 30.0;
+    public static final double SIM_AVG_LATENCY_MS = 35.0;
+    public static final double SIM_LATENCY_STD_DEV_MS = 5.0;
+    public static final double SIM_CALIB_ERROR_AVG = 0.25;
+    public static final double SIM_CALIB_ERROR_STD_DEV = 0.08;
+    public static final int SIM_RES_WIDTH = 960;
+    public static final int SIM_RES_HEIGHT = 800;
+    public static final double SIM_DIAG_FOV = 100.0;
+  }
 
   public static final class Swerve {
     public static final class Heading {
@@ -46,22 +60,6 @@ public final class Constants {
 
       public static final double MIN_ALIGNED_TIME = 500; // minimum time it needs to be at alignment for the pathfinding
                                                          // to end
-    }
-  }
-
-  public static class Vision {
-    public static class CAMERA_PLACEHOLDER {
-      public static Rotation3d ORIENTATION = new Rotation3d(0, Math.toRadians(-30), Math.toRadians(-180));
-      public static Translation3d TRANSLATION = new Translation3d(0, 0, 0.5);
-      public static Matrix<N3, N1> SINGLE_TAG_STD_DEVS = VecBuilder.fill(1, 1, 4);
-      public static Matrix<N3, N1> MULTI_TAG_STD_DEVS = VecBuilder.fill(0.5, 0.5, 2);
-    }
-
-    public static class CAMERA_PLACEHOLDER2 {
-      public static Rotation3d ORIENTATION = new Rotation3d(0, Math.toRadians(-30), 0);
-      public static Translation3d TRANSLATION = new Translation3d(0, 0, 0.5);
-      public static Matrix<N3, N1> SINGLE_TAG_STD_DEVS = VecBuilder.fill(1, 1, 4);
-      public static Matrix<N3, N1> MULTI_TAG_STD_DEVS = VecBuilder.fill(0.5, 0.5, 2);
     }
   }
 

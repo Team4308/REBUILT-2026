@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.OptionalDouble;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -53,7 +52,11 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import frc.robot.Constants;
 import frc.robot.FieldLayout;
 import frc.robot.Robot;
-//import frc.robot.subsystems.vision.Vision;
+
+import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.vision.Vision.TargetData;
+import frc.robot.subsystems.vision.Vision.VisionMeasurement;
+
 import swervelib.SwerveController;
 import swervelib.SwerveDrive;
 import swervelib.SwerveDriveTest;
@@ -73,9 +76,9 @@ public class SwerveSubsystem extends SubsystemBase {
   private PPHolonomicDriveController ALIGN_CONTROLLER;
 
   private final SwerveDrive swerveDrive;
+  private final boolean usingVision = true;
 
-  private final boolean usingVision = false;
-  /// private Vision vision;
+  private Vision vision;
 
   private Pose2d targetPose = new Pose2d();
 
@@ -164,12 +167,9 @@ public class SwerveSubsystem extends SubsystemBase {
         false, false, 0.1); // Resync absolute encoders and motor encoders periodically when they are not
                             // moving.
     swerveDrive.setModuleEncoderAutoSynchronize(false, 1);
-    if (usingVision) {
-      setupPhotonVision();
-      swerveDrive.stopOdometryThread(); // Stop the odometry thread while running vision to synchronize updates better.
-    }
-    ANGLE_CONTROLLER = Constants.Swerve.Heading.PID;
-    TRANSLATION_CONTROLLER = Constants.Swerve.Translation.PID;
+
+    ANGLE_CONTROLLER = Constants.Swerve.Heading.HEADING_PID;
+    TRANSLATION_CONTROLLER = Constants.Swerve.Translation.TRANSLATION_PID;
 
     ALIGN_CONTROLLER = new PPHolonomicDriveController(
         Constants.Swerve.Translation.PID, Constants.Swerve.Heading.PID);
@@ -184,8 +184,12 @@ public class SwerveSubsystem extends SubsystemBase {
     SmartDashboard.putData("Diagonal Bump Mode", diagonalBumpChooser);
   }
 
-  public void setupPhotonVision() {
-    // vision = new Vision(swerveDrive::getPose, swerveDrive.field);
+  public void setVision(Vision vision) {
+    this.vision = vision;
+    // Stop the odometry thread while running vision to synchronize updates better
+    if (swerveDrive != null) {
+      swerveDrive.stopOdometryThread();
+    }
   }
 
   public void setUsingState(boolean using) {
@@ -216,7 +220,7 @@ public class SwerveSubsystem extends SubsystemBase {
         break;
 
       case ALIGN_TO_FUEL:
-        driveTowardsTarget(() -> driver.getLeftTrigger());
+        alignToFuel();
         break;
 
       default:
@@ -255,11 +259,22 @@ public class SwerveSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    if (usingVision) {
+    if (usingVision && vision != null) {
       swerveDrive.updateOdometry();
-      // vision.updatePoseEstimation(swerveDrive);
 
-      // vision.updateVisionField();
+      // Poll vision for all available pose estimations
+      List<VisionMeasurement> measurements = vision.getVisionMeasurements(swerveDrive.getPose());
+      for (VisionMeasurement m : measurements) {
+        swerveDrive.addVisionMeasurement(
+            m.estimation().estimatedPose.toPose2d(),
+            m.estimation().timestampSeconds,
+            m.stdDevs());
+      }
+
+      // Send the true sim pose back to vision for rendering
+      if (Robot.isSimulation() && swerveDrive.getSimulationDriveTrainPose().isPresent()) {
+        vision.updateSimVision(swerveDrive.getSimulationDriveTrainPose().get());
+      }
     }
 
     if (usingState) {
@@ -410,8 +425,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
   /**
    * Checks if the bot is aligned translation-wise
-   * 
-   * @return boolean aligned
+   * * @return boolean aligned
    */
   public boolean isTranslationAligned() {
     if (targetPose == null)
@@ -424,8 +438,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
   /**
    * Checks if the bot is aligned heading-wise
-   * 
-   * @return boolean aligned
+   * * @return boolean aligned
    */
   public boolean isHeadingAligned() {
     if (targetPose == null)
@@ -442,8 +455,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
   /**
    * Checks if the bot is aligned heading-wise and translation-wise
-   * 
-   * @return
+   * * @return
    */
   public boolean isAligned() {
     return isTranslationAligned() && isHeadingAligned();
@@ -451,8 +463,8 @@ public class SwerveSubsystem extends SubsystemBase {
 
   /**
    * Checks if the bot is aligned for a period of time
+   * * @param holdTimeMillis How long the bot must stay aligned for
    * 
-   * @param holdTimeMillis How long the bot must stay aligned for
    * @return boolean aligned
    */
   public boolean isAligned(double holdTimeMillis) {
@@ -474,28 +486,61 @@ public class SwerveSubsystem extends SubsystemBase {
     return new PathPlannerAuto(pathName);
   }
 
+  public void alignToFuel() {
+    if (vision == null)
+      return;
+
+    Optional<TargetData> target = vision.getClosestTarget("ObjCam_Intake");
+
+    if (target.isPresent()) {
+      double yawDiff = target.get().angle().getDegrees();
+      swerveDrive.drive(
+          getTargetSpeeds(
+              DoubleUtils.clamp(driver.getLeftTrigger(), 0.0, 1.0),
+              0.0,
+              new Rotation2d(Math.toRadians(getHeading().getDegrees() + yawDiff))));
+    } else {
+      // Stop the robot if the target is lost
+      swerveDrive.drive(new edu.wpi.first.math.kinematics.ChassisSpeeds());
+    }
+  }
+
+  // is this meant to be bound to a button or somthing?
   public Command aimAtTarget(Supplier<Double> joyX, Supplier<Double> joyY) {
     return run(() -> {
-      OptionalDouble yawDiff = vision.getBestTarget("INTAKE_CAM").getYaw().get();
-      if (!yawDiff.isEmpty())
+      Optional<TargetData> targetOpt = vision.getBestTarget("ObjCam_Intake");
+
+      if (targetOpt.isPresent()) {
+        Rotation2d targetYaw = targetOpt.get().angle();
+        Rotation2d targetHeading = getHeading().plus(targetYaw);
+
         swerveDrive.driveFieldOriented(
-            getTargetSpeeds(
-                joyY.get(),
-                joyX.get(),
-                new Rotation2d(
-                    Math.toRadians(getHeading().getDegrees() - yawDiff.getAsDouble()))));
+            getTargetSpeeds(joyY.get(), joyX.get(), targetHeading));
+      } else {
+        swerveDrive.driveFieldOriented(
+            getTargetSpeeds(joyY.get(), joyX.get(), getHeading()));
+      }
     });
   }
 
+  // is this meant to be bound to a button or somthing?
   public Command driveTowardsTarget(Supplier<Double> throttle) {
     return run(() -> {
-      // OptionalDouble yawDiff = vision.getBestTarget("INTAKE_CAM").getYaw().get();
-      swerveDrive.drive(
-          getTargetSpeeds(
-              DoubleUtils.clamp(throttle.get(), 0, 1),
-              0,
-              new Rotation2d(
-                  Math.toRadians(getHeading().getDegrees() + 0 /* yawDiff.getAsDouble() */ ))));
+      Optional<TargetData> targetOpt = vision.getBestTarget("ObjCam_Intake");
+
+      if (targetOpt.isPresent()) {
+        Rotation2d targetYaw = targetOpt.get().angle();
+        Rotation2d targetHeading = getHeading().plus(targetYaw);
+
+        swerveDrive.drive(
+            getTargetSpeeds(
+                DoubleUtils.clamp(throttle.get(), 0.0, 1.0),
+                0.0,
+                targetHeading));
+      } else {
+        swerveDrive.drive(
+            getTargetSpeeds(0.0, 0.0, getHeading()));
+      }
     });
   }
 
