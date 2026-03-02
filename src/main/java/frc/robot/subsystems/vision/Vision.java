@@ -116,11 +116,6 @@ public class Vision extends SubsystemBase {
         }
     }
 
-    @Override
-    public void periodic() {
-        // Left intentionally blank. Data is now polled dynamically by the drivebase.
-    }
-
     private double estimateDistance(PhotonTrackedTarget target) {
         if (target.getArea() <= 0) return Double.MAX_VALUE;
         return 10.0 / Math.sqrt(target.getArea()); 

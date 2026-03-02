@@ -488,7 +488,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
       if (targetOpt.isPresent()) {
         Rotation2d targetYaw = targetOpt.get().angle();
-        Rotation2d targetHeading = getHeading().plus(targetYaw);
+        Rotation2d targetHeading = getHeading().minus(targetYaw);
 
         swerveDrive.driveFieldOriented(
             getTargetSpeeds(joyY.get(), joyX.get(), targetHeading));
@@ -505,7 +505,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
       if (targetOpt.isPresent()) {
         Rotation2d targetYaw = targetOpt.get().angle();
-        Rotation2d targetHeading = getHeading().plus(targetYaw);
+        Rotation2d targetHeading = getHeading().minus(targetYaw);
 
         swerveDrive.drive(
             getTargetSpeeds(
