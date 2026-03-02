@@ -168,8 +168,8 @@ public class SwerveSubsystem extends SubsystemBase {
                             // moving.
     swerveDrive.setModuleEncoderAutoSynchronize(false, 1);
 
-    ANGLE_CONTROLLER = Constants.Swerve.Heading.HEADING_PID;
-    TRANSLATION_CONTROLLER = Constants.Swerve.Translation.TRANSLATION_PID;
+    ANGLE_CONTROLLER = Constants.Swerve.Heading.PID;
+    TRANSLATION_CONTROLLER = Constants.Swerve.Translation.PID;
 
     ALIGN_CONTROLLER = new PPHolonomicDriveController(
         Constants.Swerve.Translation.PID, Constants.Swerve.Heading.PID);
