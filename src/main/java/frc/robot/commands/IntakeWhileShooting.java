@@ -8,8 +8,8 @@ public class IntakeWhileShooting extends Command {
     IntakeSubsystem m_IntakeSubsystem = new IntakeSubsystem();
     IndexerSubsystem m_IndexerSubsystem = new IndexerSubsystem();
     HoodSubsystem m_HoodSubsystem = new HoodSubsystem();
-    ShooterSubsystem m_ShooterSubsystem = new HoodSubsystem();
-    TurretSubsystem m_TurretSubsystem = new TurrentSubsystem();
+    ShooterSubsystem m_ShooterSubsystem = new ShooterSubsystem();
+    TurretSubsystem m_TurretSubsystem = new TurretSubsystem();
     SwerveSubsystem m_SwerveSubsystem = new SwerveSubsystem();
 
     @Override
