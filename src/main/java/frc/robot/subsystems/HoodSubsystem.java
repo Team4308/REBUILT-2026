@@ -1,7 +1,6 @@
 package frc.robot.subsystems;
 
 import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.NT4Publisher;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -9,15 +8,12 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Util.TrajectoryCalculations;
 
-import java.io.Serial;
 import java.util.function.Supplier;
 
 public class HoodSubsystem extends SubsystemBase {
@@ -161,12 +157,8 @@ public class HoodSubsystem extends SubsystemBase {
                 Constants.Hood.pidController.getSetpoint().velocity);
         double ffFriction = 0.15 * Math.signum(currentAngle - targetAngle);
         m_hoodMotor.setVoltage(pidOutput + ffVolts + ffFriction);
-        Logger.recordOutput("Subsystems/Hood/TargetAngle", targetAngle);
-        Logger.recordOutput("Subsystems/Hood/Friction", ffFriction);
-        Logger.recordOutput("Subsystems/Hood/Friction", pidOutput);
+
+        Logger.recordOutput("Subsystems/Hood/IsAtTarget", isAtPosition());
         Logger.recordOutput("Subsystems/Hood/CurrentAngle", currentAngle);
-        Logger.recordOutput("Subsystems/Hood/Error", currentAngle - targetAngle);
-        Logger.recordOutput("Subsystems/Hood/Voltage", ffVolts + pidOutput);
-        Logger.recordOutput("Subsystems/Hood/Current", m_hoodMotor.getSupplyCurrent().getValueAsDouble());
     }
 }
