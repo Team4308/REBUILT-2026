@@ -45,7 +45,11 @@ public class RobotContainer {
   }
 
   public void periodic() {
-    targetAngle -= m_driverController.getLeftY() / 2;
+    double controllerY = m_driverController.getLeftY();
+    if (controllerY < 0.1 && controllerY > -0.1) {
+      controllerY = 0;
+    }
+    targetAngle -= controllerY / 2;
 
     targetAngle = MathUtil.clamp(
         targetAngle,
