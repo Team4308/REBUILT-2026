@@ -15,8 +15,8 @@ import frc.robot.subsystems.HoodSubsystem;
 public class RobotContainer {
 
   public HoodSubsystem m_HoodSubsystem;
-
   private final XBoxWrapper m_driverController = new XBoxWrapper(Constants.Hood.kDriverControllerPort);
+  private final XBoxWrapper m_StateController = new XBoxWrapper(Constants.Hood.kDriverControllerPort);
   double targetAngle = 8;
 
   public RobotContainer() {
