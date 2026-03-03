@@ -14,7 +14,6 @@ import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import ca.team4308.absolutelib.wrapper.AbsoluteSubsystem;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -44,12 +43,9 @@ public class ShooterSubsystem extends AbsoluteSubsystem {
     private ShooterState currentState = ShooterState.IDLE;
     public boolean usingStateBased = false;
 
-    boolean underTrench = NetworkTableInstance.getDefault().getTable("AdvantageKit/RealOutputs")
-            .getEntry("Swerve/UnderTrench").getBoolean(false);
-
     public ShooterSubsystem() {
-        rightMotor = new TalonFX(Constants.Shooting.Mapping.ShooterMotor.kMotor1);
-        leftMotor = new TalonFX(Constants.Shooting.Mapping.ShooterMotor.kMotor2);
+        rightMotor = new TalonFX(Constants.Shooting.Shooter.kMotor1);
+        leftMotor = new TalonFX(Constants.Shooting.Shooter.kMotor2);
 
         velocityVoltage = new VelocityVoltage(0);
 
@@ -64,11 +60,11 @@ public class ShooterSubsystem extends AbsoluteSubsystem {
         leftMotor.setControl(new Follower(rightMotor.getDeviceID(), MotorAlignmentValue.Opposed));
 
         var slot0Configs = new Slot0Configs();
-        slot0Configs.kS = 0.18;
-        slot0Configs.kV = 0.113;
-        slot0Configs.kP = 0.04;
-        slot0Configs.kI = 0;
-        slot0Configs.kD = 0.01;
+        slot0Configs.kS = Constants.Shooting.Shooter.kS;
+        slot0Configs.kV = Constants.Shooting.Shooter.kV;
+        slot0Configs.kP = Constants.Shooting.Shooter.kP;
+        slot0Configs.kI = Constants.Shooting.Shooter.kI;
+        slot0Configs.kD = Constants.Shooting.Shooter.kD;
 
         rightMotor.getConfigurator().apply(rightConfiguration);
         rightMotor.getConfigurator().apply(slot0Configs);

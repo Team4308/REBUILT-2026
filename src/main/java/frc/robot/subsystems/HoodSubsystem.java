@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.Logger;
@@ -10,12 +11,15 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.util.Units;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.FieldLayout;
 import frc.robot.Util.TrajectoryCalculations;
 
 public class HoodSubsystem extends SubsystemBase {
@@ -24,6 +28,13 @@ public class HoodSubsystem extends SubsystemBase {
     private double targetAngle = 0;
 
     private double angleOffset = Constants.Shooting.Hood.REVERSE_SOFT_LIMIT_ANGLE;
+
+    public enum RobotState {
+        REST,
+        PASS_RIGHT,
+        PASS_LEFT,
+        SHOOT,
+    }
 
     public HoodSubsystem() {
         trajectory = new TrajectoryCalculations();
@@ -77,14 +88,6 @@ public class HoodSubsystem extends SubsystemBase {
                 .andThen(runOnce(() -> m_hoodMotor.setPosition(0)));
     }
 
-    // States for Hood
-    public enum RobotState {
-        REST,
-        PASS_RIGHT,
-        PASS_LEFT,
-        SHOOT,
-    }
-
     private RobotState currentState = RobotState.REST;
 
     private boolean usingState = false;
@@ -99,10 +102,63 @@ public class HoodSubsystem extends SubsystemBase {
         return currentState;
     }
 
-    boolean underTrench = false;
-
     public void stopMotors() {
         m_hoodMotor.setVoltage(0);
+    }
+
+    private Alliance getAlliance() {
+        Optional<Alliance> alliance = DriverStation.getAlliance();
+        if (alliance.isEmpty()) {
+            return Alliance.Blue;
+        }
+
+        return alliance.get();
+    }
+
+    private void restingState() {
+        setHoodAngle(Constants.Shooting.Hood.REVERSE_SOFT_LIMIT_ANGLE);
+    }
+
+    private void passRightState() {
+        final Translation3d passRightPose = (getAlliance() == Alliance.Red)
+                ? new Translation3d(
+                        FieldLayout.kFieldLength - FieldLayout.ShooterTargets.kPASS_RIGHT_POSE.getX(),
+                        FieldLayout.kFieldWidth - FieldLayout.ShooterTargets.kPASS_RIGHT_POSE.getY(),
+                        FieldLayout.ShooterTargets.kPASS_RIGHT_POSE.getZ())
+                : FieldLayout.ShooterTargets.kPASS_RIGHT_POSE;
+        trajectory.setTargetSupplier(() -> {
+            return passRightPose;
+        });
+        trajectory.updateShot();
+        setHoodAngle(trajectory.getNeededPitch());
+    }
+
+    private void passLeftState() {
+        final Translation3d passLeftPose = (getAlliance() == Alliance.Red)
+                ? new Translation3d(
+                        FieldLayout.kFieldLength - FieldLayout.ShooterTargets.kPASS_LEFT_POSE.getX(),
+                        FieldLayout.kFieldWidth - FieldLayout.ShooterTargets.kPASS_LEFT_POSE.getY(),
+                        FieldLayout.ShooterTargets.kPASS_LEFT_POSE.getZ())
+                : FieldLayout.ShooterTargets.kPASS_LEFT_POSE;
+        trajectory.setTargetSupplier(() -> {
+            return passLeftPose;
+        });
+        trajectory.updateShot();
+        setHoodAngle(trajectory.getNeededPitch());
+    }
+
+    private void shootHubState() {
+        final Translation3d hubPose = (getAlliance() == Alliance.Red)
+                ? new Translation3d(
+                        FieldLayout.kFieldLength - FieldLayout.ShooterTargets.kHUB_POSE.getX(),
+                        FieldLayout.ShooterTargets.kHUB_POSE.getY(),
+                        FieldLayout.ShooterTargets.kHUB_POSE.getZ())
+                : FieldLayout.ShooterTargets.kHUB_POSE;
+        trajectory.setTargetSupplier(() -> {
+            return hubPose;
+        });
+        trajectory.updateShot();
+        setHoodAngle(trajectory.getNeededPitch());
     }
 
     @Override
@@ -113,50 +169,39 @@ public class HoodSubsystem extends SubsystemBase {
                 .getBoolean(false);
         // Safety override: hood must retract under trench
         if (underTrench) {
-            setHoodAngle(Constants.Shooting.Hood.REVERSE_SOFT_LIMIT_ANGLE);
+            restingState();
         }
 
         if (usingState) {
             switch (currentState) {
-
                 case REST:
-                    setHoodAngle(Constants.Shooting.Hood.REVERSE_SOFT_LIMIT_ANGLE);
+                    restingState();
                     break;
 
-                case SHOOT:// TODO: Make these switch sides based on alliance color
-                    trajectory.setTargetSupplier(() -> {
-                        return Constants.Shooting.TargetPoses.kHUB_POSE;
-                    });
-                    trajectory.updateShot();
-                    setHoodAngle(trajectory.getNeededPitch());
+                case SHOOT:
+                    shootHubState();
                     break;
 
                 case PASS_RIGHT:
-                    trajectory.setTargetSupplier(() -> {
-                        return Constants.Shooting.TargetPoses.kPASS_RIGHT_POSE;
-                    });
-                    trajectory.updateShot();
-                    setHoodAngle(trajectory.getNeededPitch());
+                    passRightState();
                     break;
 
                 case PASS_LEFT:
-                    trajectory.setTargetSupplier(() -> {
-                        return Constants.Shooting.TargetPoses.kPASS_LEFT_POSE;
-                    });
-                    trajectory.updateShot();
-                    setHoodAngle(trajectory.getNeededPitch());
+                    passLeftState();
                     break;
 
+                default:
+                    restingState();
+                    break;
             }
         }
 
         double currentAngle = getHoodAngle();
         double pidOutput = Constants.Shooting.Hood.pidController.calculate(currentAngle, targetAngle);
         double ffVolts = Constants.Shooting.Hood.feedforward.calculate(
-                Units.degreesToRadians(currentAngle),
+                Constants.Shooting.Hood.pidController.getSetpoint().position,
                 Constants.Shooting.Hood.pidController.getSetpoint().velocity);
-        double ffFriction = 0.15 * Math.signum(currentAngle - targetAngle);
-        m_hoodMotor.setVoltage(pidOutput + ffVolts + ffFriction);
+        m_hoodMotor.setVoltage(pidOutput + ffVolts);
 
         Logger.recordOutput("Subsystems/Hood/IsAtTarget", isAtPosition());
         Logger.recordOutput("Subsystems/Hood/CurrentAngle", currentAngle);
