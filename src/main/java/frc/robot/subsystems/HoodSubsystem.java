@@ -51,6 +51,10 @@ public class HoodSubsystem extends SubsystemBase {
                 + (m_hoodMotor.getPosition().getValueAsDouble() / Constants.Shooting.Hood.TOTAL_GEAR_RATIO) * 360.0;
     }
 
+    public Command setHoodAngleCommand(double angle) {
+        return run(() -> setHoodAngle(angle)).until(this::isAtPosition);
+    }
+
     public void setHoodAngle(double angle) {
         targetAngle = MathUtil.clamp(
                 angle,
@@ -205,5 +209,8 @@ public class HoodSubsystem extends SubsystemBase {
 
         Logger.recordOutput("Subsystems/Hood/IsAtTarget", isAtPosition());
         Logger.recordOutput("Subsystems/Hood/CurrentAngle", currentAngle);
+        Logger.recordOutput("Subsystems/Hood/TargetAngle", targetAngle);
+        Logger.recordOutput("Subsystems/Hood/PidOutput", pidOutput);
+        Logger.recordOutput("Subsystems/Hood/FfVolts", ffVolts);
     }
 }

@@ -25,10 +25,10 @@ public class Constants {
             public static final double FORWARD_SOFT_LIMIT_ANGLE = 52.5;
             public static final double REVERSE_SOFT_LIMIT_ANGLE = 7.5;
             public static final double ampThreshold = 3;
-            public final static ArmFeedforward feedforward = new ArmFeedforward(0.425, 0, 0.015, 0.01);
+            public final static ArmFeedforward feedforward = new ArmFeedforward(0.262, 0, 0.027, 0.04);
             public final static ProfiledPIDController pidController = new ProfiledPIDController(
-                    0.67, 0.0, 0.0,
-                    new TrapezoidProfile.Constraints(1500, 2500));
+                    0.47, 0.0, 0.01,
+                    new TrapezoidProfile.Constraints(2000, 2000));
         }
 
         public static class Shooter {
