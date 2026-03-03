@@ -8,16 +8,13 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.subsystems.ShooterSubsystem;
-import frc.robot.commands.ShooterCommand;
 
 public class RobotContainer {
 
   private final CommandXboxController m_driverController = new CommandXboxController(0);
 
   private final ShooterSubsystem m_shooterSubsystem = new ShooterSubsystem();
-  private final ShooterCommand m_shooterCommand = new ShooterCommand(
-      m_shooterSubsystem,
-      () -> m_driverController.getRightTriggerAxis() * Constants.Shooter.kMaxRPM);
+
 
   private double targetSpeed = 0;
 
@@ -28,17 +25,16 @@ public class RobotContainer {
 
   private void configureBindings() {
     // NamedCommands.registerCommand("Shoot", m_turretSubsystem.aimAtHub(),
-    // m_HoodSubsystem.setState(HoodSubsystem.RobotState.SHOOT),m_shooterCommand.setState(ShooterSubsystem.ShooterState.SHOOTING));
+    // m_HoodSubsystem.setState(HoodSubsystem.RobotState.SHOOT),m_shooterSubsystem.setState(ShooterSubsystem.ShooterState.SHOOTING));
 
     // Default command: right trigger controls shooter speed continuously
-    m_shooterSubsystem.setDefaultCommand(m_shooterCommand);
+    m_shooterSubsystem.setDefaultCommand(m_shooterSubsystem.setShooterSpeed(() -> targetSpeed));
 
-    m_driverController.a().whileTrue(m_shooterCommand.setShooterSpeed(() -> 0.0));
+    m_driverController.a().whileTrue(m_shooterSubsystem.setShooterSpeed(() -> 0.0));
 
-    m_driverController.b().whileTrue(m_shooterCommand.setShooterSpeed(() -> 1000.0));
-
-    m_driverController.x().whileTrue(m_shooterCommand.setShooterSpeed(() -> 3000.0));
-    m_driverController.y().whileTrue(m_shooterCommand.setShooterSpeed(() -> 5500.0));
+    m_driverController.b().whileTrue(m_shooterSubsystem.setShooterSpeed(() -> 1000.0));
+    m_driverController.x().whileTrue(m_shooterSubsystem.setShooterSpeed(() -> 3000.0));
+    m_driverController.y().whileTrue(m_shooterSubsystem.setShooterSpeed(() -> 5500.0));
   }
 
   public void periodic() {
