@@ -1,6 +1,7 @@
 package frc.robot.subsystems.vision;
 
 import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -15,12 +16,12 @@ import edu.wpi.first.math.util.Units;
  */
 @JsonIgnoreProperties(ignoreUnknown = true) // This allows "_comment" in JSON
 public class VisionConfig {
+    public Map<String, Double> targetWidths;
+
     /** List of individual camera configurations. */
     public List<CameraConfig> cameras;
 
-    /**
-     * Configuration settings for a single camera.
-     */
+    /**Configuration settings for a single camera.*/
     public static class CameraConfig {
         public String name;
         public String type;       // "APRILTAG" or "OBJECT_DETECTION"
@@ -30,9 +31,7 @@ public class VisionConfig {
         public ResolutionData resolution;
     }
 
-    /**
-     * 3D Transform data used to define the camera's position relative to the robot center.
-     */
+    /**3D Transform data used to define the camera's position relative to the robot center.*/
     public static class TransformData {
         public double x, y, z;          // Inches
         public double roll, pitch, yaw; // Degrees
@@ -58,9 +57,7 @@ public class VisionConfig {
         }
     }
 
-    /**
-     * Resolution and Field of View settings for the camera.
-     */
+    /**Resolution and Field of View settings for the camera.*/
     public static class ResolutionData {
         public int width;
         public int height;

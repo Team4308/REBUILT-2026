@@ -35,14 +35,17 @@ public class Vision extends SubsystemBase {
 
     private final AprilTagFieldLayout fieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
     public final List<AprilTagCamera> tagCameras = new ArrayList<>();
+    
     private final Map<String, ObjectDetectionCamera> objectCameras = new HashMap<>();
+    private final Map<String, CameraConfig> cameraConfigs = new HashMap<>();
+    private final Map<String, Double> targetWidths = new HashMap<>();
     
     private final VisionSystemSim visionSim;
 
     /**
-     * A record holding a target's calculated angle and estimated distance.
+     * A record holding a detected object's calculated angle and estimated distance.
      */
-    public record TargetData(Rotation2d angle, double distance) {}
+    public record ObjectData(Rotation2d angle, double distance) {}
 
     /**
      * A record holding an estimated global pose and its calculated standard deviations.
@@ -70,7 +73,13 @@ public class Vision extends SubsystemBase {
             ObjectMapper mapper = new ObjectMapper();
             VisionConfig config = mapper.readValue(configFile, VisionConfig.class);
 
+            if (config.targetWidths != null) {
+                targetWidths.putAll(config.targetWidths);
+            }
+
             for (CameraConfig cam : config.cameras) {
+                cameraConfigs.put(cam.name, cam);
+                
                 if (!cam.enabled) continue;
 
                 NetworkTableInstance.getDefault().getTable("Robot/Vision").getSubTable(cam.name).getStringTopic("Mode").publish().set(cam.streamType);
@@ -116,57 +125,83 @@ public class Vision extends SubsystemBase {
         }
     }
 
-    private double estimateDistance(PhotonTrackedTarget target) {
-        if (target.getArea() <= 0) return Double.MAX_VALUE;
-        return 10.0 / Math.sqrt(target.getArea()); 
+    private double getObjectWidthPixels(PhotonTrackedTarget objectTarget) {
+        double minX = Double.MAX_VALUE;
+        double maxX = -Double.MAX_VALUE;
+        
+        var corners = objectTarget.getDetectedCorners();
+        if (corners == null || corners.isEmpty()) return 0.0;
+
+        for (var corner : corners) {
+            if (corner.x < minX) minX = corner.x;
+            if (corner.x > maxX) maxX = corner.x;
+        }
+        return maxX - minX;
     }
 
-    public List<TargetData> getTargetAngles(String cameraName) {
+    private double estimateDistance(PhotonTrackedTarget objectTarget, String cameraName) {
+        CameraConfig config = cameraConfigs.get(cameraName);
+        if (config == null || config.resolution == null) return Double.MAX_VALUE;
+
+        double widthPixels = getObjectWidthPixels(objectTarget);
+        if (widthPixels <= 0) return Double.MAX_VALUE;
+
+        String objectClass = String.valueOf(objectTarget.getFiducialId());
+        double gamepieceDiameterMeters = targetWidths.getOrDefault(objectClass, 0.3556);
+
+        double cameraFovRads = Math.toRadians(config.resolution.fov);
+        double pixelToRad = config.resolution.width / cameraFovRads;
+        double thetaRads = widthPixels / pixelToRad;
+
+        return gamepieceDiameterMeters / Math.tan(thetaRads);
+    }
+
+    public List<ObjectData> getObjectAngles(String cameraName) {
         ObjectDetectionCamera cam = objectCameras.get(cameraName);
-        List<TargetData> targetsInfo = new ArrayList<>();
+        List<ObjectData> objectsInfo = new ArrayList<>();
         if (cam != null) {
             var result = cam.getLatestResult();
             if (result.hasTargets()) {
-                for (PhotonTrackedTarget target : result.getTargets()) {
-                    targetsInfo.add(new TargetData(Rotation2d.fromDegrees(target.getYaw()), estimateDistance(target)));
+                for (PhotonTrackedTarget objectTarget : result.getTargets()) {
+                    objectsInfo.add(new ObjectData(Rotation2d.fromDegrees(objectTarget.getYaw()), estimateDistance(objectTarget, cameraName)));
                 }
             }
         }
-        return targetsInfo;
+        return objectsInfo;
     }
 
-    public Optional<TargetData> getBestTarget(String cameraName) {
+    public Optional<ObjectData> getBestObject(String cameraName) {
         ObjectDetectionCamera cam = objectCameras.get(cameraName);
         if (cam != null) {
             Optional<PhotonTrackedTarget> targetOpt = cam.getBestTarget();
             if (targetOpt.isPresent()) {
-                PhotonTrackedTarget target = targetOpt.get();
-                return Optional.of(new TargetData(Rotation2d.fromDegrees(target.getYaw()), estimateDistance(target)));
+                PhotonTrackedTarget objectTarget = targetOpt.get();
+                return Optional.of(new ObjectData(Rotation2d.fromDegrees(objectTarget.getYaw()), estimateDistance(objectTarget, cameraName)));
             }
         }
         return Optional.empty();
     }
 
-    public Optional<TargetData> getClosestTarget(String cameraName) {
+    public Optional<ObjectData> getClosestObject(String cameraName) {
         ObjectDetectionCamera cam = objectCameras.get(cameraName);
         if (cam == null) return Optional.empty();
 
         var result = cam.getLatestResult();
         if (!result.hasTargets()) return Optional.empty();
 
-        PhotonTrackedTarget closestTarget = null;
+        PhotonTrackedTarget closestObject = null;
         double minDistance = Double.MAX_VALUE;
 
-        for (PhotonTrackedTarget target : result.getTargets()) {
-            double distance = estimateDistance(target);
+        for (PhotonTrackedTarget objectTarget : result.getTargets()) {
+            double distance = estimateDistance(objectTarget, cameraName);
             if (distance < minDistance) {
                 minDistance = distance;
-                closestTarget = target;
+                closestObject = objectTarget;
             }
         }
 
-        if (closestTarget != null) {
-            return Optional.of(new TargetData(Rotation2d.fromDegrees(closestTarget.getYaw()), minDistance));
+        if (closestObject != null) {
+            return Optional.of(new ObjectData(Rotation2d.fromDegrees(closestObject.getYaw()), minDistance));
         }
 
         return Optional.empty();

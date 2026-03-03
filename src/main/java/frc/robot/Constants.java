@@ -9,7 +9,7 @@ import edu.wpi.first.wpilibj.RobotBase;
 import swervelib.math.Matter;
 
 public final class Constants {
-  public static final double ROBOT_MASS = Units.lbsToKilograms(140);
+  public static final double ROBOT_MASS = Units.lbsToKilograms(140);  //TODO: update this to match the wieght in physicalproperties.json
   public static final Matter CHASSIS = new Matter(
       new Translation3d(Units.inchesToMeters(0.4), Units.inchesToMeters(0.4), Units.inchesToMeters(7.2)),
       ROBOT_MASS);

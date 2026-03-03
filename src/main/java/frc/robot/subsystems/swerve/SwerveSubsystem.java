@@ -54,7 +54,7 @@ import frc.robot.FieldLayout;
 import frc.robot.Robot;
 
 import frc.robot.subsystems.vision.Vision;
-import frc.robot.subsystems.vision.Vision.TargetData;
+import frc.robot.subsystems.vision.Vision.ObjectData;
 import frc.robot.subsystems.vision.Vision.VisionMeasurement;
 
 import swervelib.SwerveController;
@@ -484,15 +484,21 @@ public class SwerveSubsystem extends SubsystemBase {
 
   public Command aimAtTarget(Supplier<Double> joyX, Supplier<Double> joyY) {
     return run(() -> {
-      Optional<TargetData> targetOpt = vision.getBestTarget("ObjCam_Intake");
+      Optional<ObjectData> targetOpt = vision.getClosestObject("ObjCam_Intake");
 
       if (targetOpt.isPresent()) {
         Rotation2d targetYaw = targetOpt.get().angle();
         Rotation2d targetHeading = getHeading().minus(targetYaw);
+        SmartDashboard.putNumber("targetHeading", targetHeading.getDegrees());
+        SmartDashboard.putNumber("targetYaw", targetYaw.getDegrees());
+        SmartDashboard.putNumber("targetDist", targetOpt.get().distance());
 
         swerveDrive.driveFieldOriented(
             getTargetSpeeds(joyY.get(), joyX.get(), targetHeading));
       } else {
+        SmartDashboard.putNumber("targetHeading", -999);
+        SmartDashboard.putNumber("targetYaw",  -999);
+        SmartDashboard.putNumber("targetDist", -999);
         swerveDrive.driveFieldOriented(
             getTargetSpeeds(joyY.get(), joyX.get(), getHeading()));
       }
@@ -501,7 +507,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
   public Command driveTowardsTarget(Supplier<Double> throttle) {
     return run(() -> {
-      Optional<TargetData> targetOpt = vision.getBestTarget("ObjCam_Intake");
+      Optional<ObjectData> targetOpt = vision.getClosestObject("ObjCam_Intake");
 
       if (targetOpt.isPresent()) {
         Rotation2d targetYaw = targetOpt.get().angle();
