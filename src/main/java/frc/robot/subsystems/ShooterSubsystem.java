@@ -48,8 +48,8 @@ public class ShooterSubsystem extends AbsoluteSubsystem {
             .getEntry("Swerve/UnderTrench").getBoolean(false);
 
     public ShooterSubsystem() {
-        rightMotor = new TalonFX(Constants.Mapping.ShooterMotor.kMotor1);
-        leftMotor = new TalonFX(Constants.Mapping.ShooterMotor.kMotor2);
+        rightMotor = new TalonFX(Constants.Shooting.Mapping.ShooterMotor.kMotor1);
+        leftMotor = new TalonFX(Constants.Shooting.Mapping.ShooterMotor.kMotor2);
 
         velocityVoltage = new VelocityVoltage(0);
 
@@ -90,7 +90,7 @@ public class ShooterSubsystem extends AbsoluteSubsystem {
         double rightRpm = rightMotor.getVelocity().getValue().in(edu.wpi.first.units.Units.RPM);
         // Compare measured RPM to the stored target RPM (both in RPM)
         double error = Math.abs(rightRpm - this.targetRPM);
-        return error < Constants.Shooter.kRPMTolerance;
+        return error < Constants.Shooting.Shooter.kRPMTolerance;
     }
 
     public void stopMotors() {
@@ -148,7 +148,7 @@ public class ShooterSubsystem extends AbsoluteSubsystem {
     }
 
     public void setShooterSpeedPass() {
-        setTargetSpeed(Constants.Shooter.kPassingRPM);
+        setTargetSpeed(Constants.Shooting.Shooter.kPassingRPM);
     } // sets the shooter’s speed to the correct speed to pass to our zone. Specific
       // location will be in strategy
 
@@ -159,7 +159,7 @@ public class ShooterSubsystem extends AbsoluteSubsystem {
     } // same as previous, but it runs until interrupted.
 
     public void setShooterSpeedHub() {
-        setTargetSpeed(Constants.Shooter.kMaxRPM);
+        setTargetSpeed(Constants.Shooting.Shooter.kMaxRPM);
     }
 
     public Command setShooterSpeedHubCommand() {
@@ -182,10 +182,7 @@ public class ShooterSubsystem extends AbsoluteSubsystem {
             }
         }
 
-        Logger.recordOutput("Subsystems/Shooter/TargetRPM", targetRPM);
         Logger.recordOutput("Subsystems/Shooter/CurRPM", getRPM());
         Logger.recordOutput("Subsystems/Shooter/AtTargetSpeed", isAtTargetSpeed());
-        Logger.recordOutput("Subsystems/Shooter/Difference", targetRPM - getRPM());
     }
-
 }

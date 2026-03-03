@@ -21,23 +21,19 @@ public class Constants {
                     new TrapezoidProfile.Constraints(1500, 2500));
         }
 
+        public static class Shooter {
+            public static final double kMaxRPM = 6000.0;
+            public static final int kRPMTolerance = 10;
+            public static final double kPassingRPM = 3000.0;
+
+            public static final int kMotor1 = 11;
+            public static final int kMotor2 = 12;
+        }
+
         public static final class TargetPoses {
             public static final Translation3d kHUB_POSE = new Translation3d(4.0, 0.0, 2.1);
             public static final Translation3d kPASS_RIGHT_POSE = new Translation3d(4.0, 0.5, 2.1);
             public static final Translation3d kPASS_LEFT_POSE = new Translation3d(4.0, -0.5, 2.1);;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-
-public class Constants {
-    public static class Shooter {
-        public static final double kMaxRPM = 6000.0;
-        public static final int kRPMTolerance = 10;
-        public static final double kPassingRPM = 3000.0;
+        }
     }
-
-    public static class Mapping {
-        public static class ShooterMotor {
-            // Change ID later
-            public static final int kMotor1 = 11;
-            public static final int kMotor2 = 12;
-            public static final int kRPMTolerance = 10;
 }

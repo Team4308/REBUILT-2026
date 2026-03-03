@@ -3,10 +3,7 @@
   "robotLength": 0.9,
   "holonomicMode": true,
   "pathFolders": [
-    "New Folder"
-  ],
-  "autoFolders": [],
-    "Disruption paths"
+    "New Folder",  "Disruption Autos"
   ],
   "autoFolders": [
     "Disruption Autos"

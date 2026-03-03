@@ -1,25 +1,12 @@
 package frc.robot;
 
-import com.pathplanner.lib.auto.NamedCommands;
-
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.subsystems.ShooterSubsystem;
-import frc.robot.commands.ShooterCommand;
 
 public class RobotContainer {
 
   private final CommandXboxController m_driverController = new CommandXboxController(0);
-
-  private final ShooterSubsystem m_shooterSubsystem = new ShooterSubsystem();
-  private final ShooterCommand m_shooterCommand = new ShooterCommand(
-      m_shooterSubsystem,
-      () -> m_driverController.getRightTriggerAxis() * Constants.Shooter.kMaxRPM);
-
-  private double targetSpeed = 0;
 
   public RobotContainer() {
 
@@ -27,6 +14,7 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
+    
   }
 
   public Command getAutonomousCommand() {
@@ -34,5 +22,3 @@ public class RobotContainer {
   }
 
 }
-
-  
