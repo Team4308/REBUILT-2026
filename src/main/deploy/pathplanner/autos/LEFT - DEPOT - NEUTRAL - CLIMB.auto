@@ -1,0 +1,43 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "LEFT to DEPOT"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Intake and Shoot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "DEPOT to NEUTRAL"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "SHOOT to CLIMB"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}
