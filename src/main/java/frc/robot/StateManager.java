@@ -6,8 +6,11 @@ import ca.team4308.absolutelib.control.XBoxWrapper;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.subsystems.HoodSubsystem;
 
 public class StateManager {
+
+    // enum of states
     public enum State {
         ActiveTeleopAllianceZoneResting,
         ActiveTeleopAllianceZoneShooting,
@@ -35,15 +38,29 @@ public class StateManager {
         Home
     }
 
-    private final XboxController m_primaryController = new XboxController(Constants.State.kPrimaryControllerPort);
-    private final XboxController m_secondaryController = new XboxController(Constants.State.kSecondaryControllerPort);
-    SwerveSubsystem m_swerveSubsystem = new SwerveSubsystem();
+    // Initialize current state to Home
     private State currentState = State.Home;
-    boolean isIntaking = false;
+
+    // Primary and Secondary controller objects
+    private final CommandXboxController m_primaryController = new CommandXboxController(Constants.State.kPrimaryControllerPort);
+    private final CommandXboxController m_secondaryController = new CommandXboxController(Constants.State.kSecondaryControllerPort);
+
+    // All subsystem objects for StateManager
+    IntakeSubsystem m_intakeSubsystem = new IntakeSubsystem();
+    IndexerSubsystem m_indexerSubsystem = new IndexerSubsystem();
+    HoodSubsystem m_hoodSubsystem = new HoodSubsystem();
+    ShooterSubsystem m_shooterSubsystem = new ShooterSubsystem();
+    TurretSubsystem m_turretSubsystem = new TurretSubsystem();
+    ClimberSubsystem m_climberSubsystem = new ClimberSubsystem  ();
+    SwerveSubsystem m_swerveSubsystem = new SwerveSubsystem();
+
+    // Togglable booleans for the secondary controller
+    boolean isIntaking = false; 
     boolean active = false;
     boolean isShooting = false;
     boolean passing = false;
 
+    // Setter and getter for state
     public void setState(State state) {
         this.currentState = state;
     }
@@ -52,21 +69,32 @@ public class StateManager {
         return state;
     }
 
+    // Constructor
     public StateManager(CommandXboxController controller) {
+
+        // Initialize controllers
         configurePrimaryBindings(controller);
         configureSecondaryBindings(controller);
     }
 
+    // Primary controller config (bindings)
     private void configurePrimaryBindings(CommandXboxController controller) {
 
+        // a is the main setstate function
         controller.a().onTrue(
                 new InstantCommand(() -> {
+
+                    // toggle for button
                     isShooting = (isShooting) ? false : true;
+
+
                     if (isShooting) {
                         if (m_swerveSubsystem.getFieldLocation() == "AllianceZone") {
                             if (active) {
-                                if (isIntaking) {
+                                if (isIntaking && isShooting) {
                                     setState(State.ActiveTeleopAllianceZoneShootingIntaking);
+                                } else if (isIntaking) {
+                                    setState(State.ActiveTeleopAllianceZoneIntaking);
                                 } else {
                                     setState(State.ActiveTeleopAllianceZoneShooting);
                                 }
@@ -125,7 +153,6 @@ public class StateManager {
                     } else if (!active) {
                         if (m_swerveSubsystem.getFieldLocation() == "AllianceZone") {
                             setState(State.InactiveTeleopAllianceZoneResting);
-
                         } else if (m_swerveSubsystem.getFieldLocation() == "NeutralZone") {
                             setState(State.InactiveTeleopNeutralZoneResting);
                         } else if (m_swerveSubsystem.getFieldLocation() == "OpponentZone") {
@@ -134,12 +161,6 @@ public class StateManager {
                     }
 
                 }));
-
-        controller.b().onTrue(
-                new InstantCommand(() -> setState()));
-
-        controller.x().onTrue(
-                new InstantCommand(() -> setState()));
     }
 
     /*
@@ -170,11 +191,24 @@ public class StateManager {
 
     }
 
+    // the big back code
     public void periodic() {
 
+        //repeatedly configure the controller as it varies for where we are on the field
+        configurePrimaryBindings(m_primaryController);
+
+        // Freaky switch statement ahh
         switch (currentState) {
 
             case ActiveTeleopAllianceZoneResting:
+                m_intakeSubsystem.setState(state.INTAKING);
+                 m_intakeSubsystem
+                m_indexerSubsystem 
+                m_hoodSubsystem 
+                m_shooterSubsystem 
+                m_turretSubsystem 
+                m_climberSubsystem
+
             case ActiveTeleopAllianceZoneShooting:
             case ActiveTeleopAllianceZoneIntaking:
             case ActiveTeleopAllianceZoneShootingIntaking:
