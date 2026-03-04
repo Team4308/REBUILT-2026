@@ -26,4 +26,7 @@ public class Constants {
         public static final int kDriverControllerPort = 0;
 
     }
+    public static final class State{
+        public static final int kStateManagerPort = 1;
+    }
 }

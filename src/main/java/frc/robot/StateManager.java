@@ -35,10 +35,12 @@ public class StateManager{
         Home
     } 
     private final XboxController m_StateController = new XboxController(Constants.State.kStateManagerPort);
+    private final XboxController m_fuelStatus = new XboxController(2);
     SwerveSubsystem m_swerveSubsystem = new SwerveSubsystem();
     private State currentState = State.Home;
-
-
+    boolean isIntaking = false;
+    boolean active = false;
+    boolean isShooting = false;
     public void setState(State state) {
         this.currentState = state;
     }
@@ -49,15 +51,27 @@ public class StateManager{
 
 
     public StateManager(CommandXboxController controller) {
-        configureBindings(controller);
+        configurePrimaryBindings(controller);
+        configureSecondaryBindings(controller);
     }
 
-    private void configureBindings(CommandXboxController controller) {
+    private void configurePrimaryBindings(CommandXboxController controller) {
 
         controller.a().onTrue(
             new InstantCommand(() -> {
-                if(m_swerveSubsystem.m_swerveSubsystem() == "AllianceZone"){
+                isShooting = (isShooting) ? false : true;
+                if(m_swerveSubsystem.getFieldLocation() == "AllianceZone"){
+                    if(active){
+                        if(isIntaking){
+                            setState(State.ActiveTeleopAllianceZoneShootingIntaking);
+                        }
+                    }
+                    
+                }else if(m_swerveSubsystem.getFieldLocation() == "NeutralZone"){
                     setState(State.ActiveTeleopAllianceZoneShootingIntaking);
+                }
+                else if(m_swerveSubsystem.getFieldLocation() == "OpponentZone"){
+                    setState(State.ActiveTeleopOpponentZoneIntaking);
                 }
             })
         );
@@ -70,12 +84,36 @@ public class StateManager{
             new InstantCommand(() -> setState())
         );
     }
+
+    /* Secondary controller bindings, buttons are toggling and determine:
+    - active/inactive
+    - if the hopper is full
+    - Shooting or not */
+    private void configureSecondaryBindings(CommandXboxController controller){
+        // Intake Toggle
+        controller.a().onTrue(
+            new InstantCommand(()->{
+                isIntaking = (isIntaking) ? false : true;
+            })
+        );
+        // Active/Inactive toggle
+
+        // HUB is active
+        controller.x().onTrue(
+            new InstantCommand(()->{
+                active = (active)? false: true;
+            })
+        );
+
+
+    }
+
+
     public void periodic(){
 
         switch(currentState){
             
             case ActiveTeleopAllianceZoneResting:
-
             case ActiveTeleopAllianceZoneShooting:
             case ActiveTeleopAllianceZoneIntaking:
             case ActiveTeleopAllianceZoneShootingIntaking:
