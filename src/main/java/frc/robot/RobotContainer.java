@@ -57,7 +57,7 @@ public class RobotContainer {
         targetSpeedHopper,
         0.0,
         1900.0);
-    // indexer.setHopperSpeed(targetSpeedHopper);
+    indexer.setHopperSpeed(targetSpeedHopper);
 
     targetSpeedIndexer -= driver.getRightY() * 10;
     targetSpeedIndexer = MathUtil.clamp(
