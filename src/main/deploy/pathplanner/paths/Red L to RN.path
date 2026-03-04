@@ -3,13 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 14.969,
-        "y": 1.6090014265335242
+        "x": 13.047081850533809,
+        "y": 2.383463819691577
       },
       "prevControl": null,
       "nextControl": {
-        "x": 15.224747229102155,
-        "y": 1.5445923188464237
+        "x": 13.18518722030663,
+        "y": 1.9284309858947821
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 13.348339264531438,
+        "y": 1.1784341637010676
+      },
+      "prevControl": {
+        "x": 13.568801753581514,
+        "y": 1.6196560839640397
+      },
+      "nextControl": {
+        "x": 13.07811417882318,
+        "y": 0.6376200246012327
       },
       "isLocked": false,
       "linkedName": null
@@ -20,12 +36,12 @@
         "y": 0.5221540656205423
       },
       "prevControl": {
-        "x": 12.539757489300998,
-        "y": 0.30219686162624837
+        "x": 11.857063917042826,
+        "y": 0.5005400602702268
       },
       "nextControl": {
-        "x": 9.990507473139889,
-        "y": 0.9039906891788037
+        "x": 10.120581257413999,
+        "y": 0.6512336892052198
       },
       "isLocked": false,
       "linkedName": null
@@ -36,12 +52,12 @@
         "y": 1.9583452211126975
       },
       "prevControl": {
-        "x": 9.193248224665577,
-        "y": 1.4223447573873595
+        "x": 9.213347947637827,
+        "y": 1.3766659990064578
       },
       "nextControl": {
-        "x": 8.412755230418341,
-        "y": 2.5626028697406706
+        "x": 8.452797372236542,
+        "y": 2.519851837926422
       },
       "isLocked": false,
       "linkedName": null
@@ -52,8 +68,8 @@
         "y": 6.1245934379457925
       },
       "prevControl": {
-        "x": 8.766945628433852,
-        "y": 4.166813829366568
+        "x": 8.860960012539824,
+        "y": 3.7301172809144822
       },
       "nextControl": null,
       "isLocked": false,
@@ -62,11 +78,11 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 1.25,
+      "waypointRelativePos": 2.25,
       "rotationDegrees": 180.0
     },
     {
-      "waypointRelativePos": 2.0,
+      "waypointRelativePos": 3.0,
       "rotationDegrees": 135.0
     }
   ],
@@ -86,7 +102,7 @@
     "rotation": 135.0
   },
   "reversed": false,
-  "folder": "Disruption paths",
+  "folder": null,
   "idealStartingState": {
     "velocity": 0,
     "rotation": 180.0
