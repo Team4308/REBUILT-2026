@@ -25,8 +25,8 @@ public class Robot extends LoggedRobot {
   public Robot() {
     Logger.recordMetadata("REBUILT-2026", "FRC-4308"); // Set a metadata value
 
-    if (isReal()) {
-      Logger.addDataReceiver(new WPILOGWriter()); // Log to a USB stick ("/U/logs")
+    if (true) {
+      // Logger.addDataReceiver(new WPILOGWriter()); // Log to a USB stick ("/U/logs")
       Logger.addDataReceiver(new NT4Publisher()); // Publish data to NetworkTables
     } else {
       setUseTiming(false); // Run as fast as possible

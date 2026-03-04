@@ -10,8 +10,11 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 
 public class Simulation {
+    private HoodSubsystem m_HoodSubsystem;
+    private ShooterSubsystem m_ShooterSubsystem;
 
     private LoggedMechanism2d mech;
 
@@ -23,6 +26,8 @@ public class Simulation {
 
     private LoggedMechanismRoot2d hoodRoot;
     private LoggedMechanismLigament2d hoodMech2d;
+
+    private FlywheelSim m_shooterSim;
 
     private Pose3d intakePose = new Pose3d();
     private Pose3d turretPose = new Pose3d();
