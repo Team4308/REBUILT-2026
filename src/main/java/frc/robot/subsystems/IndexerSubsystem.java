@@ -62,7 +62,9 @@ public class IndexerSubsystem extends SubsystemBase {
         slot1Configs.kD = Constants.IndexerMotorConfigsKd; // no output for error derivative
 
         Kraken.getConfigurator().apply(slot1Configs);
-
+        var motorConfigs2 = new MotorOutputConfigs();
+        motorConfigs2.Inverted = InvertedValue.CounterClockwise_Positive;
+        Kraken.getConfigurator().apply(motorConfigs2);
     }
 
     public void setHopperVelocity(double rpm) { // sets the velocity for Hopper
@@ -76,7 +78,7 @@ public class IndexerSubsystem extends SubsystemBase {
     public void setIndexerVelocity(double rpm) { // sets the velocity for Hopper
 
         // motor.set(rpm);
-        double motorRPS = (rpm * Constants.IndexerGearRatio) / 60.0;
+        double motorRPS = (-rpm * Constants.IndexerGearRatio) / 60.0;
         Kraken.setControl(m_indexerRequest.withVelocity(motorRPS));
 
     }
@@ -157,8 +159,10 @@ public class IndexerSubsystem extends SubsystemBase {
             }
         }
 
-        Logger.recordOutput("Subsystems/Indexer/HopperSpeed", (Falcon.getVelocity().getValueAsDouble() / Constants.HopperGearRatio) * 60.0);
-        Logger.recordOutput("Subsystems/Indexer/IndexerSpeed", (Kraken.getVelocity().getValueAsDouble() / Constants.IndexerGearRatio) * 60.0);
+        Logger.recordOutput("Subsystems/Indexer/HopperSpeed",
+                (Falcon.getVelocity().getValueAsDouble() / Constants.HopperGearRatio) * 60.0);
+        Logger.recordOutput("Subsystems/Indexer/IndexerSpeed",
+                (Kraken.getVelocity().getValueAsDouble() / Constants.IndexerGearRatio) * 60.0);
         Logger.recordOutput("Subsystems/Indexer/TargetIndexerSpeed", indexerSpeed);
         Logger.recordOutput("Subsystems/Indexer/TargetHopperSpeed", hopperSpeed);
     }
