@@ -62,13 +62,16 @@ public class StateManager {
     boolean active = false;
     boolean isShooting = false;
     boolean passing = false;
+    boolean manual = false;
+    boolean STOP = false;
+    boolean StopSwerve = false;
 
     // Setter and getter for state
-    public void setState(State state) {
+    public void setRobotState(State state) {
         this.currentState = state;
     }
 
-    public State getState(State state) {
+    public State getRobotState(State state) {
         return state;
     }
 
@@ -87,82 +90,106 @@ public class StateManager {
         controller.a().onTrue(
                 new InstantCommand(() -> {
 
-                    // toggle for button
-                    isShooting = (isShooting) ? false : true;
+                    // stops all motors including swerve
+                    if(STOP && StopSwerve){
+                        m_hoodSubsystem.stopMotors();
+                        m_intakeSubsystem.stopRoller();
+                        m_climberSubsystem.stopMotors(); // Climber DOES NOT have a stop method
+                        m_indexerSubsystem.stopMotors();
+                        m_shooterSubsystem.stopMotors();
+                        m_turretSubsystem.stopTurret();
+                        m_swerveSubsystem.stopSwerve(); // Swerve DOES NOT have any stop method
 
+                    }else if(STOP){ // stop all motors except for swerve, done so that if a bot is cooked while in the middle of field we can still drive the bot back to safety
+                        m_hoodSubsystem.stopMotors();
+                        m_intakeSubsystem.stopRoller();
+                        m_climberSubsystem.stopMotors(); // Climber DOES NOT have a stop method
+                        m_indexerSubsystem.stopMotors();
+                        m_shooterSubsystem.stopMotors();
+                        m_turretSubsystem.stopTurret();
+                    }else{
+
+                        
+                        if(manual){ // disables the usingState boolean in all subsystems
+                            
+                        }else{ // if both conditions pass run all of the shooting code
+
+                    // toggle for button (only allow when previous conditions are satisfied)
+                    isShooting = (isShooting) ? false : true;
 
                     if (isShooting) {
                         if (m_swerveSubsystem.getFieldLocation() == "AllianceZone") {
                             if (active) {
                                 if (isIntaking && isShooting) {
-                                    setState(State.ActiveTeleopAllianceZoneShootingIntaking);
+                                    setRobotState(State.ActiveTeleopAllianceZoneShootingIntaking);
                                 } else if (isIntaking) {
-                                    setState(State.ActiveTeleopAllianceZoneIntaking);
+                                    setRobotState(State.ActiveTeleopAllianceZoneIntaking);
                                 } else {
-                                    setState(State.ActiveTeleopAllianceZoneShooting);
+                                    setRobotState(State.ActiveTeleopAllianceZoneShooting);
                                 }
                             } else {
-                                setState(State.InactiveTeleopAllianceZoneIntaking);
+                                setRobotState(State.InactiveTeleopAllianceZoneIntaking);
                             }
 
                         } else if (m_swerveSubsystem.getFieldLocation() == "NeutralZone") {
                             if (active) {
                                 if (isIntaking && passing) {
-                                    setState(State.ActiveTeleopNeutralZonePassingIntaking);
+                                    setRobotState(State.ActiveTeleopNeutralZonePassingIntaking);
                                 } else if (isIntaking) {
-                                    setState(State.ActiveTeleopNeutralZoneIntaking);
+                                    setRobotState(State.ActiveTeleopNeutralZoneIntaking);
                                 } else if (passing) {
-                                    setState(State.ActiveTeleopNeutralZonePassing);
+                                    setRobotState(State.ActiveTeleopNeutralZonePassing);
                                 } else {
-                                    setState(State.ActiveTeleopNeutralZoneResting);
+                                    setRobotState(State.ActiveTeleopNeutralZoneResting);
                                 }
                             } else {
                                 if (isIntaking && passing) {
-                                    setState(State.InactiveTeleopNeutralZonePassingIntaking);
+                                    setRobotState(State.InactiveTeleopNeutralZonePassingIntaking);
                                 } else {
-                                    setState(State.InactiveTeleopNeutralZoneIntaking);
+                                    setRobotState(State.InactiveTeleopNeutralZoneIntaking);
                                 }
                             }
                         } else if (m_swerveSubsystem.getFieldLocation() == "OpponentZone") {
                             if (active) {
 
                                 if (isIntaking && passing) {
-                                    setState(State.ActiveTeleopOpponentZonePassingIntaking);
+                                    setRobotState(State.ActiveTeleopOpponentZonePassingIntaking);
                                 } else if (isIntaking) {
-                                    setState(State.ActiveTeleopOpponentZoneIntaking);
+                                    setRobotState(State.ActiveTeleopOpponentZoneIntaking);
                                 } else if (passing) {
-                                    setState(State.ActiveTeleopOpponentZonePassing);
+                                    setRobotState(State.ActiveTeleopOpponentZonePassing);
                                 } else {
-                                    setState(State.ActiveTeleopOpponentZoneResting);
+                                    setRobotState(State.ActiveTeleopOpponentZoneResting);
                                 }
                             } else {
                                 if (isIntaking && passing) {
-                                    setState(State.InactiveTeleopOpponentlZonePassingIntaking);
+                                    setRobotState(State.InactiveTeleopOpponentlZonePassingIntaking);
                                 } else {
-                                    setState(State.InactiveTeleopOpponentZoneIntaking);
+                                    setRobotState(State.InactiveTeleopOpponentZoneIntaking);
                                 }
                             }
                         }
 
                     } else if (active) {
                         if (m_swerveSubsystem.getFieldLocation() == "AllianceZone") {
-                            setState(State.ActiveTeleopAllianceZoneResting);
+                            setRobotState(State.ActiveTeleopAllianceZoneResting);
                         } else if (m_swerveSubsystem.getFieldLocation() == "NeutralZone") {
-                            setState(State.ActiveTeleopNeutralZoneResting);
+                            setRobotState(State.ActiveTeleopNeutralZoneResting);
                         } else if (m_swerveSubsystem.getFieldLocation() == "OpponentZone") {
-                            setState(State.ActiveTeleopOpponentZoneResting);
+                            setRobotState(State.ActiveTeleopOpponentZoneResting);
                         }
 
                     } else if (!active) {
                         if (m_swerveSubsystem.getFieldLocation() == "AllianceZone") {
-                            setState(State.InactiveTeleopAllianceZoneResting);
+                            setRobotState(State.InactiveTeleopAllianceZoneResting);
                         } else if (m_swerveSubsystem.getFieldLocation() == "NeutralZone") {
-                            setState(State.InactiveTeleopNeutralZoneResting);
+                            setRobotState(State.InactiveTeleopNeutralZoneResting);
                         } else if (m_swerveSubsystem.getFieldLocation() == "OpponentZone") {
-                            setState(State.InactiveTeleopOpponentZoneResting);
+                            setRobotState(State.InactiveTeleopOpponentZoneResting);
                         }
                     }
-
+                  }
+                }
                 }));
     }
 
@@ -192,9 +219,27 @@ public class StateManager {
                     passing = (passing) ? false : true;
                 }));
 
+        // manual toggle
+
+        controller.y().onTrue(
+                new InstantCommand(() -> {
+                    manual = (manual) ? false : true;
+                }));
+
+        // emergency stop non-swerve motor toggle
+
+        controller.x().onTrue(
+                new InstantCommand(() -> {
+                    STOP = (STOP) ? false : true;
+                }));
+
+        // emergency swerve motor toggle
+        controller.x().onTrue(
+                new InstantCommand(() -> {
+                    StopSwerve = (StopSwerve) ? false : true;
+                }));
     }
 
-    // the big back code
     public void periodic() {
 
         //repeatedly configure the controller as it varies for where we are on the field
@@ -203,39 +248,148 @@ public class StateManager {
         // Freaky switch statement ahh
         switch (currentState) {
 
+            // All resting cases (Active && Inactive) should all do the same thing
             case ActiveTeleopAllianceZoneResting:
-                m_intakeSubsystem.setState(state.INTAKING);
-                m_indexerSubsystem 
+            case ActiveTeleopNeutralZoneResting:
+            case ActiveTeleopOpponentZoneResting:
+            case InactiveTeleopAllianceZoneResting:
+            case InactiveTeleopNeutralZoneResting:
+            case InactiveTeleopOpponentZoneResting:
+
+                m_intakeSubsystem.setRobotState(state.INTAKING);
                 m_hoodSubsystem.setState(RobotState.REST);
-                m_shooterSubsystem 
-                m_turretSubsystem 
-                m_climberSubsystem
+                m_indexerSubsystem.setState(State.IDLE);
+                m_shooterSubsystem.setState(ShooterState.IDLE);
+                m_climberSubsystem.setState(States.NOT_CLIMBING);
+                // Turret does not have a state manager, requires hard coded implementation if not added...
+                m_turretSubsystem.setState(/*whatever the rest state is */);
+                
 
             case ActiveTeleopAllianceZoneShooting:
+                m_intakeSubsystem.setRobotState(state.SHOOTING);
+                m_hoodSubsystem.setState(RobotState.SHOOT);
+                m_indexerSubsystem.setState(State.SHOOTING);
+                m_shooterSubsystem.setState(ShooterState.SHOOTING);
+                m_climberSubsystem.setState(States.NOT_CLIMBING);
+                m_turretSubsystem.setState(/*whatever the shooting state is */);
+
+            // All of the intaking states (active/inactive) should  do the same thing
             case ActiveTeleopAllianceZoneIntaking:
-            case ActiveTeleopAllianceZoneShootingIntaking:
-            case ActiveTeleopNeutralZoneResting:
-            case ActiveTeleopNeutralZonePassing:
             case ActiveTeleopNeutralZoneIntaking:
-            case ActiveTeleopNeutralZonePassingIntaking:
-            case ActiveTeleopOpponentZoneResting:
-            case ActiveTeleopOpponentZonePassing:
             case ActiveTeleopOpponentZoneIntaking:
-            case ActiveTeleopOpponentZonePassingIntaking:
-            case InactiveTeleopAllianceZoneResting:
             case InactiveTeleopAllianceZoneIntaking:
-            case InactiveTeleopNeutralZoneResting:
             case InactiveTeleopNeutralZoneIntaking:
-            case InactiveTeleopNeutralZonePassingIntaking:
-            case InactiveTeleopOpponentZoneResting:
             case InactiveTeleopOpponentZoneIntaking:
+
+
+                m_intakeSubsystem.setRobotState(state.INTAKING);
+                m_hoodSubsystem.setState(RobotState.SHOOT);
+                m_indexerSubsystem.setState(State.IDLE);
+                m_shooterSubsystem.setState(ShooterState.IDLE);
+                m_climberSubsystem.setState(States.NOT_CLIMBING);
+                m_turretSubsystem.setState(/*whatever the aiming (not shooting) state is */);
+
+            case ActiveTeleopAllianceZoneShootingIntaking:
+                m_intakeSubsystem.setRobotState(state.INTAKING); // does not agitate tho...
+                m_hoodSubsystem.setState(RobotState.SHOOT);
+                m_indexerSubsystem.setState(State.SHOOTING);
+                m_shooterSubsystem.setState(ShooterState.SHOOTING);
+                m_climberSubsystem.setState(States.NOT_CLIMBING);
+                m_turretSubsystem.setState(/*whatever the shooting state is */);
+
+            // passing implementation needs to be more clear, this is a general outline, needs work
+            case ActiveTeleopNeutralZonePassing:
+            case ActiveTeleopOpponentZonePassing:
+
+                m_intakeSubsystem.setRobotState(state.REST); // does not agitate tho...
+                m_hoodSubsystem.setState(RobotState.PASS_LEFT); // set to PASS_LEFT as a placeholder, implementation needs to be refined
+                m_indexerSubsystem.setState(State.SHOOTING);
+                m_shooterSubsystem.setState(ShooterState.PASSING);
+                m_climberSubsystem.setState(States.NOT_CLIMBING);
+                m_turretSubsystem.setState(/*whatever the passing state is */);
+
+            // Since we have PassingIntake for inactive why aren't there PassinIntake states for active?
+            case ActiveTeleopNeutralZonePassingIntaking:
+            case ActiveTeleopOpponentZonePassingIntaking:
+            case InactiveTeleopNeutralZonePassingIntaking:
             case InactiveTeleopOpponentlZonePassingIntaking:
+
+                m_intakeSubsystem.setRobotState(state.INTAKING); // does not agitate tho...
+                m_hoodSubsystem.setState(RobotState.PASS_LEFT); // set to PASS_LEFT as a placeholder, implementation needs to be refined
+                m_indexerSubsystem.setState(State.SHOOTING);
+                m_shooterSubsystem.setState(ShooterState.PASSING);
+                m_climberSubsystem.setState(States.NOT_CLIMBING);
+                m_turretSubsystem.setState(/*whatever the passing state is */);
+
+            // Climbing states don't have any setup logic so these statements are never called, update when more info is added
             case ClimbPrepareLeft:
+                m_intakeSubsystem.setRobotState(state.REST); 
+                m_hoodSubsystem.setState(RobotState.REST); 
+                m_indexerSubsystem.setState(State.IDLE);
+                m_shooterSubsystem.setState(ShooterState.IDLE);
+                m_climberSubsystem.setState(States.GOING_TO_CLIMB);
+                m_turretSubsystem.setState(/*whatever the rest/idle state is */);
+
             case ClimbPrepareRight:
+                m_intakeSubsystem.setRobotState(state.REST); 
+                m_hoodSubsystem.setState(RobotState.REST); 
+                m_indexerSubsystem.setState(State.IDLE);
+                m_shooterSubsystem.setState(ShooterState.IDLE);
+                m_climberSubsystem.setState(States.GOING_TO_CLIMB);
+                m_turretSubsystem.setState(/*whatever the rest/idle state is */);
+
             case ClimbedUp:
+                m_intakeSubsystem.setRobotState(state.REST); 
+                m_hoodSubsystem.setState(RobotState.REST); 
+                m_indexerSubsystem.setState(State.IDLE);
+                m_shooterSubsystem.setState(ShooterState.IDLE);
+                m_climberSubsystem.setState(States.IN_CLIMB);
+                m_turretSubsystem.setState(/*whatever the rest/idle state is */);
+
+            // What does it mean to be in the home state?
             case Home:
 
         }
     }
 
 }
+
+/*
+ * State manager syntax for each subsystem if you want to make changes without opening a bunch
+ * of github branches:
+ * 
+ * StateManager:
+ *  enum: State
+ *  states: too many, look up for the enum
+ *  setter: setState()
+ * 
+ * IntakeSubsystem:
+ *  enum: state
+ *  states: REST, SHOOTING, INTAKING
+ *  setter: setState()
+ * 
+ * IndexerSubsystem:
+ *  enum: State
+ *  states: IDLE, SHOOTING
+ *  setter: setState()
+ * 
+ * ShooterSubsystem:
+ *  enum: ShooterState
+ *  states: IDLE, SHOOTING, PASSING
+ *  setter: setState()
+ * 
+ * TurretSubsystem (needs a state manager):
+ *  enum: NA
+ *  states: NA
+ *  setter: NA
+ * 
+ * HoodSubsystem:
+ *  enum: RobotState
+ *  states: REST, SHOOT, PASS_LEFT, PASS_RIGHT
+ *  setter: setState()
+ * 
+ * ClimberSubsystem:
+ *  enum: States
+ *  states: NOT_CLIMBING, GOING_TO_CLIMB, IN_CLIMB
+ *  setter: setState()
+ */

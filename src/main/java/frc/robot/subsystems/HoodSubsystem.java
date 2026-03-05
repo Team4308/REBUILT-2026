@@ -25,7 +25,7 @@ public class HoodSubsystem extends SubsystemBase {
     
 
     private double targetAngle = 0;
-    
+    private boolean usingState = false;
     public HoodSubsystem() {
         trajectory = new TrajectoryCalculations();
         var talonFXConfigs = new TalonFXConfiguration();
@@ -48,6 +48,12 @@ public class HoodSubsystem extends SubsystemBase {
         );
     }
 
+    public void setUsingState(boolean using){
+        usingState = using;
+    }
+    public boolean getUsingState(){
+        return usingState;
+    }
     public boolean isAtPosition() {
         // Uses a tolerance value from Constants 
         return Math.abs(getHoodAngle() - targetAngle) < Constants.Hood.kToleranceDegrees;
@@ -117,7 +123,7 @@ public void periodic() {
     if (underTrench) {
         setHoodAngle(Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE);
     }
-
+    if(usingState){
     switch (currentState) {
 
         case REST:
@@ -142,7 +148,7 @@ public void periodic() {
             setHoodAngle(trajectory.getNeededPitch());
             break;    
 
-    }
+    }}
 
         double currentAngle = getHoodAngle();
         double pidOutput = Constants.Hood.pidController.calculate(currentAngle, targetAngle);
