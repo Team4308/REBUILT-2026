@@ -127,6 +127,7 @@ public class IndexerSubsystem extends SubsystemBase {
     @Override
     public void periodic() { // the states
         setHopperVelocity(hopperSpeed);
+        setIndexerVelocity(indexerSpeed);
 
         boolean BallsReady = !m_beambreak.get();
 
@@ -157,7 +158,8 @@ public class IndexerSubsystem extends SubsystemBase {
         }
 
         Logger.recordOutput("Subsystems/Indexer/HopperSpeed", (Falcon.getVelocity().getValueAsDouble() / Constants.HopperGearRatio) * 60.0);
-        Logger.recordOutput("Subsystems/Indexer/IndexerSpeed", indexerSpeed);
+        Logger.recordOutput("Subsystems/Indexer/IndexerSpeed", (Kraken.getVelocity().getValueAsDouble() / Constants.IndexerGearRatio) * 60.0);
+        Logger.recordOutput("Subsystems/Indexer/TargetIndexerSpeed", indexerSpeed);
         Logger.recordOutput("Subsystems/Indexer/TargetHopperSpeed", hopperSpeed);
     }
 

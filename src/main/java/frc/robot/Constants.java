@@ -13,9 +13,9 @@ public class Constants {
     public static double HopperMotorConfigsKd = 0;
 
     public static int IndexerMotorId = 15;
-    public static double IndexerMotorConfigsKs = 0.1;
-    public static double IndexerMotorConfigsKv = 0.12;
-    public static double IndexerMotorConfigsKp = 0.11;
+    public static double IndexerMotorConfigsKs = 0.47;
+    public static double IndexerMotorConfigsKv = 0.15;
+    public static double IndexerMotorConfigsKp = 0.0;
     public static double IndexerMotorConfigsKi = 0;
     public static double IndexerMotorConfigsKd = 0;
 

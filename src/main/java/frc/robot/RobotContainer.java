@@ -63,7 +63,7 @@ public class RobotContainer {
     targetSpeedIndexer = MathUtil.clamp(
         targetSpeedIndexer,
         0.0,
-        1900.0);
+        6000.0);
     indexer.setIndexerSpeed(targetSpeedIndexer);
   }
 
