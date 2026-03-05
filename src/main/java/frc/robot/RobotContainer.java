@@ -4,7 +4,6 @@
 
 package frc.robot;
 
-import com.pathplanner.lib.auto.NamedCommands;
 import ca.team4308.absolutelib.control.XBoxWrapper;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -16,7 +15,6 @@ public class RobotContainer {
 
   public HoodSubsystem m_HoodSubsystem;
   private final XBoxWrapper m_driverController = new XBoxWrapper(Constants.Hood.kDriverControllerPort);
-  private final XBoxWrapper m_StateController = new XBoxWrapper(Constants.Hood.kDriverControllerPort);
   double targetAngle = 8;
 
   public RobotContainer() {
