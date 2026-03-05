@@ -20,15 +20,14 @@ public class Constants {
         public static final double max_velocity = 500;
         public final static ArmFeedforward feedforward = new ArmFeedforward(0, 0.28, 0.0155, 0.01);
         public final static ProfiledPIDController pidController = new ProfiledPIDController(
-            0.06, 0.0, 0.0,
-            new TrapezoidProfile.Constraints(Constants.Hood.max_velocity, Constants.Hood.max_accel)
-        );
+                0.06, 0.0, 0.0,
+                new TrapezoidProfile.Constraints(Constants.Hood.max_velocity, Constants.Hood.max_accel));
     }
 
     public static final class TurretSubsystem {
         public static final long MOD1 = 31;
         public static final long MOD2 = 33;
-        public static final int DRIVE_MOTOR_ID = 11;
+        public static final int DRIVE_MOTOR_ID = 13;
         public static final int CANCODER1_ID = 17;
         public static final int CANCODER2_ID = 18;
 
@@ -43,15 +42,15 @@ public class Constants {
         public static final double CANCODER2_GEAR_RATIO = (85.0 / 17.0) * (40.0 / 33.0);
         public static final double DRIVE_MOTOR_GEAR_RATIO = 12.0 / 85.0;
 
-        public static final double kP = 0.20;
+        public static final double kP = 0.0;
         public static final double kI = 0.0;
-        public static final double kD = 0.005;
+        public static final double kD = 0.0;
 
         public static final double MAX_VELOCITY_DEG_S = 260 * 4;
         public static final double MAX_ACCEL_DEG_S2 = 310 * 6;
 
-        public static final double kS = 0.05;
-        public static final double kV = 0.002;
+        public static final double kS = 0.0;
+        public static final double kV = 0.0;
 
         public static boolean stateManagerEnabled = true;
         public static final double TURRET_TOLERANCE_DEGREES = 0.5;

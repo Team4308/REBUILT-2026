@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Subsystems.turretSubsystem;
 
 public class RobotContainer {
+    private Double targetAngle = 0.0;
 
     public turretSubsystem m_turret = new turretSubsystem();
 
@@ -19,5 +20,7 @@ public class RobotContainer {
     }
 
     public void robotPeriodic() {
+        targetAngle += driverController.getLeftY();
+        m_turret.setTarget(targetAngle);
     }
 }
