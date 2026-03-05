@@ -29,7 +29,15 @@ public class turretSubsystem extends AbsoluteSubsystem {
 
     private double targetDegUnwrapped = 0.0;
     private double currentDegUnwrapped = 0.0;
-    private double lastWrappedDeg = 0.0;
+
+    // CRT is used only once at boot to establish absolute position.
+    // After that we track via encoder-1 deltas (no race conditions).
+    private boolean crtLocked = false;
+    private double lastRaw1 = 0.0; // previous encoder-1 reading for delta tracking
+
+    // Debug values for logging
+    private double dbgRaw1, dbgRaw2;
+    private long dbgVal1, dbgVal2, dbgCrtResult;
 
     private final TrapezoidProfile profile = new TrapezoidProfile(
             new TrapezoidProfile.Constraints(
@@ -55,7 +63,6 @@ public class turretSubsystem extends AbsoluteSubsystem {
         driveMotor.getConfigurator().apply(driveConfig);
 
         CANcoderConfiguration ccConfig = new CANcoderConfiguration();
-        ccConfig.MagnetSensor.MagnetOffset = 0.0;
         canCoder1.getConfigurator().apply(ccConfig);
         canCoder2.getConfigurator().apply(ccConfig);
     }
@@ -69,26 +76,48 @@ public class turretSubsystem extends AbsoluteSubsystem {
     }
 
     private void updateCurrentAngle() {
-        double wrappedDeg;
+        double raw1 = canCoder1.getAbsolutePosition().getValueAsDouble();
+        double raw2 = canCoder2.getAbsolutePosition().getValueAsDouble();
 
-        double encoder1 = canCoder1.getAbsolutePosition().getValueAsDouble();
-        double encoder2 = canCoder2.getAbsolutePosition().getValueAsDouble();
-        long val1 = Math.floorMod(Math.round(encoder1 * TurretSubsystem.ENCODER_TICKS_NUMERATOR), TurretSubsystem.MOD1);
-        long val2 = Math.floorMod(Math.round(encoder2 * TurretSubsystem.ENCODER_TICKS_NUMERATOR), TurretSubsystem.MOD2);
+        dbgRaw1 = raw1;
+        dbgRaw2 = raw2;
 
-        long[] result = ChineseRemainderSolver.solvePair(val1, TurretSubsystem.MOD1, val2, TurretSubsystem.MOD2);
-        if (result == null) {
-            wrappedDeg = lastWrappedDeg;
-        } else {
-            double rotations = ((double) result[0]) / (double) TurretSubsystem.TICKS_PER_REV;
-            wrappedDeg = MathUtil.inputModulus(rotations * 360.0, 0, 360);
+        if (!crtLocked) {
+
+            long val1 = Math.floorMod(Math.round(raw1 * TurretSubsystem.MOD1), TurretSubsystem.MOD1);
+            long val2 = Math.floorMod(Math.round(raw2 * TurretSubsystem.MOD2), TurretSubsystem.MOD2);
+            dbgVal1 = val1;
+            dbgVal2 = val2;
+
+            long[] result = ChineseRemainderSolver.solvePair(val1, TurretSubsystem.MOD1, val2, TurretSubsystem.MOD2);
+            if (result == null) return;
+
+            long teeth = result[0]; // [0, 1023)
+            dbgCrtResult = teeth;
+
+            // Convert to degrees within [0, 360)
+            double deg = teeth / TurretSubsystem.TEETH_PER_TURRET_REV * 360.0;
+            deg = MathUtil.inputModulus(deg, 0, 360);
+
+            currentDegUnwrapped = deg;
+            lastRaw1 = raw1;
+            crtLocked = true;
+
+            System.out.printf("CRT LOCK | res1=%d res2=%d | teeth=%d | deg=%.2f%n",
+                    val1, val2, teeth, deg);
+            return;
         }
+        double deltaRaw = raw1 - lastRaw1;
 
-        double delta = wrappedDeg - lastWrappedDeg;
-        if (delta > 180) delta -= 360;
-        if (delta < -180) delta += 360;
-        currentDegUnwrapped += delta;
-        lastWrappedDeg = wrappedDeg;
+        if (deltaRaw > 0.5) deltaRaw -= 1.0;
+        if (deltaRaw < -0.5) deltaRaw += 1.0;
+
+        double deltaDeg = deltaRaw / TurretSubsystem.CANCODER1_GEAR_RATIO * 360.0;
+        currentDegUnwrapped += deltaDeg;
+        lastRaw1 = raw1;
+
+        System.out.printf("ENC1 | raw1=%.4f deltaRaw=%.6f | deg=%.2f%n",
+                raw1, deltaRaw, currentDegUnwrapped);
     }
 
     public void setTarget(double degrees) {
@@ -221,6 +250,13 @@ public class turretSubsystem extends AbsoluteSubsystem {
         recordOutput("At Target", isAtTarget());
         recordOutput("Min Limit (deg)", TurretSubsystem.MIN_DEGREES);
         recordOutput("Max Limit (deg)", TurretSubsystem.MAX_DEGREES);
+
+        // CRT debug
+        recordOutput("CRT/Enc1 Raw", dbgRaw1);
+        recordOutput("CRT/Enc2 Raw", dbgRaw2);
+        recordOutput("CRT/Residue1", (double) dbgVal1);
+        recordOutput("CRT/Residue2", (double) dbgVal2);
+        recordOutput("CRT/TeethPassed", (double) dbgCrtResult);
     }
 
     @Override

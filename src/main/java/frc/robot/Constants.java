@@ -43,8 +43,9 @@ public class Constants {
         public static final double CANCODER1_GEAR_RATIO = (85.0 / 17.0) * (40.0 / 31.0);
         public static final double CANCODER2_GEAR_RATIO = (85.0 / 17.0) * (40.0 / 33.0);
 
-
-        public static final long ENCODER_TICKS_NUMERATOR = (85L * 40L) / 17L; // Encoder ticks per revolution of the turret, before applying modulus for unwrapping
+        // The common numerator of the gear ratios: 85*40/17 = 200.
+        // This is the number of "teeth passed" (encoder mesh events) per turret revolution.
+        public static final double TEETH_PER_TURRET_REV = 200.0;
 
         public static final double kP = 0.0;
         public static final double kI = 0.0;
@@ -64,7 +65,5 @@ public class Constants {
         public static final double MAX_TICKS = TICKS_PER_REV * 0.5;
         public static final double MIN_DEGREES = -0.5 * 360.0;
         public static final double MAX_DEGREES = 0.5 * 360.0;
-
-        public static final double TURRET_MOI = 0.025;
     }
 }
