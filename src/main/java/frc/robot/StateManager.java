@@ -2,11 +2,14 @@ package frc.robot;
 
 import java.lang.ModuleLayer.Controller;
 
+import com.ctre.phoenix6.signals.RobotEnableValue;
+
 import ca.team4308.absolutelib.control.XBoxWrapper;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.subsystems.HoodSubsystem;
+import frc.robot.subsystems.HoodSubsystem.RobotState;
 
 public class StateManager {
 
@@ -202,9 +205,8 @@ public class StateManager {
 
             case ActiveTeleopAllianceZoneResting:
                 m_intakeSubsystem.setState(state.INTAKING);
-                 m_intakeSubsystem
                 m_indexerSubsystem 
-                m_hoodSubsystem 
+                m_hoodSubsystem.setState(RobotState.REST);
                 m_shooterSubsystem 
                 m_turretSubsystem 
                 m_climberSubsystem
