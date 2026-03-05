@@ -111,9 +111,22 @@ public class StateManager {
 
                         
                         if(manual){ // disables the usingState boolean in all subsystems
-                            
-                        }else{ // if both conditions pass run all of the shooting code
+                            m_hoodSubsystem.setUsingState(false);
+                            m_swerveSubsystem.setUsingState(false);
+                            m_intakeSubsystem.setStateBased(false);
+                            m_climberSubsystem.setStateBased(false);
+                            m_indexerSubsystem.setUsingState(false);
+                            m_shooterSubsystem.setStateBased(false);
+                            m_turretSubsystem.setStateBased(false); // Turret DOES NOT have a setstatebased, needs to be added.
 
+                        }else{ // if both conditions pass run all of the shooting code
+                            m_hoodSubsystem.setUsingState(true);
+                            m_swerveSubsystem.setUsingState(true);
+                            m_intakeSubsystem.setStateBased(true);
+                            m_climberSubsystem.setStateBased(true);
+                            m_indexerSubsystem.setUsingState(true);
+                            m_shooterSubsystem.setStateBased(true);
+                            m_turretSubsystem.setStateBased(true); // Turret DOES NOT have a setstatebased, needs to be added.
                     // toggle for button (only allow when previous conditions are satisfied)
                     isShooting = (isShooting) ? false : true;
 
