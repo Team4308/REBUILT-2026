@@ -3,8 +3,9 @@ package frc.robot;
 import ca.team4308.absolutelib.math.trajectories.shooter.ShooterSystem;
 import ca.team4308.absolutelib.subsystems.Arm;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Subsystems.HoodSubsystem;
 import frc.robot.Util.TrajectoryCalculations;
-import frc.robot.subsystems.*;
+import frc.robot.Subsystems.*;
 
 /*
  * READDDD MEEEEE:
@@ -30,10 +31,9 @@ public class StateManager extends SubsystemBase {
     
     private final HoodSubsystem hood;
     private final ShooterSubsystem shooter;
-    private final TurretSubsystem turret;
-    private final IntakeSubsystem intake;
-    private final DriveSubsystem drive;
-    private final Arm arm;
+    // private final TurretSubsystem turret;
+    // private final IntakeSubsystem intake;
+    // private final DriveSubsystem drive;
     private StateManager.RobotState currentState = StateManager.RobotState.Home;
 
     private final TrajectoryCalculations trajectory;
@@ -49,22 +49,22 @@ public class StateManager extends SubsystemBase {
 
     public StateManager(
         HoodSubsystem hood,
-        ShooterSubsystem shooter,
-        TurretSubsystem turret,
-        IntakeSubsystem intake,
-        DriveSubsystem drive
+        ShooterSubsystem shooter
+        // TurretSubsystem turret,
+        // IntakeSubsystem intake,
+        // DriveSubsystem drive
     ) {
         this.hood = hood;
         this.shooter = shooter;
-        this.turret = turret;
-        this.intake = intake;
-        this.drive = drive;
+        // this.turret = turret;
+        // this.intake = intake;
+        // this.drive = drive;
 
         trajectory = new TrajectoryCalculations();
 
-        trajectory.setPoseSupplier(drive::getPose);
-        trajectory.setChassisSupplier(drive::getChassisSpeeds);
-        trajectory.setCurrentRPMsupply(shooter::getRPM);
+        // trajectory.setPoseSupplier(drive::getPose);
+        // trajectory.setChassisSupplier(drive::getChassisSpeeds);
+        // trajectory.setCurrentRPMsupply(shooter::getRPM);
     }
 
     @Override
@@ -72,61 +72,62 @@ public class StateManager extends SubsystemBase {
         switch (currentState) {
 
             case Home:
-                intake.stopMotors();
-                shooter.stopMotors();
+                // intake.stopMotors();
+                // shooter.stopMotors();
                 hood.setHoodAngle(Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE);
                 break;
             case ActiveTeleopAllianceZone:
-                intake.runIntake();
+                // // intake.runIntake();
                 trajectory.updateShot();
                 hood.setHoodAngle(trajectory.getNeededPitch());
-                turret.setYaw(trajectory.getNeededYaw());
-                shooter.setTargetRPM(trajectory.getNeededRPM());
+                // turret.setYaw(trajectory.getNeededYaw());
+                // shooter.setTargetRPM(trajectory.getNeededRPM());
                 break;    
 
             case ActiveTeleopNeutralZone:
-                intake.runIntake();
+                // // intake.runIntake();
                 hood.setHoodAngle(Constants.Hood.kPassingAngle);
-                turret.aimAtPassingSide();
-                shooter.setTargetRPM(Constants.Shooter.kPassingRPM);
+                // turret.aimAtPassingSide();
+                // shooter.setTargetRPM(Constants.Shooter.kPassingRPM);
                 break;     
                        
             case ActiveTeleopOpponentZone:
-                intake.runIntake();
+                // // intake.runIntake();
                 hood.setHoodAngle(Constants.Hood.kPassingAngle);
-                turret.aimAtPassingSide();
-                shooter.setTargetRPM(Constants.Shooter.kPassingRPM);
+                // turret.aimAtPassingSide();
+                // shooter.setTargetRPM(Constants.Shooter.kPassingRPM);
                 break;
 
             case InactiveTeleopAllianceZone:
-                intake.runIntake();
-                shooter.stop();
+                // // intake.runIntake();
+                // shooter.stop();
                 hood.setHoodAngle(Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE);
-                turret.setYaw(trajectory.getNeededYaw());
+                // turret.setYaw(trajectory.getNeededYaw());
                 break;
 
             case InactiveTeleopNeutralZone:
-                intake.runIntake();
+                // // intake.runIntake();
                 hood.setHoodAngle(Constants.Hood.kPassingAngle);
-                turret.aimAtPassingSide();
-                shooter.setTargetRPM(Constants.Shooter.kPassingRPM);
+                ///.aimAtPassingSide();
+                //shooter.setTargetRPM(Constants.Shooter.kPassingRPM);
                 break;
 
             case InactiveTeleopOpponentZone:
-                intake.runIntake();
+                // intake.runIntake();
                 hood.setHoodAngle(Constants.Hood.kPassingAngle);
-                turret.aimAtPassingSide();
-                shooter.setTargetRPM(Constants.Shooter.kPassingRPM);
+                //turret.aimAtPassingSide();
+               // shooter.setTargetRPM(Constants.Shooter.kPassingRPM);
                 break;
 
             case EndgameTeleopAllianceZone:
             case EndgameTeleopNeutralZone:
             case EndgameTeleopOpponentZone:
-                intake.stop();
-                shooter.stop();
-                turret.setSafeAngle();
+                // intake.stop();
+                //shooter.stop();
+                //turret.setSafeAngle();
                 hood.setHoodAngle(Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE);
                 break;
 
         }
+    }
 }

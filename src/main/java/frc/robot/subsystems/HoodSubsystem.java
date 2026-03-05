@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.Subsystems;
 
 import org.littletonrobotics.junction.Logger;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -93,9 +93,9 @@ public class HoodSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         // IMPORTANT: Update this to whatever the locationUtil file is actually called
-        if(LocationUtil.GetIsUnderTrench()) {
-            setHoodAngle(Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE); 
-        }
+        // if(LocationUtil.GetIsUnderTrench()) {
+        //     setHoodAngle(Constants.Hood.REVERSE_SOFT_LIMIT_ANGLE); 
+        // }
         double currentAngle = getHoodAngle();
         double pidOutput = Constants.Hood.pidController.calculate(currentAngle, targetAngle);
         double ffVolts = Constants.Hood.feedforward.calculate(Units.degreesToRadians(currentAngle), Constants.Hood.pidController.getSetpoint().velocity);

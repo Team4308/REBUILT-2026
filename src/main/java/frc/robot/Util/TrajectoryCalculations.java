@@ -68,15 +68,27 @@ public class TrajectoryCalculations {
     }
 
     public double getNeededYaw() {
-        return shooterSystem.getLastTrajectoryResult().getYawAdjustmentDegrees();
+        var result = shooterSystem.getLastTrajectoryResult();
+        if (result == null) {
+            return 0.0;
+        }
+        return result.getYawAdjustmentDegrees();
     }
 
     public double getNeededPitch() {
-        return shooterSystem.getLastTrajectoryResult().getPitchAngleDegrees();
+        var result = shooterSystem.getLastTrajectoryResult();
+        if (result == null) {
+            return 0.0;
+        }
+        return result.getPitchAngleDegrees();
     }
 
     public double getNeededRPM(){
-        return shooterSystem.getLastTrajectoryResult().getRecommendedRpm();
+        var result = shooterSystem.getLastTrajectoryResult();
+        if (result == null) {
+            return 0.0;
+        }
+        return result.getRecommendedRpm();
     }
 
     public void updateShot(){
