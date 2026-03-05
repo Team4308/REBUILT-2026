@@ -38,9 +38,13 @@ public class Constants {
 
         public static final Translation3d FIELD_TARGET = new Translation3d(8.27, 4.1, 2.0);
 
+        // Use only to output degrees based on absolute position, not for calculations, which should use raw encoder values and gear ratios
+        // use the oppsite of this to convert from degrees to raw encoder values for calculations like to log and find min max encoder values for unwrapping
         public static final double CANCODER1_GEAR_RATIO = (85.0 / 17.0) * (40.0 / 31.0);
         public static final double CANCODER2_GEAR_RATIO = (85.0 / 17.0) * (40.0 / 33.0);
-        public static final double DRIVE_MOTOR_GEAR_RATIO = 12.0 / 85.0;
+
+
+        public static final long ENCODER_TICKS_NUMERATOR = (85L * 40L) / 17L; // Encoder ticks per revolution of the turret, before applying modulus for unwrapping
 
         public static final double kP = 0.0;
         public static final double kI = 0.0;

@@ -73,8 +73,8 @@ public class turretSubsystem extends AbsoluteSubsystem {
 
         double encoder1 = canCoder1.getAbsolutePosition().getValueAsDouble();
         double encoder2 = canCoder2.getAbsolutePosition().getValueAsDouble();
-        long val1 = Math.floorMod(Math.round(encoder1 * TurretSubsystem.MOD1), TurretSubsystem.MOD1);
-        long val2 = Math.floorMod(Math.round(encoder2 * TurretSubsystem.MOD2), TurretSubsystem.MOD2);
+        long val1 = Math.floorMod(Math.round(encoder1 * TurretSubsystem.ENCODER_TICKS_NUMERATOR), TurretSubsystem.MOD1);
+        long val2 = Math.floorMod(Math.round(encoder2 * TurretSubsystem.ENCODER_TICKS_NUMERATOR), TurretSubsystem.MOD2);
 
         long[] result = ChineseRemainderSolver.solvePair(val1, TurretSubsystem.MOD1, val2, TurretSubsystem.MOD2);
         if (result == null) {
