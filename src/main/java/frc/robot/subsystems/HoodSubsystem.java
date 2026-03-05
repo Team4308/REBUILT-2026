@@ -106,6 +106,13 @@ public class HoodSubsystem extends SubsystemBase {
         return currentState;
     }
 
+    public void setUsingState(boolean using){
+        usingState = using;
+    }
+    public boolean getUsingState(){
+        return usingState;
+    }
+
     public void stopMotors() {
         m_hoodMotor.setVoltage(0);
     }
