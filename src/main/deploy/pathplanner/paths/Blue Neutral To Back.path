@@ -8,8 +8,13 @@
       },
       "prevControl": null,
       "nextControl": {
+<<<<<<< HEAD:src/main/deploy/pathplanner/paths/Blue Neutral To Back.path
         "x": 6.684291763306209,
         "y": 5.096545084764986
+=======
+        "x": 14.901504366212762,
+        "y": 6.308838917473649
+>>>>>>> refs/remotes/origin/Autons:src/main/deploy/pathplanner/paths/Red R to LN (Shoot).path
       },
       "isLocked": false,
       "linkedName": null
@@ -20,12 +25,21 @@
         "y": 7.085231316725978
       },
       "prevControl": {
+<<<<<<< HEAD:src/main/deploy/pathplanner/paths/Blue Neutral To Back.path
         "x": 6.913048416665758,
         "y": 6.539765500256549
       },
       "nextControl": {
         "x": 5.9348465102381045,
         "y": 7.460194578949243
+=======
+        "x": 13.453963043950953,
+        "y": 7.193138992326753
+      },
+      "nextControl": {
+        "x": 12.189403607025746,
+        "y": 7.476194389082319
+>>>>>>> refs/remotes/origin/Autons:src/main/deploy/pathplanner/paths/Red R to LN (Shoot).path
       },
       "isLocked": false,
       "linkedName": null
@@ -36,18 +50,28 @@
         "y": 7.547876631079477
       },
       "prevControl": {
+<<<<<<< HEAD:src/main/deploy/pathplanner/paths/Blue Neutral To Back.path
         "x": 4.668159669615515,
         "y": 7.5429216470040705
       },
       "nextControl": {
         "x": 3.3407330206274963,
         "y": 7.569236327736159
+=======
+        "x": 12.172830993830987,
+        "y": 7.493330888595867
+      },
+      "nextControl": {
+        "x": 9.50355031629961,
+        "y": 7.284098499641875
+>>>>>>> refs/remotes/origin/Autons:src/main/deploy/pathplanner/paths/Red R to LN (Shoot).path
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
+<<<<<<< HEAD:src/main/deploy/pathplanner/paths/Blue Neutral To Back.path
         "x": 2.976476868327403,
         "y": 7.19282325029656
       },
@@ -58,18 +82,39 @@
       "nextControl": {
         "x": 2.5412791879922088,
         "y": 6.718284200299948
+=======
+        "x": 9.098074179743222,
+        "y": 6.939728958630528
+      },
+      "prevControl": {
+        "x": 9.287481640469823,
+        "y": 7.102900076850332
+      },
+      "nextControl": {
+        "x": 8.491834393690917,
+        "y": 6.4174642948205
+>>>>>>> refs/remotes/origin/Autons:src/main/deploy/pathplanner/paths/Red R to LN (Shoot).path
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
+<<<<<<< HEAD:src/main/deploy/pathplanner/paths/Blue Neutral To Back.path
         "x": 2.976476868327403,
         "y": 4.061897983392646
       },
       "prevControl": {
         "x": 3.0150201148890434,
         "y": 4.989765070308341
+=======
+        "x": 8.831,
+        "y": 2.112
+      },
+      "prevControl": {
+        "x": 8.985917836294139,
+        "y": 2.3082153510761643
+>>>>>>> refs/remotes/origin/Autons:src/main/deploy/pathplanner/paths/Red R to LN (Shoot).path
       },
       "nextControl": null,
       "isLocked": false,
