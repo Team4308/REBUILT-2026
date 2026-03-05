@@ -3,9 +3,9 @@ package frc.robot;
 import ca.team4308.absolutelib.math.trajectories.shooter.ShooterSystem;
 import ca.team4308.absolutelib.subsystems.Arm;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Subsystems.HoodSubsystem;
+import frc.robot.subsystems.HoodSubsystem;
 import frc.robot.Util.TrajectoryCalculations;
-import frc.robot.Subsystems.*;
+import frc.robot.subsystems.*;
 
 /*
  * READDDD MEEEEE:
