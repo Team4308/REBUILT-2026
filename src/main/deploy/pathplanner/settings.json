@@ -3,10 +3,13 @@
   "robotLength": 0.9,
   "holonomicMode": true,
   "pathFolders": [
-    "New Folder",  "Disruption Autos"
+    "New Folder",
+    "Disruption Autos"
   ],
   "autoFolders": [
-    "Disruption Autos"
+    "Disruption",
+    "Starting Mid",
+    "Starting Left"
   ],
   "defaultMaxVel": 3.0,
   "defaultMaxAccel": 3.0,
