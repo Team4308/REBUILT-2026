@@ -38,24 +38,27 @@ public class Constants {
 
         public static final Translation3d FIELD_TARGET = new Translation3d(8.27, 4.1, 2.0);
 
-        // Use only to output degrees based on absolute position, not for calculations, which should use raw encoder values and gear ratios
-        // use the oppsite of this to convert from degrees to raw encoder values for calculations like to log and find min max encoder values for unwrapping
+        // Use only to output degrees based on absolute position, not for calculations,
+        // which should use raw encoder values and gear ratios
+        // use the oppsite of this to convert from degrees to raw encoder values for
+        // calculations like to log and find min max encoder values for unwrapping
         public static final double CANCODER1_GEAR_RATIO = (85.0 / 17.0) * (40.0 / 31.0);
         public static final double CANCODER2_GEAR_RATIO = (85.0 / 17.0) * (40.0 / 33.0);
 
         // The common numerator of the gear ratios: 85*40/17 = 200.
-        // This is the number of "teeth passed" (encoder mesh events) per turret revolution.
+        // This is the number of "teeth passed" (encoder mesh events) per turret
+        // revolution.
         public static final double TEETH_PER_TURRET_REV = 200.0;
 
-        public static final double kP = 0.0;
+        public static final double kP = 0.02;
         public static final double kI = 0.0;
         public static final double kD = 0.0;
 
         public static final double MAX_VELOCITY_DEG_S = 260 * 4;
         public static final double MAX_ACCEL_DEG_S2 = 310 * 6;
 
-        public static final double kS = 0.0;
-        public static final double kV = 0.0;
+        public static final double kS = 0.3;
+        public static final double kV = 0.01;
 
         public static boolean stateManagerEnabled = true;
         public static final double TURRET_TOLERANCE_DEGREES = 0.5;
@@ -63,7 +66,7 @@ public class Constants {
         public static final int TICKS_PER_REV = (int) (MOD1 * MOD2);
         public static final double MIN_TICKS = -TICKS_PER_REV * 0.5;
         public static final double MAX_TICKS = TICKS_PER_REV * 0.5;
-        public static final double MIN_DEGREES = -0.5 * 360.0;
-        public static final double MAX_DEGREES = 0.5 * 360.0;
+        public static final double MIN_DEGREES = 180;
+        public static final double MAX_DEGREES = 540;
     }
 }

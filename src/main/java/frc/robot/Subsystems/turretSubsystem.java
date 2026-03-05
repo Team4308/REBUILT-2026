@@ -18,6 +18,8 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj.Preferences;
 import frc.robot.Constants;
 import frc.robot.Constants.TurretSubsystem;
 
@@ -29,6 +31,9 @@ public class turretSubsystem extends AbsoluteSubsystem {
 
     private double targetDegUnwrapped = 0.0;
     private double currentDegUnwrapped = 0.0;
+
+    private double offset1 = 0.205;
+    private double offset2 = -0.237;
 
     // CRT is used only once at boot to establish absolute position.
     // After that we track via encoder-1 deltas (no race conditions).
@@ -42,29 +47,27 @@ public class turretSubsystem extends AbsoluteSubsystem {
     private final TrapezoidProfile profile = new TrapezoidProfile(
             new TrapezoidProfile.Constraints(
                     TurretSubsystem.MAX_VELOCITY_DEG_S,
-                    TurretSubsystem.MAX_ACCEL_DEG_S2
-            )
-    );
+                    TurretSubsystem.MAX_ACCEL_DEG_S2));
     private TrapezoidProfile.State profileSetpoint = new TrapezoidProfile.State(0, 0);
     private TrapezoidProfile.State profileGoal = new TrapezoidProfile.State(0, 0);
 
     private final PIDController pid = new PIDController(
-            TurretSubsystem.kP, TurretSubsystem.kI, TurretSubsystem.kD
-    );
+            TurretSubsystem.kP, TurretSubsystem.kI, TurretSubsystem.kD);
 
     public turretSubsystem() {
         driveMotor = new TalonFX(Constants.TurretSubsystem.DRIVE_MOTOR_ID);
         canCoder1 = new CANcoder(Constants.TurretSubsystem.CANCODER1_ID);
         canCoder2 = new CANcoder(Constants.TurretSubsystem.CANCODER2_ID);
 
+        // Load persisted offsets if present (stored by calibrateZero()).
+        offset1 = Preferences.getDouble("turret.offset1", offset1);
+        offset2 = Preferences.getDouble("turret.offset2", offset2);
+        System.out.printf("Turret offsets loaded: offset1=%.6f offset2=%.6f%n", offset1, offset2);
+
         TalonFXConfiguration driveConfig = new TalonFXConfiguration();
         driveConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         driveConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         driveMotor.getConfigurator().apply(driveConfig);
-
-        CANcoderConfiguration ccConfig = new CANcoderConfiguration();
-        canCoder1.getConfigurator().apply(ccConfig);
-        canCoder2.getConfigurator().apply(ccConfig);
     }
 
     public double getTurretAngle() {
@@ -76,8 +79,10 @@ public class turretSubsystem extends AbsoluteSubsystem {
     }
 
     private void updateCurrentAngle() {
-        double raw1 = canCoder1.getAbsolutePosition().getValueAsDouble();
-        double raw2 = canCoder2.getAbsolutePosition().getValueAsDouble();
+        double raw1 = canCoder1.getAbsolutePosition().getValueAsDouble() - offset1;
+        double raw2 = canCoder2.getAbsolutePosition().getValueAsDouble() - offset2;
+        recordOutput("encoder1", raw1);
+        recordOutput("encoder2", raw2);
 
         dbgRaw1 = raw1;
         dbgRaw2 = raw2;
@@ -90,7 +95,8 @@ public class turretSubsystem extends AbsoluteSubsystem {
             dbgVal2 = val2;
 
             long[] result = ChineseRemainderSolver.solvePair(val1, TurretSubsystem.MOD1, val2, TurretSubsystem.MOD2);
-            if (result == null) return;
+            if (result == null)
+                return;
 
             long teeth = result[0]; // [0, 1023)
             dbgCrtResult = teeth;
@@ -109,8 +115,10 @@ public class turretSubsystem extends AbsoluteSubsystem {
         }
         double deltaRaw = raw1 - lastRaw1;
 
-        if (deltaRaw > 0.5) deltaRaw -= 1.0;
-        if (deltaRaw < -0.5) deltaRaw += 1.0;
+        if (deltaRaw > 0.5)
+            deltaRaw -= 1.0;
+        if (deltaRaw < -0.5)
+            deltaRaw += 1.0;
 
         double deltaDeg = deltaRaw / TurretSubsystem.CANCODER1_GEAR_RATIO * 360.0;
         currentDegUnwrapped += deltaDeg;
@@ -126,9 +134,8 @@ public class turretSubsystem extends AbsoluteSubsystem {
         double minDeg = TurretSubsystem.MIN_DEGREES;
         double maxDeg = TurretSubsystem.MAX_DEGREES;
 
-        double delta = requestedWrapped - currentWrapped;
-        if (delta > 180) delta -= 360;
-        if (delta < -180) delta += 360;
+        // Use inputModulus to get the shortest signed delta in (-180, 180].
+        double delta = MathUtil.inputModulus(requestedWrapped - currentWrapped, -180.0, 180.0);
         double shortPath = currentDegUnwrapped + delta;
 
         if (shortPath >= minDeg && shortPath <= maxDeg) {
@@ -235,7 +242,7 @@ public class turretSubsystem extends AbsoluteSubsystem {
         double ffOutput = TurretSubsystem.kS * Math.signum(profileSetpoint.velocity)
                 + TurretSubsystem.kV * profileSetpoint.velocity;
 
-        double voltage = MathUtil.clamp(pidOutput + ffOutput, -12.0, 12.0);
+        double voltage = MathUtil.clamp(pidOutput + ffOutput, -1.0, 1.0);
         driveMotor.setVoltage(voltage);
 
         recordOutput("Turret Angle (wrapped)", getTurretAngle());
