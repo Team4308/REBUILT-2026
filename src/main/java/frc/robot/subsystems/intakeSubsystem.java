@@ -147,10 +147,13 @@ public class IntakeSubsystem extends SubsystemBase {
       switch (currentState) {
         case REST:
           retract();
+          break;
         case SHOOTING:
           agitate();
+          break;
         case INTAKING:
           intake();
+          break;
       }
     }
   }
