@@ -182,9 +182,7 @@ public class HoodSubsystem extends SubsystemBase {
         // Safety override: hood must retract under trench
         if (underTrench) {
             restingState();
-        }
-
-        if (usingState) {
+        } else if (usingState) {
             switch (currentState) {
                 case REST:
                     restingState();
