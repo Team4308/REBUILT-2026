@@ -34,7 +34,7 @@ public class StateManager {
         InactiveTeleopNeutralZonePassingIntaking,
         InactiveTeleopOpponentZoneResting,
         InactiveTeleopOpponentZoneIntaking,
-        InactiveTeleopOpponentlZonePassingIntaking,
+        InactiveTeleopOpponentZonePassingIntaking,
         ClimbPrepareLeft,
         ClimbPrepareRight,
         ClimbedUp,
@@ -86,6 +86,7 @@ public class StateManager {
     public void updateState() {
 
         if (STOP && StopSwerve) {// stops all motors including swerve
+            setRobotState(State.Home);
             m_hoodSubsystem.stopMotors();
             m_intakeSubsystem.stopRoller();
             m_climberSubsystem.stopMotors(); // Climber DOES NOT have a stop method
@@ -93,19 +94,34 @@ public class StateManager {
             m_shooterSubsystem.stopMotors();
             m_turretSubsystem.stopTurret();
             m_swerveSubsystem.stopSwerve(); // Swerve DOES NOT have any stop method
+            m_hoodSubsystem.setUsingState(false);
+            m_swerveSubsystem.setUsingState(false);
+            m_intakeSubsystem.setStateBased(false);
+            m_climberSubsystem.setStateBased(false);
+            m_indexerSubsystem.setUsingState(false);
+            m_shooterSubsystem.setStateBased(false);
+            m_turretSubsystem.setStateBased(false); // Turret DOES NOT have a setstatebased, needs to be added.
             return;
         } else if (STOP) { // stop all motors except for swerve, done so that if a bot is cooked while in
-                           // the middle of field we can still drive the bot back to safety
+            setRobotState(State.Home); // the middle of field we can still drive the bot back to safety
             m_hoodSubsystem.stopMotors();
             m_intakeSubsystem.stopRoller();
             m_climberSubsystem.stopMotors(); // Climber DOES NOT have a stop method
             m_indexerSubsystem.stopMotors();
             m_shooterSubsystem.stopMotors();
             m_turretSubsystem.stopTurret();
+            m_hoodSubsystem.setUsingState(false);
+            m_swerveSubsystem.setUsingState(false);
+            m_intakeSubsystem.setStateBased(false);
+            m_climberSubsystem.setStateBased(false);
+            m_indexerSubsystem.setUsingState(false);
+            m_shooterSubsystem.setStateBased(false);
+            m_turretSubsystem.setStateBased(false); // Turret DOES NOT have a setstatebased, needs to be added.
             return;
         } else {
 
             if (manual) { // disables the usingState boolean in all subsystems
+                setRobotState(State.Home);
                 m_hoodSubsystem.setUsingState(false);
                 m_swerveSubsystem.setUsingState(false);
                 m_intakeSubsystem.setStateBased(false);
@@ -169,7 +185,7 @@ public class StateManager {
                             }
                         } else {
                             if (isIntaking && passing) {
-                                setRobotState(State.InactiveTeleopOpponentlZonePassingIntaking);
+                                setRobotState(State.InactiveTeleopOpponentZonePassingIntaking);
                             } else {
                                 setRobotState(State.InactiveTeleopOpponentZoneIntaking);
                             }
@@ -329,7 +345,7 @@ public class StateManager {
             case ActiveTeleopNeutralZonePassingIntaking:
             case ActiveTeleopOpponentZonePassingIntaking:
             case InactiveTeleopNeutralZonePassingIntaking:
-            case InactiveTeleopOpponentlZonePassingIntaking:
+            case InactiveTeleopOpponentZonePassingIntaking:
 
                 m_intakeSubsystem.setRobotState(state.INTAKING); // does not agitate tho...
                 m_hoodSubsystem.setState(RobotState.PASS_LEFT); // set to PASS_LEFT as a placeholder, implementation
@@ -369,8 +385,14 @@ public class StateManager {
                 m_turretSubsystem.setState(/* whatever the rest/idle state is */);
                 break;
 
-            // What does it mean to be in the home state?
+            // similar to resting states, however intake is retracted
             case Home:
+                m_intakeSubsystem.setRobotState(state.REST);
+                m_hoodSubsystem.setState(RobotState.REST);
+                m_indexerSubsystem.setState(State.IDLE);
+                m_shooterSubsystem.setState(ShooterState.IDLE);
+                m_climberSubsystem.setState(States.NOT_CLIMBING);
+                m_turretSubsystem.setState(/* whatever the resting state is */);
                 break;
 
         }
