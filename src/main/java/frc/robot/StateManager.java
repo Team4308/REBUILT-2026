@@ -285,7 +285,7 @@ public class StateManager {
             case InactiveTeleopNeutralZoneResting:
             case InactiveTeleopOpponentZoneResting:
 
-                m_intakeSubsystem.setRobotState(state.INTAKING);
+                m_intakeSubsystem.setState(state.INTAKING);
                 m_hoodSubsystem.setState(RobotState.REST);
                 m_indexerSubsystem.setState(State.IDLE);
                 m_shooterSubsystem.setState(ShooterState.IDLE);
@@ -296,7 +296,7 @@ public class StateManager {
 
                 break;
             case ActiveTeleopAllianceZoneShooting:
-                m_intakeSubsystem.setRobotState(state.SHOOTING);
+                m_intakeSubsystem.setState(state.SHOOTING);
                 m_hoodSubsystem.setState(RobotState.SHOOT);
                 m_indexerSubsystem.setState(State.SHOOTING);
                 m_shooterSubsystem.setState(ShooterState.SHOOTING);
@@ -311,7 +311,7 @@ public class StateManager {
             case InactiveTeleopNeutralZoneIntaking:
             case InactiveTeleopOpponentZoneIntaking:
 
-                m_intakeSubsystem.setRobotState(state.INTAKING);
+                m_intakeSubsystem.setState(state.INTAKING);
                 m_hoodSubsystem.setState(RobotState.SHOOT);
                 m_indexerSubsystem.setState(State.IDLE);
                 m_shooterSubsystem.setState(ShooterState.IDLE);
@@ -319,7 +319,7 @@ public class StateManager {
                 m_turretSubsystem.setState(/* whatever the aiming (not shooting) state is */);
                 break;
             case ActiveTeleopAllianceZoneShootingIntaking:
-                m_intakeSubsystem.setRobotState(state.INTAKING); // does not agitate tho...
+                m_intakeSubsystem.setState(state.INTAKING); // does not agitate tho...
                 m_hoodSubsystem.setState(RobotState.SHOOT);
                 m_indexerSubsystem.setState(State.SHOOTING);
                 m_shooterSubsystem.setState(ShooterState.SHOOTING);
@@ -331,7 +331,7 @@ public class StateManager {
             case ActiveTeleopNeutralZonePassing:
             case ActiveTeleopOpponentZonePassing:
 
-                m_intakeSubsystem.setRobotState(state.REST); // does not agitate tho...
+                m_intakeSubsystem.setState(state.REST); // does not agitate tho...
                 m_hoodSubsystem.setState(RobotState.PASS_LEFT); // set to PASS_LEFT as a placeholder, implementation
                                                                 // needs to be refined
                 m_indexerSubsystem.setState(State.SHOOTING);
@@ -347,7 +347,7 @@ public class StateManager {
             case InactiveTeleopNeutralZonePassingIntaking:
             case InactiveTeleopOpponentZonePassingIntaking:
 
-                m_intakeSubsystem.setRobotState(state.INTAKING); // does not agitate tho...
+                m_intakeSubsystem.setState(state.INTAKING); // does not agitate tho...
                 m_hoodSubsystem.setState(RobotState.PASS_LEFT); // set to PASS_LEFT as a placeholder, implementation
                                                                 // needs to be refined
                 m_indexerSubsystem.setState(State.SHOOTING);
@@ -359,7 +359,7 @@ public class StateManager {
             // Climbing states don't have any setup logic so these statements are never
             // called, update when more info is added
             case ClimbPrepareLeft:
-                m_intakeSubsystem.setRobotState(state.REST);
+                m_intakeSubsystem.setState(state.REST);
                 m_hoodSubsystem.setState(RobotState.REST);
                 m_indexerSubsystem.setState(State.IDLE);
                 m_shooterSubsystem.setState(ShooterState.IDLE);
@@ -368,7 +368,7 @@ public class StateManager {
                 break;
 
             case ClimbPrepareRight:
-                m_intakeSubsystem.setRobotState(state.REST);
+                m_intakeSubsystem.setState(state.REST);
                 m_hoodSubsystem.setState(RobotState.REST);
                 m_indexerSubsystem.setState(State.IDLE);
                 m_shooterSubsystem.setState(ShooterState.IDLE);
@@ -377,7 +377,7 @@ public class StateManager {
                 break;
 
             case ClimbedUp:
-                m_intakeSubsystem.setRobotState(state.REST);
+                m_intakeSubsystem.setState(state.REST);
                 m_hoodSubsystem.setState(RobotState.REST);
                 m_indexerSubsystem.setState(State.IDLE);
                 m_shooterSubsystem.setState(ShooterState.IDLE);
@@ -387,7 +387,7 @@ public class StateManager {
 
             // similar to resting states, however intake is retracted
             case Home:
-                m_intakeSubsystem.setRobotState(state.REST);
+                m_intakeSubsystem.setState(state.REST);
                 m_hoodSubsystem.setState(RobotState.REST);
                 m_indexerSubsystem.setState(State.IDLE);
                 m_shooterSubsystem.setState(ShooterState.IDLE);
