@@ -101,9 +101,9 @@ public class RobotContainer {
 
     drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
 
-    driver.X.onTrue(new InstantCommand(() -> targetPoseForTESTING = drivebase.getPose()));
+    //driver.X.onTrue(new InstantCommand(() -> targetPoseForTESTING = drivebase.getPose()));
 
-    driver.Y.whileTrue(driveFieldOrientedAnglularVelocityKeyboard);
+    //driver.Y.whileTrue(driveFieldOrientedAnglularVelocityKeyboard);
     driver.A.whileTrue(drivebase.driveToPose(() -> targetPoseForTESTING));
   }
 
