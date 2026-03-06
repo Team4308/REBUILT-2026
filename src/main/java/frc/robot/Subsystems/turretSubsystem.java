@@ -19,7 +19,7 @@ import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj.Preferences;
 import frc.robot.Constants;
-import frc.robot.Constants.TurretSubsystem;
+import frc.robot.Constants.Shooting.TurretSubsystem;
 
 public class turretSubsystem extends AbsoluteSubsystem {
 
@@ -53,9 +53,9 @@ public class turretSubsystem extends AbsoluteSubsystem {
             TurretSubsystem.kP, TurretSubsystem.kI, TurretSubsystem.kD);
 
     public turretSubsystem() {
-        driveMotor = new TalonFX(Constants.TurretSubsystem.DRIVE_MOTOR_ID);
-        canCoder1 = new CANcoder(Constants.TurretSubsystem.CANCODER1_ID);
-        canCoder2 = new CANcoder(Constants.TurretSubsystem.CANCODER2_ID);
+        driveMotor = new TalonFX(Constants.Shooting.TurretSubsystem.DRIVE_MOTOR_ID);
+        canCoder1 = new CANcoder(Constants.Shooting.TurretSubsystem.CANCODER1_ID);
+        canCoder2 = new CANcoder(Constants.Shooting.TurretSubsystem.CANCODER2_ID);
 
         // Load persisted offsets if present (stored by calibrateZero()).
         offset1 = Preferences.getDouble("turret.offset1", offset1);
@@ -201,7 +201,7 @@ public class turretSubsystem extends AbsoluteSubsystem {
     }
 
     public void aimAtPassingSide() {
-        setTarget(Constants.TurretSubsystem.PASSING_SIDE_ANGLE);
+        setTarget(Constants.Shooting.TurretSubsystem.PASSING_SIDE_ANGLE);
     }
 
     public Command aimAtPassingZoneCommand(Pose2d target) {
@@ -213,7 +213,7 @@ public class turretSubsystem extends AbsoluteSubsystem {
     }
 
     public void setSafeAngle() {
-        setTarget(Constants.TurretSubsystem.SAFE_ANGLE);
+        setTarget(Constants.Shooting.TurretSubsystem.SAFE_ANGLE);
     }
 
     public void stopTurret() {
