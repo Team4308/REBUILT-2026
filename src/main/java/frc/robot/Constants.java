@@ -7,7 +7,7 @@ public class Constants {
     public static double HopperGearRatio = 1;
     
     public static int HopperMotorId = 14;
-    public static double HopperMotorConfigsKs = 0.8;
+    public static double HopperMotorConfigsKs = 0.38;
     public static double HopperMotorConfigsKv = 0.0;
     public static double HopperMotorConfigsKp = 0.0;
     public static double HopperMotorConfigsKi = 0;
