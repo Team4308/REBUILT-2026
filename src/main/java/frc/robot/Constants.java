@@ -11,10 +11,12 @@ public final class Constants {
 
     // Roller tuning
     public static final double ROLLER_GEAR_RATIO = 1.0;
-    public static final double ROLLER_KP = 0.12;
+    public static final double ROLLER_KS = 0.35 ;
+    public static final double ROLLER_KV = 0.002;
+    public static final double ROLLER_KP = 0.00000001;
     public static final double ROLLER_KI = 0.0;
     public static final double ROLLER_KD = 0.0;
-    public static final double ROLLER_KV = 0.12;
+    
 
     public static final double ROLLER_INTAKE_RPM = 4500.0;
 
