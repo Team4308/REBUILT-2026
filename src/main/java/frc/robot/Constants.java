@@ -5,10 +5,11 @@ public class Constants {
     public static double HopperSpeed = 100;
     public static double IndexerGearRatio = 5 / 3;
     public static double HopperGearRatio = 1;
+    
     public static int HopperMotorId = 14;
     public static double HopperMotorConfigsKs = 0.8;
-    public static double HopperMotorConfigsKv = 0.15;
-    public static double HopperMotorConfigsKp = 0.2;
+    public static double HopperMotorConfigsKv = 0.0;
+    public static double HopperMotorConfigsKp = 0.0;
     public static double HopperMotorConfigsKi = 0;
     public static double HopperMotorConfigsKd = 0;
 
