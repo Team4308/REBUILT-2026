@@ -2,7 +2,6 @@ package frc.robot.Subsystems;
 
 import java.util.function.Supplier;
 
-import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -18,7 +17,6 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj.Preferences;
 import frc.robot.Constants;
 import frc.robot.Constants.TurretSubsystem;
@@ -32,8 +30,8 @@ public class turretSubsystem extends AbsoluteSubsystem {
     private double targetDegUnwrapped = 0.0;
     private double currentDegUnwrapped = 0.0;
 
-    private double offset1 = 0.205;
-    private double offset2 = -0.237;
+    private double offset1 = TurretSubsystem.DEFAULT_OFFSET1;
+    private double offset2 = TurretSubsystem.DEFAULT_OFFSET2;
 
     // CRT is used only once at boot to establish absolute position.
     // After that we track via encoder-1 deltas (no race conditions).
@@ -71,7 +69,7 @@ public class turretSubsystem extends AbsoluteSubsystem {
     }
 
     public double getTurretAngle() {
-        return MathUtil.inputModulus(currentDegUnwrapped, 0, 360);
+        return MathUtil.inputModulus(currentDegUnwrapped, 0, TurretSubsystem.FULL_REVOLUTION_DEG);
     }
 
     public double getUnwrappedAngle() {
@@ -102,10 +100,18 @@ public class turretSubsystem extends AbsoluteSubsystem {
             dbgCrtResult = teeth;
 
             // Convert to degrees within [0, 360)
-            double deg = teeth / TurretSubsystem.TEETH_PER_TURRET_REV * 360.0;
-            deg = MathUtil.inputModulus(deg, 0, 360);
+            double deg = teeth / TurretSubsystem.TEETH_PER_TURRET_REV * TurretSubsystem.FULL_REVOLUTION_DEG;
+            deg = MathUtil.inputModulus(deg, 0, TurretSubsystem.FULL_REVOLUTION_DEG);
+
+            // Map the [0,360) angle into the valid unwrapped range [MIN, MAX].
+            // The valid range is exactly one revolution wide, so there is exactly
+            // one representative for every wrapped angle inside [MIN, MAX].
+            deg = MathUtil.inputModulus(deg, TurretSubsystem.MIN_DEGREES, TurretSubsystem.MAX_DEGREES);
 
             currentDegUnwrapped = deg;
+            targetDegUnwrapped = deg;  // start target at current so turret doesn't jump
+            profileSetpoint = new TrapezoidProfile.State(deg, 0);
+            profileGoal = new TrapezoidProfile.State(deg, 0);
             lastRaw1 = raw1;
             crtLocked = true;
 
@@ -115,12 +121,13 @@ public class turretSubsystem extends AbsoluteSubsystem {
         }
         double deltaRaw = raw1 - lastRaw1;
 
-        if (deltaRaw > 0.5)
+        // Handle CANcoder wrap-around (encoder values are in [0,1) turns)
+        if (deltaRaw > TurretSubsystem.CANCODER_WRAP_THRESHOLD)
             deltaRaw -= 1.0;
-        if (deltaRaw < -0.5)
+        if (deltaRaw < -TurretSubsystem.CANCODER_WRAP_THRESHOLD)
             deltaRaw += 1.0;
 
-        double deltaDeg = deltaRaw / TurretSubsystem.CANCODER1_GEAR_RATIO * 360.0;
+        double deltaDeg = deltaRaw / TurretSubsystem.CANCODER1_GEAR_RATIO * TurretSubsystem.FULL_REVOLUTION_DEG;
         currentDegUnwrapped += deltaDeg;
         lastRaw1 = raw1;
 
@@ -129,39 +136,26 @@ public class turretSubsystem extends AbsoluteSubsystem {
     }
 
     public void setTarget(double degrees) {
-        double requestedWrapped = MathUtil.inputModulus(degrees, 0, 360);
-        double currentWrapped = MathUtil.inputModulus(currentDegUnwrapped, 0, 360);
-        double minDeg = TurretSubsystem.MIN_DEGREES;
-        double maxDeg = TurretSubsystem.MAX_DEGREES;
-
-        // Use inputModulus to get the shortest signed delta in (-180, 180].
-        double delta = MathUtil.inputModulus(requestedWrapped - currentWrapped, -180.0, 180.0);
-        double shortPath = currentDegUnwrapped + delta;
-
-        if (shortPath >= minDeg && shortPath <= maxDeg) {
-            targetDegUnwrapped = shortPath;
-        } else {
-            double longPath = (delta > 0) ? shortPath - 360 : shortPath + 360;
-            if (longPath >= minDeg && longPath <= maxDeg) {
-                targetDegUnwrapped = longPath;
-            } else {
-                targetDegUnwrapped = MathUtil.clamp(shortPath, minDeg, maxDeg);
-            }
-        }
-
+        // The valid unwrapped range [MIN, MAX] is exactly one revolution wide.
+        // For any requested angle there is exactly one equivalent value inside that
+        // band, so we simply map into it.  The turret will always take the direct
+        // path through unwrapped space — which is the shortest path that respects
+        // the physical limits.  If the turret is near MAX and the target is near
+        // MIN (or vice-versa), the motion naturally "unwinds the long way" because
+        // that is the only legal direction.
+        targetDegUnwrapped = MathUtil.inputModulus(degrees, TurretSubsystem.MIN_DEGREES, TurretSubsystem.MAX_DEGREES);
         profileGoal = new TrapezoidProfile.State(targetDegUnwrapped, 0);
     }
 
     public void nudgeTarget(double deltaDeg) {
-        double minDeg = TurretSubsystem.MIN_DEGREES;
-        double maxDeg = TurretSubsystem.MAX_DEGREES;
-        targetDegUnwrapped = MathUtil.clamp(targetDegUnwrapped + deltaDeg, minDeg, maxDeg);
+        targetDegUnwrapped = MathUtil.clamp(
+                targetDegUnwrapped + deltaDeg, TurretSubsystem.MIN_DEGREES, TurretSubsystem.MAX_DEGREES);
         profileGoal = new TrapezoidProfile.State(targetDegUnwrapped, 0);
     }
 
     public boolean isAtTarget() {
         return Math.abs(currentDegUnwrapped - targetDegUnwrapped) <= TurretSubsystem.TURRET_TOLERANCE_DEGREES
-                && Math.abs(profileSetpoint.velocity) < 1.0;
+                && Math.abs(profileSetpoint.velocity) < TurretSubsystem.VELOCITY_STOPPED_THRESHOLD;
     }
 
     public Command moveToTarget(Supplier<Double> degrees) {
@@ -235,20 +229,20 @@ public class turretSubsystem extends AbsoluteSubsystem {
     public void periodic() {
         updateCurrentAngle();
 
-        profileSetpoint = profile.calculate(0.020, profileSetpoint, profileGoal);
+        profileSetpoint = profile.calculate(TurretSubsystem.LOOP_PERIOD_S, profileSetpoint, profileGoal);
 
         double pidOutput = pid.calculate(currentDegUnwrapped, profileSetpoint.position);
 
         double ffOutput = TurretSubsystem.kS * Math.signum(profileSetpoint.velocity)
                 + TurretSubsystem.kV * profileSetpoint.velocity;
 
-        double voltage = MathUtil.clamp(pidOutput + ffOutput, -1.0, 1.0);
+        double voltage = MathUtil.clamp(pidOutput + ffOutput, -TurretSubsystem.MAX_VOLTAGE, TurretSubsystem.MAX_VOLTAGE);
         driveMotor.setVoltage(voltage);
 
         recordOutput("Turret Angle (wrapped)", getTurretAngle());
         recordOutput("Turret Angle (unwrapped)", currentDegUnwrapped);
         recordOutput("Target (unwrapped)", targetDegUnwrapped);
-        recordOutput("Target (wrapped)", MathUtil.inputModulus(targetDegUnwrapped, 0, 360));
+        recordOutput("Target (wrapped)", MathUtil.inputModulus(targetDegUnwrapped, 0, TurretSubsystem.FULL_REVOLUTION_DEG));
         recordOutput("Profile Setpoint", profileSetpoint.position);
         recordOutput("Profile Velocity", profileSetpoint.velocity);
         recordOutput("PID Output", pidOutput);

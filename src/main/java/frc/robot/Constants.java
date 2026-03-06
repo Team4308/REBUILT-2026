@@ -62,11 +62,28 @@ public class Constants {
 
         public static boolean stateManagerEnabled = true;
         public static final double TURRET_TOLERANCE_DEGREES = 0.5;
+        /** Velocity threshold (deg/s) below which turret is considered "stopped". */
+        public static final double VELOCITY_STOPPED_THRESHOLD = 1.0;
 
         public static final int TICKS_PER_REV = (int) (MOD1 * MOD2);
         public static final double MIN_TICKS = -TICKS_PER_REV * 0.5;
         public static final double MAX_TICKS = TICKS_PER_REV * 0.5;
         public static final double MIN_DEGREES = 180;
         public static final double MAX_DEGREES = 540;
+
+        /** One full turret revolution in degrees. */
+        public static final double FULL_REVOLUTION_DEG = 360.0;
+        /** Half revolution, used for wrap-around calculations. */
+        public static final double HALF_REVOLUTION_DEG = 180.0;
+        /** CANcoder wraps at ±0.5 turns; this is the wrap threshold. */
+        public static final double CANCODER_WRAP_THRESHOLD = 0.5;
+        /** Robot loop period in seconds (20 ms). */
+        public static final double LOOP_PERIOD_S = 0.020;
+        /** Maximum voltage magnitude sent to the turret motor. */
+        public static final double MAX_VOLTAGE = 1.0;
+        /** Default encoder-1 offset (overridden by Preferences). */
+        public static final double DEFAULT_OFFSET1 = 0.0;
+        /** Default encoder-2 offset (overridden by Preferences). */
+        public static final double DEFAULT_OFFSET2 = 0.0;
     }
 }
