@@ -57,8 +57,8 @@ public class Constants {
         public static final double MAX_VELOCITY_DEG_S = 260 * 4;
         public static final double MAX_ACCEL_DEG_S2 = 310 * 6;
 
-        public static final double kS = 0.3;
-        public static final double kV = 0.01;
+        public static final double kS = 0.35;
+        public static final double kV = 0.013;
 
         public static boolean stateManagerEnabled = true;
         public static final double TURRET_TOLERANCE_DEGREES = 0.5;
@@ -69,7 +69,7 @@ public class Constants {
         public static final double MIN_TICKS = -TICKS_PER_REV * 0.5;
         public static final double MAX_TICKS = TICKS_PER_REV * 0.5;
         public static final double MIN_DEGREES = 180;
-        public static final double MAX_DEGREES = 540;
+        public static final double MAX_DEGREES = 580;
 
         /** One full turret revolution in degrees. */
         public static final double FULL_REVOLUTION_DEG = 360.0;
@@ -80,7 +80,7 @@ public class Constants {
         /** Robot loop period in seconds (20 ms). */
         public static final double LOOP_PERIOD_S = 0.020;
         /** Maximum voltage magnitude sent to the turret motor. */
-        public static final double MAX_VOLTAGE = 1.0;
+        public static final double MAX_VOLTAGE = 3.0;
         /** Default encoder-1 offset (overridden by Preferences). */
         public static final double DEFAULT_OFFSET1 = 0.0;
         /** Default encoder-2 offset (overridden by Preferences). */

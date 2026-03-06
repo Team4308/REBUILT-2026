@@ -27,8 +27,8 @@ public class turretSubsystem extends AbsoluteSubsystem {
     private final CANcoder canCoder1;
     private final CANcoder canCoder2;
 
-    private double targetDegUnwrapped = 0.0;
-    private double currentDegUnwrapped = 0.0;
+    private double targetDeg = 0.0;
+    private double currentDeg = 0.0;
 
     private double offset1 = TurretSubsystem.DEFAULT_OFFSET1;
     private double offset2 = TurretSubsystem.DEFAULT_OFFSET2;
@@ -62,6 +62,9 @@ public class turretSubsystem extends AbsoluteSubsystem {
         offset2 = Preferences.getDouble("turret.offset2", offset2);
         System.out.printf("Turret offsets loaded: offset1=%.6f offset2=%.6f%n", offset1, offset2);
 
+        // pid.enableContinuousInput(TurretSubsystem.MIN_DEGREES,
+        // TurretSubsystem.MAX_DEGREES);
+
         TalonFXConfiguration driveConfig = new TalonFXConfiguration();
         driveConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         driveConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
@@ -69,11 +72,11 @@ public class turretSubsystem extends AbsoluteSubsystem {
     }
 
     public double getTurretAngle() {
-        return MathUtil.inputModulus(currentDegUnwrapped, 0, TurretSubsystem.FULL_REVOLUTION_DEG);
+        return MathUtil.inputModulus(currentDeg, TurretSubsystem.MIN_DEGREES, TurretSubsystem.MAX_DEGREES);
     }
 
-    public double getUnwrappedAngle() {
-        return currentDegUnwrapped;
+    public double getAngle() {
+        return currentDeg;
     }
 
     private void updateCurrentAngle() {
@@ -101,15 +104,9 @@ public class turretSubsystem extends AbsoluteSubsystem {
 
             // Convert to degrees within [0, 360)
             double deg = teeth / TurretSubsystem.TEETH_PER_TURRET_REV * TurretSubsystem.FULL_REVOLUTION_DEG;
-            deg = MathUtil.inputModulus(deg, 0, TurretSubsystem.FULL_REVOLUTION_DEG);
 
-            // Map the [0,360) angle into the valid unwrapped range [MIN, MAX].
-            // The valid range is exactly one revolution wide, so there is exactly
-            // one representative for every wrapped angle inside [MIN, MAX].
-            deg = MathUtil.inputModulus(deg, TurretSubsystem.MIN_DEGREES, TurretSubsystem.MAX_DEGREES);
-
-            currentDegUnwrapped = deg;
-            targetDegUnwrapped = deg;  // start target at current so turret doesn't jump
+            currentDeg = deg;
+            targetDeg = deg; // start target at current so turret doesn't jump
             profileSetpoint = new TrapezoidProfile.State(deg, 0);
             profileGoal = new TrapezoidProfile.State(deg, 0);
             lastRaw1 = raw1;
@@ -128,33 +125,33 @@ public class turretSubsystem extends AbsoluteSubsystem {
             deltaRaw += 1.0;
 
         double deltaDeg = deltaRaw / TurretSubsystem.CANCODER1_GEAR_RATIO * TurretSubsystem.FULL_REVOLUTION_DEG;
-        currentDegUnwrapped += deltaDeg;
+        currentDeg += deltaDeg;
         lastRaw1 = raw1;
 
         System.out.printf("ENC1 | raw1=%.4f deltaRaw=%.6f | deg=%.2f%n",
-                raw1, deltaRaw, currentDegUnwrapped);
+                raw1, deltaRaw, currentDeg);
     }
 
     public void setTarget(double degrees) {
         // The valid unwrapped range [MIN, MAX] is exactly one revolution wide.
         // For any requested angle there is exactly one equivalent value inside that
-        // band, so we simply map into it.  The turret will always take the direct
+        // band, so we simply map into it. The turret will always take the direct
         // path through unwrapped space — which is the shortest path that respects
-        // the physical limits.  If the turret is near MAX and the target is near
+        // the physical limits. If the turret is near MAX and the target is near
         // MIN (or vice-versa), the motion naturally "unwinds the long way" because
         // that is the only legal direction.
-        targetDegUnwrapped = MathUtil.inputModulus(degrees, TurretSubsystem.MIN_DEGREES, TurretSubsystem.MAX_DEGREES);
-        profileGoal = new TrapezoidProfile.State(targetDegUnwrapped, 0);
+        targetDeg = MathUtil.inputModulus(degrees, TurretSubsystem.MIN_DEGREES, TurretSubsystem.MAX_DEGREES);
+        profileGoal = new TrapezoidProfile.State(targetDeg, 0);
     }
 
     public void nudgeTarget(double deltaDeg) {
-        targetDegUnwrapped = MathUtil.clamp(
-                targetDegUnwrapped + deltaDeg, TurretSubsystem.MIN_DEGREES, TurretSubsystem.MAX_DEGREES);
-        profileGoal = new TrapezoidProfile.State(targetDegUnwrapped, 0);
+        targetDeg = MathUtil.clamp(
+                targetDeg + deltaDeg, TurretSubsystem.MIN_DEGREES, TurretSubsystem.MAX_DEGREES);
+        profileGoal = new TrapezoidProfile.State(targetDeg, 0);
     }
 
     public boolean isAtTarget() {
-        return Math.abs(currentDegUnwrapped - targetDegUnwrapped) <= TurretSubsystem.TURRET_TOLERANCE_DEGREES
+        return Math.abs(currentDeg - targetDeg) <= TurretSubsystem.TURRET_TOLERANCE_DEGREES
                 && Math.abs(profileSetpoint.velocity) < TurretSubsystem.VELOCITY_STOPPED_THRESHOLD;
     }
 
@@ -221,7 +218,7 @@ public class turretSubsystem extends AbsoluteSubsystem {
 
     public void stopTurret() {
         driveMotor.setVoltage(0);
-        profileSetpoint = new TrapezoidProfile.State(currentDegUnwrapped, 0);
+        profileSetpoint = new TrapezoidProfile.State(currentDeg, 0);
         profileGoal = profileSetpoint;
     }
 
@@ -231,18 +228,20 @@ public class turretSubsystem extends AbsoluteSubsystem {
 
         profileSetpoint = profile.calculate(TurretSubsystem.LOOP_PERIOD_S, profileSetpoint, profileGoal);
 
-        double pidOutput = pid.calculate(currentDegUnwrapped, profileSetpoint.position);
+        double pidOutput = pid.calculate(currentDeg, profileSetpoint.position);
 
         double ffOutput = TurretSubsystem.kS * Math.signum(profileSetpoint.velocity)
                 + TurretSubsystem.kV * profileSetpoint.velocity;
 
-        double voltage = MathUtil.clamp(pidOutput + ffOutput, -TurretSubsystem.MAX_VOLTAGE, TurretSubsystem.MAX_VOLTAGE);
+        double voltage = MathUtil.clamp(pidOutput + ffOutput, -TurretSubsystem.MAX_VOLTAGE,
+                TurretSubsystem.MAX_VOLTAGE);
         driveMotor.setVoltage(voltage);
 
-        recordOutput("Turret Angle (wrapped)", getTurretAngle());
-        recordOutput("Turret Angle (unwrapped)", currentDegUnwrapped);
-        recordOutput("Target (unwrapped)", targetDegUnwrapped);
-        recordOutput("Target (wrapped)", MathUtil.inputModulus(targetDegUnwrapped, 0, TurretSubsystem.FULL_REVOLUTION_DEG));
+        recordOutput("Turret Angle (wrapped)", getTurretAngle() + 20);
+        recordOutput("Turret Angle (unwrapped)", currentDeg + 20);
+        recordOutput("Target (unwrapped)", targetDeg);
+        recordOutput("Target (wrapped)",
+                MathUtil.inputModulus(targetDeg, 0, TurretSubsystem.FULL_REVOLUTION_DEG));
         recordOutput("Profile Setpoint", profileSetpoint.position);
         recordOutput("Profile Velocity", profileSetpoint.velocity);
         recordOutput("PID Output", pidOutput);
