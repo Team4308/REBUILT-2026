@@ -36,6 +36,8 @@ public class Robot extends LoggedRobot {
 
     Logger.start(); // Start logging! No more data receivers, replay sources, or metadata values may
                     // be added.
+    Logger.start(); // Start logging! No more data receivers, replay sources, or metadata values may
+                    // be added.
 
     m_robotContainer = new RobotContainer();
   }
@@ -84,7 +86,6 @@ public class Robot extends LoggedRobot {
     }
   }
 
-  @Override
   public void teleopPeriodic() {
     m_robotContainer.periodic();
   }

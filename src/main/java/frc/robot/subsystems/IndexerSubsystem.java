@@ -1,0 +1,175 @@
+package frc.robot.Subsystems;
+
+import com.ctre.phoenix6.configs.MotorOutputConfigs;
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
+
+import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
+
+import org.littletonrobotics.junction.Logger;
+
+public class IndexerSubsystem extends SubsystemBase {
+
+    private final DigitalInput m_beambreak = new DigitalInput(Constants.Indexer.BeambreakSensor);
+
+    private State currentState = State.IDLE;
+
+    private boolean usingState = false;
+
+    // private double slowerIndexerSpeed;
+
+    private double hopperSpeed;
+    private double indexerSpeed;
+
+    public enum State { // the diff states
+        IDLE,
+        SHOOTING
+    }
+
+    TalonFX Falcon = new TalonFX(Constants.Indexer.HopperMotorId);
+    TalonFX Kraken = new TalonFX(Constants.Indexer.IndexerMotorId);
+
+    private final VelocityVoltage m_hopperRequest = new VelocityVoltage(0).withSlot(0);
+    private final VelocityVoltage m_indexerRequest = new VelocityVoltage(0).withSlot(0);
+
+    public IndexerSubsystem() {
+        hopperSpeed = Constants.Indexer.HopperSpeed;
+        indexerSpeed = Constants.Indexer.IndexerSpeed;
+        // in init function, set slot 0 gains
+        var slot0Configs = new Slot0Configs();
+        slot0Configs.kS = Constants.Indexer.HopperMotorConfigsKs; // Add 0.1 V output to overcome static friction
+        slot0Configs.kV = Constants.Indexer.HopperMotorConfigsKv; // A velocity target of 1 rps results in 0.12 V output
+        slot0Configs.kP = Constants.Indexer.HopperMotorConfigsKp; // An error of 1 rps results in 0.11 V output
+        slot0Configs.kI = Constants.Indexer.HopperMotorConfigsKi; // no output for integrated error
+        slot0Configs.kD = Constants.Indexer.HopperMotorConfigsKd; // no output for error derivative
+
+        Falcon.getConfigurator().apply(slot0Configs);
+
+        var motorConfigs = new MotorOutputConfigs();
+        motorConfigs.Inverted = InvertedValue.Clockwise_Positive;
+        Falcon.getConfigurator().apply(motorConfigs);
+
+        var slot1Configs = new Slot0Configs();
+        slot1Configs.kS = Constants.Indexer.IndexerMotorConfigsKs; // Add 0.1 V output to overcome static friction
+        slot1Configs.kV = Constants.Indexer.IndexerMotorConfigsKv; // A velocity target of 1 rps results in 0.12 V
+                                                                   // output
+        slot1Configs.kP = Constants.Indexer.IndexerMotorConfigsKp; // An error of 1 rps results in 0.11 V output
+        slot1Configs.kI = Constants.Indexer.IndexerMotorConfigsKi; // no output for integrated error
+        slot1Configs.kD = Constants.Indexer.IndexerMotorConfigsKd; // no output for error derivative
+
+        Kraken.getConfigurator().apply(slot1Configs);
+        var motorConfigs2 = new MotorOutputConfigs();
+        motorConfigs2.Inverted = InvertedValue.CounterClockwise_Positive;
+        Kraken.getConfigurator().apply(motorConfigs2);
+    }
+
+    public void setHopperVelocity(double rpm) { // sets the velocity for Hopper
+
+        // motor.set(rpm);
+        double motorRPS = (rpm * Constants.Indexer.HopperGearRatio) / 60.0;
+        Falcon.setControl(m_hopperRequest.withVelocity(motorRPS));
+
+    }
+
+    public void setIndexerVelocity(double rpm) { // sets the velocity for Hopper
+
+        // motor.set(rpm);
+        double motorRPS = (-rpm * Constants.Indexer.IndexerGearRatio) / 60.0;
+        Kraken.setControl(m_indexerRequest.withVelocity(motorRPS));
+
+    }
+
+    public Command feedBalls() {
+
+        return run(() -> runMotors()); // tells to run
+    }
+
+    public void runMotors() { // uh runs
+
+        setHopperVelocity(hopperSpeed);
+        setIndexerVelocity(indexerSpeed);
+
+    }
+
+    public void runMotorsAtReduceSpeed() { // uh runs "But slower Than normal Something like that" - lingfeng
+
+        setHopperVelocity(hopperSpeed);
+        setIndexerVelocity(indexerSpeed / (Constants.Indexer.SlowerIndexerSpeed));
+
+    }
+
+    public void stopMotors() {
+        Falcon.stopMotor();
+        Kraken.stopMotor();
+    }
+
+    public void setHopperSpeed(double value) {
+        hopperSpeed = value;
+    }
+
+    public void setIndexerSpeed(double value) {
+        indexerSpeed = value;
+    }
+
+    /*
+     * public void SetSlowerIndexerSpeed (double value){ might need later idk its
+     * too late for this
+     * slowerIndexerSpeed = indexerSpeed/(Constants.slowerIndexerSpeed);
+     * }
+     */
+
+    public void setUsingState(boolean using) {
+        usingState = using;
+    }
+
+    @Override
+    public void periodic() { // the states
+        setHopperVelocity(hopperSpeed);
+        setIndexerVelocity(indexerSpeed);
+
+        boolean BallsReady = !m_beambreak.get();
+
+        if (usingState) {
+
+            switch (currentState) {
+
+                case IDLE:
+
+                    if (BallsReady) {
+
+                        stopMotors();
+                    }
+
+                    else {
+
+                        runMotorsAtReduceSpeed();
+
+                    }
+
+                    break;
+
+                case SHOOTING:
+                    runMotors();
+                    break;
+
+            }
+        }
+
+        Logger.recordOutput("Subsystems/Indexer/HopperSpeed",
+                (Falcon.getVelocity().getValueAsDouble() / Constants.Indexer.HopperGearRatio) * 60.0);
+        Logger.recordOutput("Subsystems/Indexer/IndexerSpeed",
+                (Kraken.getVelocity().getValueAsDouble() / Constants.Indexer.IndexerGearRatio) * 60.0);
+        Logger.recordOutput("Subsystems/Indexer/TargetIndexerSpeed", indexerSpeed);
+        Logger.recordOutput("Subsystems/Indexer/TargetHopperSpeed", hopperSpeed);
+    }
+
+    public void setState(State newState) {
+        this.currentState = newState;
+    }
+
+}

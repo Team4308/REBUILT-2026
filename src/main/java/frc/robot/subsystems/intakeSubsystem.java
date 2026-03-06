@@ -63,6 +63,11 @@ public class IntakeSubsystem extends SubsystemBase {
     return Math.abs(currentDeg - targetAngleDeg) < Constants.Intake.ANGLE_TOLERANCE_DEG;
   }
 
+  public void stopMotors() {
+    roller.stopMotor();
+    pivot.stopMotor();
+  }
+
   /* --------------- Commands ---------------- */
 
   public Command setRollerSpeed(Supplier<Double> rpmSupplier) {

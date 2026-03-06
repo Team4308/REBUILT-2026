@@ -9,11 +9,19 @@ import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import ca.team4308.absolutelib.control.RazerWrapper;
-import ca.team4308.absolutelib.math.DoubleUtils;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.Util.FuelSim;
+import frc.robot.Commands.HoodCommand;
+import frc.robot.Commands.IndexerCommand;
+import frc.robot.Commands.IntakeCommand;
+import frc.robot.Commands.ShooterCommand;
+import frc.robot.Subsystems.HoodSubsystem;
+import frc.robot.Subsystems.IndexerSubsystem;
+import frc.robot.Subsystems.IntakeSubsystem;
+import frc.robot.Subsystems.ShooterSubsystem;
+import frc.robot.Subsystems.TurretSubsystem;
 import frc.robot.Subsystems.swerve.SwerveSubsystem;
 import java.io.File;
 import swervelib.SwerveInputStream;
@@ -27,6 +35,15 @@ public class RobotContainer {
         private final Vision vision = new Vision();
         private final SwerveSubsystem drivebase = new SwerveSubsystem(
                         new File(Filesystem.getDeployDirectory(), "swerve"));
+
+        private final HoodSubsystem m_HoodSubsystem;
+        private final IntakeSubsystem m_IntakeSubsystem;
+        private final TurretSubsystem m_TurretSubsystem;
+        private final IndexerSubsystem m_IndexerSubsystem;
+        private final ShooterSubsystem m_ShooterSubsystem;
+
+        private double m_hoodAngle = 7.5;
+        private double m_turretAngle = 180;
 
         // Commands
         private final SendableChooser<Command> autoChooser;
@@ -74,9 +91,27 @@ public class RobotContainer {
         public RobotContainer() {
                 // Configure the trigger bindings
                 drivebase.setVision(vision);
+
+                m_HoodSubsystem = new HoodSubsystem();
+                m_IndexerSubsystem = new IndexerSubsystem();
+                m_TurretSubsystem = new TurretSubsystem();
+                m_ShooterSubsystem = new ShooterSubsystem();
+                m_IntakeSubsystem = new IntakeSubsystem();
+
+                new IntakeSubsystem().setDefaultCommand(getAutonomousCommand());
+
+                m_ShooterSubsystem.setDefaultCommand(
+                                new ShooterCommand(m_ShooterSubsystem, () -> driver.getRightTrigger()));
+
+                m_IntakeSubsystem
+                                .setDefaultCommand(new IntakeCommand(m_IntakeSubsystem, () -> driver.getLeftTrigger()));
+
                 configureNamedCommands();
                 configureBindings();
-                initFuelSim();
+
+                if (Robot.isSimulation()) {
+                        initFuelSim();
+                }
 
                 DriverStation.silenceJoystickConnectionWarning(true);
                 autoChooser = AutoBuilder.buildAutoChooser();
@@ -92,25 +127,34 @@ public class RobotContainer {
                 driver.M1.onTrue(
                                 Commands.runOnce(() -> drivebase.resetOdometry(new Pose2d(0, 0, new Rotation2d()))));
 
-                driver.LeftTrigger.whileTrue(driveRobotOrientedAngularVelocity);
+                driver.LB.whileTrue(driveRobotOrientedAngularVelocity);
 
                 // driver.M3.whileTrue(drivebase.moveUpLeft());
                 // driver.M4.whileTrue(drivebase.moveUpRight());
                 // driver.M5.whileTrue(drivebase.moveDownLeft());
                 // driver.M6.whileTrue(drivebase.moveDownRight());
 
-                driver.RightTrigger.whileTrue(drivebase.driveTowardsTarget(driver::getRightTrigger));
+                // driver.RightTrigger.whileTrue(drivebase.driveTowardsTarget(driver::getRightTrigger));
                 driver.RB.whileTrue(drivebase.aimAtTarget(() -> driver.getLeftY() * -1, () -> driver.getLeftX() * -1));
 
                 drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
 
-                driver.X.onTrue(new InstantCommand(() -> targetPoseForTESTING = drivebase.getPose()));
+                driver.A.onTrue(new IndexerCommand(m_IndexerSubsystem, () -> 0.));
+                driver.X.onTrue(new IndexerCommand(m_IndexerSubsystem, () -> 1500.));
+                driver.Y.onTrue(new IndexerCommand(m_IndexerSubsystem, () -> 3000.));
+                driver.B.onTrue(new InstantCommand(
+                                () -> m_IntakeSubsystem.setIntakeAngle(Constants.Intake.INTAKE_ANGLE_DEG)));
 
-                driver.Y.whileTrue(driveFieldOrientedAnglularVelocityKeyboard);
-                driver.A.whileTrue(drivebase.driveToPose(() -> targetPoseForTESTING));
+                driver.povUp.onTrue(new InstantCommand(() -> m_hoodAngle += 2.5));
+                driver.povDown.onTrue(new InstantCommand(() -> m_hoodAngle -= 2.5));
+
+                driver.povRight.onTrue(new InstantCommand(() -> m_turretAngle += 5));
+                driver.povLeft.onTrue(new InstantCommand(() -> m_turretAngle -= 5));
         }
 
         public void periodic() {
+                m_HoodSubsystem.setHoodAngle(m_hoodAngle);
+                m_TurretSubsystem.setTarget(m_turretAngle);
         }
 
         public void configureNamedCommands() {

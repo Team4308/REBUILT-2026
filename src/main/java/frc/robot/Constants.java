@@ -71,22 +71,6 @@ public final class Constants {
   }
 
   public static final class Shooting {
-    public static final class Hood {
-      public static final int HoodMotor = 10;
-      public static final double kPassingAngle = 30.0;
-      public static final double kToleranceDegrees = 2.0;
-      public static final double TOTAL_GEAR_RATIO = 50.0 * (42.0 / 12.0);
-      public static final double FORWARD_SOFT_LIMIT_ANGLE = 82.0;
-      public static final double REVERSE_SOFT_LIMIT_ANGLE = 47.0;
-      public static final double ampThreshold = 20;
-      public static final double max_accel = 1000;
-      public static final double max_velocity = 500;
-      public final static ArmFeedforward feedforward = new ArmFeedforward(0, 0.28, 0.0155, 0.01);
-      public final static ProfiledPIDController pidController = new ProfiledPIDController(
-          0.06, 0.0, 0.0,
-          new TrapezoidProfile.Constraints(2000, 1000));
-    }
-
     public static class Shooter {
       public static final double kMaxRPM = 6000.0;
       public static final int kRPMTolerance = 100;
@@ -102,7 +86,7 @@ public final class Constants {
       public static final double kD = 0.01;
     }
 
-    public static final class TurretSubsystem {
+    public static final class Turret {
       public static final long MOD1 = 31;
       public static final long MOD2 = 33;
       public static final int DRIVE_MOTOR_ID = 13;
@@ -165,16 +149,18 @@ public final class Constants {
       public static final double DEFAULT_OFFSET2 = 0.0;
     }
 
-    public static final int HoodMotor = 10; // CAN ID for the hood motor
-    public static final double kToleranceDegrees = 2.0; // Tolerance for position control
-    public static final double TOTAL_GEAR_RATIO = 97.4;
-    public static final double FORWARD_SOFT_LIMIT_ANGLE = 52.5;
-    public static final double REVERSE_SOFT_LIMIT_ANGLE = 7.5;
-    public static final double ampThreshold = 3;
-    public final static ArmFeedforward feedforward = new ArmFeedforward(0.262, 0, 0.027, 0.04);
-    public final static ProfiledPIDController pidController = new ProfiledPIDController(
-        0.47, 0.0, 0.01,
-        new TrapezoidProfile.Constraints(2000, 2000));
+    public static final class Hood {
+      public static final int HoodMotor = 10; // CAN ID for the hood motor
+      public static final double kToleranceDegrees = 2.0; // Tolerance for position control
+      public static final double TOTAL_GEAR_RATIO = 97.4;
+      public static final double FORWARD_SOFT_LIMIT_ANGLE = 52.5;
+      public static final double REVERSE_SOFT_LIMIT_ANGLE = 7.5;
+      public static final double ampThreshold = 3;
+      public final static ArmFeedforward feedforward = new ArmFeedforward(0.262, 0, 0.027, 0.04);
+      public final static ProfiledPIDController pidController = new ProfiledPIDController(
+          0.47, 0.0, 0.01,
+          new TrapezoidProfile.Constraints(2000, 2000));
+    }
   }
 
   public static final class Intake {
@@ -213,6 +199,29 @@ public final class Constants {
     public static final double AGITATE_LOW_DEG = 45.0;
     public static final double AGITATE_HIGH_DEG = 70.0;
     public static final double ANGLE_TOLERANCE_DEG = 1.5;
+  }
+
+  public static class Indexer {
+    public static double IndexerSpeed = 100;
+    public static double HopperSpeed = 100;
+    public static double IndexerGearRatio = 5 / 3;
+    public static double HopperGearRatio = 1;
+    public static int HopperMotorId = 14;
+    public static double HopperMotorConfigsKs = 0.8;
+    public static double HopperMotorConfigsKv = 0.15;
+    public static double HopperMotorConfigsKp = 0.2;
+    public static double HopperMotorConfigsKi = 0;
+    public static double HopperMotorConfigsKd = 0;
+
+    public static int IndexerMotorId = 15;
+    public static double IndexerMotorConfigsKs = 0.47;
+    public static double IndexerMotorConfigsKv = 0.15;
+    public static double IndexerMotorConfigsKp = 0.07;
+    public static double IndexerMotorConfigsKi = 0;
+    public static double IndexerMotorConfigsKd = 0;
+
+    public static int BeambreakSensor = 9;
+    public static double SlowerIndexerSpeed = 50;
   }
 
   public static class OperatorConstants {

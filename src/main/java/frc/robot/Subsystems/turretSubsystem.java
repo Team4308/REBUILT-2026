@@ -19,9 +19,8 @@ import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj.Preferences;
 import frc.robot.Constants;
-import frc.robot.Constants.Shooting.TurretSubsystem;
 
-public class turretSubsystem extends AbsoluteSubsystem {
+public class TurretSubsystem extends AbsoluteSubsystem {
 
     private final TalonFX driveMotor;
     private final CANcoder canCoder1;
@@ -30,8 +29,8 @@ public class turretSubsystem extends AbsoluteSubsystem {
     private double targetDeg = 0.0;
     private double currentDeg = 0.0;
 
-    private double offset1 = TurretSubsystem.DEFAULT_OFFSET1;
-    private double offset2 = TurretSubsystem.DEFAULT_OFFSET2;
+    private double offset1 = Constants.Shooting.Turret.DEFAULT_OFFSET1;
+    private double offset2 = Constants.Shooting.Turret.DEFAULT_OFFSET2;
 
     // CRT is used only once at boot to establish absolute position.
     // After that we track via encoder-1 deltas (no race conditions).
@@ -44,18 +43,18 @@ public class turretSubsystem extends AbsoluteSubsystem {
 
     private final TrapezoidProfile profile = new TrapezoidProfile(
             new TrapezoidProfile.Constraints(
-                    TurretSubsystem.MAX_VELOCITY_DEG_S,
-                    TurretSubsystem.MAX_ACCEL_DEG_S2));
+                    Constants.Shooting.Turret.MAX_VELOCITY_DEG_S,
+                    Constants.Shooting.Turret.MAX_ACCEL_DEG_S2));
     private TrapezoidProfile.State profileSetpoint = new TrapezoidProfile.State(0, 0);
     private TrapezoidProfile.State profileGoal = new TrapezoidProfile.State(0, 0);
 
     private final PIDController pid = new PIDController(
-            TurretSubsystem.kP, TurretSubsystem.kI, TurretSubsystem.kD);
+            Constants.Shooting.Turret.kP, Constants.Shooting.Turret.kI, Constants.Shooting.Turret.kD);
 
-    public turretSubsystem() {
-        driveMotor = new TalonFX(Constants.Shooting.TurretSubsystem.DRIVE_MOTOR_ID);
-        canCoder1 = new CANcoder(Constants.Shooting.TurretSubsystem.CANCODER1_ID);
-        canCoder2 = new CANcoder(Constants.Shooting.TurretSubsystem.CANCODER2_ID);
+    public TurretSubsystem() {
+        driveMotor = new TalonFX(Constants.Shooting.Turret.DRIVE_MOTOR_ID);
+        canCoder1 = new CANcoder(Constants.Shooting.Turret.CANCODER1_ID);
+        canCoder2 = new CANcoder(Constants.Shooting.Turret.CANCODER2_ID);
 
         // Load persisted offsets if present (stored by calibrateZero()).
         offset1 = Preferences.getDouble("turret.offset1", offset1);
@@ -72,7 +71,8 @@ public class turretSubsystem extends AbsoluteSubsystem {
     }
 
     public double getTurretAngle() {
-        return MathUtil.inputModulus(currentDeg, TurretSubsystem.MIN_DEGREES, TurretSubsystem.MAX_DEGREES);
+        return MathUtil.inputModulus(currentDeg, Constants.Shooting.Turret.MIN_DEGREES,
+                Constants.Shooting.Turret.MAX_DEGREES);
     }
 
     public double getAngle() {
@@ -90,12 +90,15 @@ public class turretSubsystem extends AbsoluteSubsystem {
 
         if (!crtLocked) {
 
-            long val1 = Math.floorMod(Math.round(raw1 * TurretSubsystem.MOD1), TurretSubsystem.MOD1);
-            long val2 = Math.floorMod(Math.round(raw2 * TurretSubsystem.MOD2), TurretSubsystem.MOD2);
+            long val1 = Math.floorMod(Math.round(raw1 * Constants.Shooting.Turret.MOD1),
+                    Constants.Shooting.Turret.MOD1);
+            long val2 = Math.floorMod(Math.round(raw2 * Constants.Shooting.Turret.MOD2),
+                    Constants.Shooting.Turret.MOD2);
             dbgVal1 = val1;
             dbgVal2 = val2;
 
-            long[] result = ChineseRemainderSolver.solvePair(val1, TurretSubsystem.MOD1, val2, TurretSubsystem.MOD2);
+            long[] result = ChineseRemainderSolver.solvePair(val1, Constants.Shooting.Turret.MOD1, val2,
+                    Constants.Shooting.Turret.MOD2);
             if (result == null)
                 return;
 
@@ -103,7 +106,8 @@ public class turretSubsystem extends AbsoluteSubsystem {
             dbgCrtResult = teeth;
 
             // Convert to degrees within [0, 360)
-            double deg = teeth / TurretSubsystem.TEETH_PER_TURRET_REV * TurretSubsystem.FULL_REVOLUTION_DEG;
+            double deg = teeth / Constants.Shooting.Turret.TEETH_PER_TURRET_REV
+                    * Constants.Shooting.Turret.FULL_REVOLUTION_DEG;
 
             currentDeg = deg;
             targetDeg = deg; // start target at current so turret doesn't jump
@@ -119,12 +123,13 @@ public class turretSubsystem extends AbsoluteSubsystem {
         double deltaRaw = raw1 - lastRaw1;
 
         // Handle CANcoder wrap-around (encoder values are in [0,1) turns)
-        if (deltaRaw > TurretSubsystem.CANCODER_WRAP_THRESHOLD)
+        if (deltaRaw > Constants.Shooting.Turret.CANCODER_WRAP_THRESHOLD)
             deltaRaw -= 1.0;
-        if (deltaRaw < -TurretSubsystem.CANCODER_WRAP_THRESHOLD)
+        if (deltaRaw < -Constants.Shooting.Turret.CANCODER_WRAP_THRESHOLD)
             deltaRaw += 1.0;
 
-        double deltaDeg = deltaRaw / TurretSubsystem.CANCODER1_GEAR_RATIO * TurretSubsystem.FULL_REVOLUTION_DEG;
+        double deltaDeg = deltaRaw / Constants.Shooting.Turret.CANCODER1_GEAR_RATIO
+                * Constants.Shooting.Turret.FULL_REVOLUTION_DEG;
         currentDeg += deltaDeg;
         lastRaw1 = raw1;
 
@@ -140,19 +145,20 @@ public class turretSubsystem extends AbsoluteSubsystem {
         // the physical limits. If the turret is near MAX and the target is near
         // MIN (or vice-versa), the motion naturally "unwinds the long way" because
         // that is the only legal direction.
-        targetDeg = MathUtil.inputModulus(degrees, TurretSubsystem.MIN_DEGREES, TurretSubsystem.MAX_DEGREES);
+        targetDeg = MathUtil.inputModulus(degrees, Constants.Shooting.Turret.MIN_DEGREES,
+                Constants.Shooting.Turret.MAX_DEGREES);
         profileGoal = new TrapezoidProfile.State(targetDeg, 0);
     }
 
     public void nudgeTarget(double deltaDeg) {
         targetDeg = MathUtil.clamp(
-                targetDeg + deltaDeg, TurretSubsystem.MIN_DEGREES, TurretSubsystem.MAX_DEGREES);
+                targetDeg + deltaDeg, Constants.Shooting.Turret.MIN_DEGREES, Constants.Shooting.Turret.MAX_DEGREES);
         profileGoal = new TrapezoidProfile.State(targetDeg, 0);
     }
 
     public boolean isAtTarget() {
-        return Math.abs(currentDeg - targetDeg) <= TurretSubsystem.TURRET_TOLERANCE_DEGREES
-                && Math.abs(profileSetpoint.velocity) < TurretSubsystem.VELOCITY_STOPPED_THRESHOLD;
+        return Math.abs(currentDeg - targetDeg) <= Constants.Shooting.Turret.TURRET_TOLERANCE_DEGREES
+                && Math.abs(profileSetpoint.velocity) < Constants.Shooting.Turret.VELOCITY_STOPPED_THRESHOLD;
     }
 
     public Command moveToTarget(Supplier<Double> degrees) {
@@ -201,7 +207,7 @@ public class turretSubsystem extends AbsoluteSubsystem {
     }
 
     public void aimAtPassingSide() {
-        setTarget(Constants.Shooting.TurretSubsystem.PASSING_SIDE_ANGLE);
+        setTarget(Constants.Shooting.Turret.PASSING_SIDE_ANGLE);
     }
 
     public Command aimAtPassingZoneCommand(Pose2d target) {
@@ -213,10 +219,10 @@ public class turretSubsystem extends AbsoluteSubsystem {
     }
 
     public void setSafeAngle() {
-        setTarget(Constants.Shooting.TurretSubsystem.SAFE_ANGLE);
+        setTarget(Constants.Shooting.Turret.SAFE_ANGLE);
     }
 
-    public void stopTurret() {
+    public void stopMotors() {
         driveMotor.setVoltage(0);
         profileSetpoint = new TrapezoidProfile.State(currentDeg, 0);
         profileGoal = profileSetpoint;
@@ -226,30 +232,30 @@ public class turretSubsystem extends AbsoluteSubsystem {
     public void periodic() {
         updateCurrentAngle();
 
-        profileSetpoint = profile.calculate(TurretSubsystem.LOOP_PERIOD_S, profileSetpoint, profileGoal);
+        profileSetpoint = profile.calculate(Constants.Shooting.Turret.LOOP_PERIOD_S, profileSetpoint, profileGoal);
 
         double pidOutput = pid.calculate(currentDeg, profileSetpoint.position);
 
-        double ffOutput = TurretSubsystem.kS * Math.signum(profileSetpoint.velocity)
-                + TurretSubsystem.kV * profileSetpoint.velocity;
+        double ffOutput = Constants.Shooting.Turret.kS * Math.signum(profileSetpoint.velocity)
+                + Constants.Shooting.Turret.kV * profileSetpoint.velocity;
 
-        double voltage = MathUtil.clamp(pidOutput + ffOutput, -TurretSubsystem.MAX_VOLTAGE,
-                TurretSubsystem.MAX_VOLTAGE);
+        double voltage = MathUtil.clamp(pidOutput + ffOutput, -Constants.Shooting.Turret.MAX_VOLTAGE,
+                Constants.Shooting.Turret.MAX_VOLTAGE);
         driveMotor.setVoltage(voltage);
 
         recordOutput("Turret Angle (wrapped)", getTurretAngle() + 20);
         recordOutput("Turret Angle (unwrapped)", currentDeg + 20);
         recordOutput("Target (unwrapped)", targetDeg);
         recordOutput("Target (wrapped)",
-                MathUtil.inputModulus(targetDeg, 0, TurretSubsystem.FULL_REVOLUTION_DEG));
+                MathUtil.inputModulus(targetDeg, 0, Constants.Shooting.Turret.FULL_REVOLUTION_DEG));
         recordOutput("Profile Setpoint", profileSetpoint.position);
         recordOutput("Profile Velocity", profileSetpoint.velocity);
         recordOutput("PID Output", pidOutput);
         recordOutput("FF Output", ffOutput);
         recordOutput("Voltage", voltage);
         recordOutput("At Target", isAtTarget());
-        recordOutput("Min Limit (deg)", TurretSubsystem.MIN_DEGREES);
-        recordOutput("Max Limit (deg)", TurretSubsystem.MAX_DEGREES);
+        recordOutput("Min Limit (deg)", Constants.Shooting.Turret.MIN_DEGREES);
+        recordOutput("Max Limit (deg)", Constants.Shooting.Turret.MAX_DEGREES);
 
         // CRT debug
         recordOutput("CRT/Enc1 Raw", dbgRaw1);
