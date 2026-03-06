@@ -4,8 +4,11 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 
+import java.util.function.Supplier;
+
 import com.ctre.phoenix6.configs.*;
 
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -19,19 +22,19 @@ public class IntakeSubsystem extends SubsystemBase {
 
   private double targetAngleDeg = Constants.Intake.RETRACTED_ANGLE_DEG;
 
-  private enum State {
+  private enum state {
     REST,
     SHOOTING,
     INTAKING
   }
-
-  private State currentState = State.REST;
+  private state currentState = state.REST;
   private boolean stateBased = false;
 
   public IntakeSubsystem() {
     configureRoller();
     configurePivot();
 
+    // Intake always starts retracted
     pivot.setPosition(0);
   }
 
@@ -39,7 +42,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
   public void setRollerSpeed(double rpm) {
     roller.setControl(
-        rollerRequest.withVelocity(rpm / 60.0)); // FIXED (RPM → rotations/sec)
+        rollerRequest.withVelocity(rpm * 60.0));
   }
 
   public void stopRoller() {
@@ -50,7 +53,6 @@ public class IntakeSubsystem extends SubsystemBase {
 
   public void setIntakeAngle(double angleDeg) {
     targetAngleDeg = angleDeg;
-
     pivot.setControl(
         pivotRequest.withPosition(degToRot(angleDeg)));
   }
@@ -61,9 +63,36 @@ public class IntakeSubsystem extends SubsystemBase {
         < Constants.Intake.ANGLE_TOLERANCE_DEG;
   }
 
-  /* ---------------- States ---------------- */
+  /* --------------- Commands ---------------- */
 
-  public void setState(State s) {
+  public Command setRollerSpeed(Supplier<Double> rpmSupplier) {
+    return run(() -> setRollerSpeed(rpmSupplier.get()));
+  }
+
+  public Command moveIntakeToAngle(double targetAngle) {
+    return run(() -> setIntakeAngle(targetAngle)).until(() -> isAtAngle());
+  }
+
+  public Command intake() {
+    return moveIntakeToAngle(Constants.Intake.INTAKE_ANGLE_DEG).alongWith(setRollerSpeed(() -> Constants.Intake.ROLLER_INTAKE_RPM));
+  }
+
+  public Command retract() {
+    return (moveIntakeToAngle(Constants.Intake.RETRACTED_ANGLE_DEG).alongWith(run(() -> stopRoller()))).until(() -> isAtAngle());
+  }
+
+  public Command retract(double timeoutMs) {
+    return retract().withTimeout(timeoutMs / 1000);
+  }
+
+  public Command agitate() {
+    return (moveIntakeToAngle(Constants.Intake.AGITATE_HIGH_DEG).until(() -> isAtAngle()).andThen(
+      moveIntakeToAngle(Constants.Intake.AGITATE_LOW_DEG).until(() -> isAtAngle()))).repeatedly();
+  }
+
+  /* ---------------- States ----------------- */
+
+  public void setState(state s) {
     currentState = s;
   }
 
@@ -96,7 +125,6 @@ public class IntakeSubsystem extends SubsystemBase {
 
     cfg.MotionMagic.MotionMagicCruiseVelocity =
         degToRot(Constants.Intake.MAX_VEL_DEG_PER_SEC);
-
     cfg.MotionMagic.MotionMagicAcceleration =
         degToRot(Constants.Intake.MAX_ACCEL_DEG_PER_SEC2);
 
@@ -115,25 +143,18 @@ public class IntakeSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-
-    if (!stateBased) return;
-
-    switch (currentState) {
-
-      case REST:
-        setIntakeAngle(Constants.Intake.RETRACTED_ANGLE_DEG);
-        stopRoller();
-        break;
-
-      case INTAKING:
-        setIntakeAngle(Constants.Intake.INTAKE_ANGLE_DEG);
-        setRollerSpeed(Constants.Intake.ROLLER_INTAKE_RPM);
-        break;
-
-      case SHOOTING:
-        setIntakeAngle(Constants.Intake.AGITATE_HIGH_DEG);
-        setRollerSpeed(Constants.Intake.ROLLER_SHOOT_RPM);
-        break;
+    if (stateBased) {
+      switch (currentState) {
+        case REST:
+          retract();
+          break;
+        case SHOOTING:
+          agitate();
+          break;
+        case INTAKING:
+          intake();
+          break;
+      }
     }
   }
 }
