@@ -6,19 +6,21 @@ import com.ctre.phoenix6.hardware.TalonFX;
 
 import java.util.function.Supplier;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.ctre.phoenix6.configs.*;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
-public class IntakeSubsystem extends SubsystemBase {
+public class intakeSubsystem extends SubsystemBase {
 
   private final TalonFX roller = new TalonFX(Constants.Intake.ROLLER_ID);
-  private final TalonFX pivot = new TalonFX(Constants.Intake.PIVOT_ID);
+  //private final TalonFX pivot = new TalonFX(Constants.Intake.PIVOT_ID);
 
   private final VelocityVoltage rollerRequest = new VelocityVoltage(0);
-  private final MotionMagicVoltage pivotRequest = new MotionMagicVoltage(0);
+ // private final MotionMagicVoltage pivotRequest = new MotionMagicVoltage(0);
 
   private double targetAngleDeg = Constants.Intake.RETRACTED_ANGLE_DEG;
 
@@ -30,19 +32,21 @@ public class IntakeSubsystem extends SubsystemBase {
   private state currentState = state.REST;
   private boolean stateBased = false;
 
-  public IntakeSubsystem() {
+  public intakeSubsystem() {
     configureRoller();
-    configurePivot();
+    //configurePivot();
 
     // Intake always starts retracted
-    pivot.setPosition(0);
+    //pivot.setPosition(0);
   }
 
   /* ---------------- Roller ---------------- */
 
   public void setRollerSpeed(double rpm) {
     roller.setControl(
-        rollerRequest.withVelocity(rpm * 60.0));
+        rollerRequest.withVelocity(-rpm * 60.0));
+    Logger.recordOutput("Subsystems/Indexer/TargetIntakeRPM", -rpm);
+
   }
 
   public void stopRoller() {
@@ -51,7 +55,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
   /* ---------------- Pivot ---------------- */
 
-  public void setIntakeAngle(double angleDeg) {
+ /*public void setIntakeAngle(double angleDeg) {
     targetAngleDeg = angleDeg;
     pivot.setControl(
         pivotRequest.withPosition(degToRot(angleDeg)));
@@ -62,8 +66,8 @@ public class IntakeSubsystem extends SubsystemBase {
     return Math.abs(currentDeg - targetAngleDeg)
         < Constants.Intake.ANGLE_TOLERANCE_DEG;
   }
-
-  /* --------------- Commands ---------------- */
+*/
+  /* --------------- Commands ---------------- 
 
   public Command setRollerSpeed(Supplier<Double> rpmSupplier) {
     return run(() -> setRollerSpeed(rpmSupplier.get()));
@@ -89,7 +93,7 @@ public class IntakeSubsystem extends SubsystemBase {
     return (moveIntakeToAngle(Constants.Intake.AGITATE_HIGH_DEG).until(() -> isAtAngle()).andThen(
       moveIntakeToAngle(Constants.Intake.AGITATE_LOW_DEG).until(() -> isAtAngle()))).repeatedly();
   }
-
+*/
   /* ---------------- States ----------------- */
 
   public void setState(state s) {
@@ -104,16 +108,17 @@ public class IntakeSubsystem extends SubsystemBase {
 
   private void configureRoller() {
     TalonFXConfiguration cfg = new TalonFXConfiguration();
-
+    cfg.Slot0.kS = Constants.Intake.ROLLER_KS;
+    cfg.Slot0.kV = Constants.Intake.ROLLER_KV;
     cfg.Slot0.kP = Constants.Intake.ROLLER_KP;
     cfg.Slot0.kI = Constants.Intake.ROLLER_KI;
     cfg.Slot0.kD = Constants.Intake.ROLLER_KD;
-    cfg.Slot0.kV = Constants.Intake.ROLLER_KV;
+
 
     roller.getConfigurator().apply(cfg);
   }
 
-  private void configurePivot() {
+  /*private void configurePivot() {
     TalonFXConfiguration cfg = new TalonFXConfiguration();
 
     cfg.Slot0.kP = Constants.Intake.PIVOT_KP;
@@ -128,7 +133,7 @@ public class IntakeSubsystem extends SubsystemBase {
     cfg.MotionMagic.MotionMagicAcceleration =
         degToRot(Constants.Intake.MAX_ACCEL_DEG_PER_SEC2);
 
-    pivot.getConfigurator().apply(cfg);
+    //pivot.getConfigurator().apply(cfg);
   }
 
   private double degToRot(double deg) {
@@ -137,24 +142,29 @@ public class IntakeSubsystem extends SubsystemBase {
 
   private double rotToDeg(double rot) {
     return rot / Constants.Intake.PIVOT_GEAR_RATIO * 360.0;
-  }
+  }*/
 
   /* ---------------- Periodic --------------- */
 
   @Override
-  public void periodic() {
+  public void periodic (){
+        Logger.recordOutput("Subsystems/Intake/IntakeRPM", roller.getVelocity().getValueAsDouble());
+        //Logger.recordOutput("Subsystems/Indexer/IndexerSpeed", (Kraken.getVelocity().getValueAsDouble() / Constants.IndexerGearRatio) * 60.0);
+        //Logger.recordOutput("Subsystems/Indexer/TargetHopperSpeed", hopperSpeed);      }
+  }
+}
+  
+  /*public void periodic() {
     if (stateBased) {
       switch (currentState) {
         case REST:
           retract();
-          break;
         case SHOOTING:
           agitate();
-          break;
         case INTAKING:
           intake();
-          break;
       }
     }
   }
 }
+*/
