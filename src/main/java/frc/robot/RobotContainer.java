@@ -8,12 +8,13 @@ import ca.team4308.absolutelib.control.XBoxWrapper;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.subsystems.IntakeSubsystem;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import frc.robot.subsystems.intakeSubsystem;
 
 public class RobotContainer {
   private final XBoxWrapper m_driverController = new XBoxWrapper(Constants.kDriverControllerPort);
 
-  public IntakeSubsystem m_IntakeSubsystem;
+  public intakeSubsystem m_IntakeSubsystem;
 
   double targetAngle;
   double targetRPM;
@@ -21,15 +22,15 @@ public class RobotContainer {
   public RobotContainer() {
     targetAngle = 0.0;
     targetRPM = 0.0;
-    m_IntakeSubsystem = new IntakeSubsystem();
+    m_IntakeSubsystem = new intakeSubsystem();
     configureBindings();
   }
 
   private void configureBindings() {
-    m_driverController.A.onTrue(m_IntakeSubsystem.intake());
-    m_driverController.X.onTrue(m_IntakeSubsystem.retract());
-    m_driverController.Y.onTrue(m_IntakeSubsystem.retract(1000));
-    m_driverController.B.onTrue(m_IntakeSubsystem.agitate());
+    m_driverController.A.onTrue(new InstantCommand(() -> targetRPM = 0 ));
+    m_driverController.X.onTrue(new InstantCommand(() -> targetRPM = 1000 ));
+    m_driverController.Y.onTrue(new InstantCommand(() -> targetRPM = 2000 ));
+    m_driverController.B.onTrue(new InstantCommand(() -> targetRPM = 3000 ));
   }
 
   public void periodic() {
@@ -37,7 +38,7 @@ public class RobotContainer {
     targetAngle += m_driverController.getLeftY();
     targetRPM += m_driverController.getRightY();
     targetAngle = MathUtil.clamp(targetAngle, Constants.Intake.RETRACTED_ANGLE_DEG, Constants.Intake.INTAKE_ANGLE_DEG);
-    m_IntakeSubsystem.setIntakeAngle(targetAngle);
+   // m_IntakeSubsystem.setIntakeAngle(targetAngle);
     m_IntakeSubsystem.setRollerSpeed(targetRPM);
   }
 
