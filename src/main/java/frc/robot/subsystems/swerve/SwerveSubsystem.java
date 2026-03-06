@@ -1,4 +1,4 @@
-package frc.robot.subsystems.swerve;
+package frc.robot.Subsystems.swerve;
 
 import static edu.wpi.first.units.Units.Meter;
 import static edu.wpi.first.units.Units.MetersPerSecond;
@@ -53,9 +53,9 @@ import frc.robot.Constants;
 import frc.robot.FieldLayout;
 import frc.robot.Robot;
 
-import frc.robot.subsystems.vision.Vision;
-import frc.robot.subsystems.vision.Vision.ObjectData;
-import frc.robot.subsystems.vision.Vision.VisionMeasurement;
+import frc.robot.Subsystems.vision.Vision;
+import frc.robot.Subsystems.vision.Vision.ObjectData;
+import frc.robot.Subsystems.vision.Vision.VisionMeasurement;
 
 import swervelib.SwerveController;
 import swervelib.SwerveDrive;
@@ -309,14 +309,14 @@ public class SwerveSubsystem extends SubsystemBase {
 
   private boolean getUnderTrench() {
     Pose2d curPose = swerveDrive.getPose();
-    return FieldLayout.blueLeftTrench.contains(curPose) || FieldLayout.blueRightTrench.contains(curPose)
-        || FieldLayout.redLeftTrench.contains(curPose) || FieldLayout.redRightTrench.contains(curPose);
+    return FieldLayout.Zones.blueLeftTrench.contains(curPose) || FieldLayout.Zones.blueRightTrench.contains(curPose)
+        || FieldLayout.Zones.redLeftTrench.contains(curPose) || FieldLayout.Zones.redRightTrench.contains(curPose);
   }
 
   private boolean getOverBump() {
     Pose2d curPose = swerveDrive.getPose();
-    return FieldLayout.blueLeftBump.contains(curPose) || FieldLayout.blueRightBump.contains(curPose)
-        || FieldLayout.redLeftBump.contains(curPose) || FieldLayout.redRightBump.contains(curPose);
+    return FieldLayout.Zones.blueLeftBump.contains(curPose) || FieldLayout.Zones.blueRightBump.contains(curPose)
+        || FieldLayout.Zones.redLeftBump.contains(curPose) || FieldLayout.Zones.redRightBump.contains(curPose);
   }
 
   private Alliance getAlliance() {
@@ -330,13 +330,13 @@ public class SwerveSubsystem extends SubsystemBase {
 
   private String getFieldLocation() {
     Pose2d curPose = swerveDrive.getPose();
-    if (FieldLayout.redAllianceZone.contains(curPose)) {
+    if (FieldLayout.Zones.redAllianceZone.contains(curPose)) {
       if (getAlliance() == Alliance.Blue) {
         return "OpponentZone";
       } else {
         return "AllianceZone";
       }
-    } else if (FieldLayout.blueAllianceZone.contains(curPose)) {
+    } else if (FieldLayout.Zones.blueAllianceZone.contains(curPose)) {
       if (getAlliance() == Alliance.Red) {
         return "OpponentZone";
       } else {
@@ -497,7 +497,7 @@ public class SwerveSubsystem extends SubsystemBase {
             getTargetSpeeds(joyY.get(), joyX.get(), targetHeading));
       } else {
         SmartDashboard.putNumber("targetHeading", -999);
-        SmartDashboard.putNumber("targetYaw",  -999);
+        SmartDashboard.putNumber("targetYaw", -999);
         SmartDashboard.putNumber("targetDist", -999);
         swerveDrive.driveFieldOriented(
             getTargetSpeeds(joyY.get(), joyX.get(), getHeading()));
@@ -643,9 +643,9 @@ public class SwerveSubsystem extends SubsystemBase {
         String zone = getFieldLocation();
 
         if (zone.equals("AllianceZone")) {
-          targetPose = FieldLayout.getNeutralLeft();
+          targetPose = FieldLayout.Zones.getNeutralLeft();
         } else if (zone.equals("NeutralZone")) {
-          targetPose = FieldLayout.getOpponentLeftPose();
+          targetPose = FieldLayout.Zones.getOpponentLeftPose();
         } else {
           targetPose = null;
         }
@@ -655,9 +655,9 @@ public class SwerveSubsystem extends SubsystemBase {
         String zone = getFieldLocation();
 
         if (zone.equals("AllianceZone")) {
-          targetPose = FieldLayout.getNeutralRight();
+          targetPose = FieldLayout.Zones.getNeutralRight();
         } else if (zone.equals("NeutralZone")) {
-          targetPose = FieldLayout.getOpponentRightPose();
+          targetPose = FieldLayout.Zones.getOpponentRightPose();
         } else {
           targetPose = null;
         }
@@ -679,9 +679,9 @@ public class SwerveSubsystem extends SubsystemBase {
         String zone = getFieldLocation();
 
         if (zone.equals("NeutralZone")) {
-          targetPose = FieldLayout.getAllianceLeftPose();
+          targetPose = FieldLayout.Zones.getAllianceLeftPose();
         } else if (zone.equals("OpponentZone")) {
-          targetPose = FieldLayout.getNeutralLeft();
+          targetPose = FieldLayout.Zones.getNeutralLeft();
         } else {
           targetPose = null;
         }
@@ -691,9 +691,9 @@ public class SwerveSubsystem extends SubsystemBase {
         String zone = getFieldLocation();
 
         if (zone.equals("NeutralZone")) {
-          targetPose = FieldLayout.getAllianceRightPose();
+          targetPose = FieldLayout.Zones.getAllianceRightPose();
         } else if (zone.equals("OpponentZone")) {
-          targetPose = FieldLayout.getNeutralRight();
+          targetPose = FieldLayout.Zones.getNeutralRight();
         } else {
           targetPose = null;
         }

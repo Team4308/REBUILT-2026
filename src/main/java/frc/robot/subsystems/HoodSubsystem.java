@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.Subsystems;
 
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -106,10 +106,11 @@ public class HoodSubsystem extends SubsystemBase {
         return currentState;
     }
 
-    public void setUsingState(boolean using){
+    public void setUsingState(boolean using) {
         usingState = using;
     }
-    public boolean getUsingState(){
+
+    public boolean getUsingState() {
         return usingState;
     }
 

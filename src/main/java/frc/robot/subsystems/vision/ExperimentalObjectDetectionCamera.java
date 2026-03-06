@@ -1,4 +1,4 @@
-package frc.robot.subsystems.vision;
+package frc.robot.Subsystems.vision;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,9 +16,13 @@ import frc.robot.Constants.VisionConstants;
 //untested and unimplemented on pi side DO NOT USE
 
 /**
- * EXPERIMENTAL: An implementation of an Object Detection camera that consumes raw data arrays
+ * EXPERIMENTAL: An implementation of an Object Detection camera that consumes
+ * raw data arrays
  * from a Python backend via NetworkTables.
- * <p><b>WARNING:</b> This class is marked as untested and unimplemented on the Pi side. Use with caution.</p>
+ * <p>
+ * <b>WARNING:</b> This class is marked as untested and unimplemented on the Pi
+ * side. Use with caution.
+ * </p>
  */
 public class ExperimentalObjectDetectionCamera extends ObjectDetectionCamera {
 
@@ -32,31 +36,33 @@ public class ExperimentalObjectDetectionCamera extends ObjectDetectionCamera {
      */
     public ExperimentalObjectDetectionCamera(String name) {
         super(name);
-        
+
         // Subscribe to Python Data: "Experimental/<Name>/Data"
         this.experimentalSubscriber = NetworkTableInstance.getDefault()
-            .getTable(VisionConstants.EXPERIMENTAL_ROOT)
-            .getSubTable(name)
-            .getDoubleArrayTopic("Data")
-            .subscribe(new double[0], PubSubOption.keepDuplicates(true));
-            
+                .getTable(VisionConstants.EXPERIMENTAL_ROOT)
+                .getSubTable(name)
+                .getDoubleArrayTopic("Data")
+                .subscribe(new double[0], PubSubOption.keepDuplicates(true));
+
         System.out.println("Vision: [" + name + "] initialized in EXPERIMENTAL (Python) mode.");
     }
 
     /**
      * Decodes the raw double array from NetworkTables into a PhotonPipelineResult.
-     * Expects a protocol containing Timestamp, Count, and per-target data (ClassID, Yaw, Pitch, Area, Confidence).
+     * Expects a protocol containing Timestamp, Count, and per-target data (ClassID,
+     * Yaw, Pitch, Area, Confidence).
      *
      * @return The constructed PhotonPipelineResult.
      */
     @Override
     public PhotonPipelineResult getLatestResult() {
         double[] data = experimentalSubscriber.get();
-        
-        // Protocol requires Timestamp + Count
-        if (data.length < 2) return new PhotonPipelineResult();
 
-        long captureTimestamp = (long) data[0]; 
+        // Protocol requires Timestamp + Count
+        if (data.length < 2)
+            return new PhotonPipelineResult();
+
+        long captureTimestamp = (long) data[0];
         int targetCount = (int) data[1];
         int packetSize = 5; // ClassID + Yaw + Pitch + Area + Confidence
 
@@ -64,7 +70,8 @@ public class ExperimentalObjectDetectionCamera extends ObjectDetectionCamera {
 
         for (int i = 0; i < targetCount; i++) {
             int base = 2 + (i * packetSize);
-            if (base + packetSize > data.length) break; 
+            if (base + packetSize > data.length)
+                break;
 
             int classId = (int) data[base + 0];
             double yaw = data[base + 1];
@@ -74,18 +81,17 @@ public class ExperimentalObjectDetectionCamera extends ObjectDetectionCamera {
 
             // Construct Target (No Pose for Objects)
             targets.add(new PhotonTrackedTarget(
-                yaw, pitch, area, 0.0, 
-                -1,                  // Fiducial ID
-                classId,             // Class ID
-                (float)confidence,   // Confidence
-                new Transform3d(), new Transform3d(), // Empty 3D Pose
-                0.0,                 // Ambiguity
-                new ArrayList<>(), new ArrayList<>()  // Corners
+                    yaw, pitch, area, 0.0,
+                    -1, // Fiducial ID
+                    classId, // Class ID
+                    (float) confidence, // Confidence
+                    new Transform3d(), new Transform3d(), // Empty 3D Pose
+                    0.0, // Ambiguity
+                    new ArrayList<>(), new ArrayList<>() // Corners
             ));
         }
 
         return new PhotonPipelineResult(
-            0, captureTimestamp, (long)(Timer.getFPGATimestamp() * 1e6), -1, targets
-        );
+                0, captureTimestamp, (long) (Timer.getFPGATimestamp() * 1e6), -1, targets);
     }
 }

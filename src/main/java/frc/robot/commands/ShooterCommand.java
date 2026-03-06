@@ -3,7 +3,7 @@ package frc.robot.commands;
 import java.util.function.Supplier;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.Subsystems.ShooterSubsystem;
 
 public class ShooterCommand extends Command {
   private final ShooterSubsystem m_subsystem;

@@ -1,4 +1,4 @@
-package frc.robot.subsystems.vision;
+package frc.robot.Subsystems.vision;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,23 +23,25 @@ import frc.robot.Constants.VisionConstants;
 
 /**
  * Represents a standard AprilTag camera using PhotonVision.
- * Handles pose estimation, standard deviation calculations based on tag count/distance,
+ * Handles pose estimation, standard deviation calculations based on tag
+ * count/distance,
  * and simulation integration.
  */
 public class AprilTagCamera {
     protected final String name;
     protected final PhotonCamera photonCamera;
     protected final PhotonPoseEstimator poseEstimator;
-    protected PhotonCameraSim cameraSim; 
+    protected PhotonCameraSim cameraSim;
     public Matrix<N3, N1> curStdDevs;
 
     /**
      * Creates a new AprilTagCamera.
      *
-     * @param name The name of the camera (must match PhotonVision pipeline name).
+     * @param name       The name of the camera (must match PhotonVision pipeline
+     *                   name).
      * @param robotToCam The transform from the robot's center to the camera.
-     * @param layout The AprilTag field layout.
-     * @param visionSim The simulation system (can be null if not in sim).
+     * @param layout     The AprilTag field layout.
+     * @param visionSim  The simulation system (can be null if not in sim).
      */
     public AprilTagCamera(String name, Transform3d robotToCam, AprilTagFieldLayout layout, VisionSystemSim visionSim) {
         this.name = name;
@@ -60,7 +62,8 @@ public class AprilTagCamera {
      */
     public PhotonPipelineResult getLatestResult() {
         if (RobotBase.isSimulation() && cameraSim != null) {
-            return cameraSim.getCamera().getAllUnreadResults().stream().reduce((first, second) -> second).orElse(new PhotonPipelineResult());
+            return cameraSim.getCamera().getAllUnreadResults().stream().reduce((first, second) -> second)
+                    .orElse(new PhotonPipelineResult());
         }
         var results = photonCamera.getAllUnreadResults();
         return results.isEmpty() ? new PhotonPipelineResult() : results.get(results.size() - 1);
@@ -69,15 +72,19 @@ public class AprilTagCamera {
     /**
      * Calculates the estimated robot pose based on visible AprilTags.
      *
-     * @param prevPose The previous estimated pose (used for reference, though not always required by PhotonPoseEstimator).
-     * @return An Optional containing the EstimatedRobotPose if a valid estimate is found.
+     * @param prevPose The previous estimated pose (used for reference, though not
+     *                 always required by PhotonPoseEstimator).
+     * @return An Optional containing the EstimatedRobotPose if a valid estimate is
+     *         found.
      */
     public Optional<EstimatedRobotPose> getEstimatedGlobalPose(Pose2d prevPose) {
         PhotonPipelineResult result = getLatestResult();
-        if (!result.hasTargets()) return Optional.empty();
+        if (!result.hasTargets())
+            return Optional.empty();
 
         double ambiguity = result.getBestTarget().getPoseAmbiguity();
-        if (ambiguity != -1 && ambiguity > VisionConstants.MAX_AMBIGUITY) return Optional.empty();
+        if (ambiguity != -1 && ambiguity > VisionConstants.MAX_AMBIGUITY)
+            return Optional.empty();
 
         Optional<EstimatedRobotPose> est = Optional.empty();
         var cameraMatrix = photonCamera.getCameraMatrix();
@@ -86,11 +93,12 @@ public class AprilTagCamera {
         // High Accuracy Strategy
         if (cameraMatrix.isPresent() && distCoeffs.isPresent()) {
             est = poseEstimator.estimateRioMultiTagPose(result, cameraMatrix.get(), distCoeffs.get());
-        } 
-        
+        }
+
         // Fallback Strategy
         if (est.isEmpty()) {
-            if (ambiguity == -1) return Optional.empty();
+            if (ambiguity == -1)
+                return Optional.empty();
             est = poseEstimator.estimateLowestAmbiguityPose(result);
         }
 
@@ -103,25 +111,29 @@ public class AprilTagCamera {
     }
 
     /**
-     * Dynamically updates the standard deviations for the pose estimate based on the number and distance of tags.
+     * Dynamically updates the standard deviations for the pose estimate based on
+     * the number and distance of tags.
      *
-     * @param pose The estimated robot pose.
+     * @param pose    The estimated robot pose.
      * @param targets The list of visible targets used for the estimate.
      */
     protected void updateEstimationStdDevs(EstimatedRobotPose pose, List<PhotonTrackedTarget> targets) {
-        Matrix<N3, N1> estStdDevs = VecBuilder.fill(VisionConstants.SINGLE_TAG_STD_DEV, VisionConstants.SINGLE_TAG_STD_DEV, 2.0);
+        Matrix<N3, N1> estStdDevs = VecBuilder.fill(VisionConstants.SINGLE_TAG_STD_DEV,
+                VisionConstants.SINGLE_TAG_STD_DEV, 2.0);
         int numTags = 0;
         double avgDist = 0;
 
         for (var target : targets) {
             var tagPose = poseEstimator.getFieldTags().getTagPose(target.getFiducialId());
-            avgDist += tagPose.get().toPose2d().getTranslation().getDistance(pose.estimatedPose.toPose2d().getTranslation());
+            avgDist += tagPose.get().toPose2d().getTranslation()
+                    .getDistance(pose.estimatedPose.toPose2d().getTranslation());
             numTags++;
         }
 
         if (numTags > 0) {
             avgDist /= numTags;
-            if (numTags > 1) estStdDevs = VecBuilder.fill(VisionConstants.MULTI_TAG_STD_DEV, VisionConstants.MULTI_TAG_STD_DEV, 1.0);
+            if (numTags > 1)
+                estStdDevs = VecBuilder.fill(VisionConstants.MULTI_TAG_STD_DEV, VisionConstants.MULTI_TAG_STD_DEV, 1.0);
             double scalar = (numTags == 1 && avgDist > 4) ? Double.MAX_VALUE : 1 + (avgDist * avgDist / 30.0);
             curStdDevs = estStdDevs.times(scalar);
         } else {
@@ -132,12 +144,13 @@ public class AprilTagCamera {
     /**
      * Configures the camera simulation properties.
      *
-     * @param visionSim The VisionSystemSim instance.
+     * @param visionSim  The VisionSystemSim instance.
      * @param robotToCam The camera's transform relative to the robot.
      */
     private void setupSimulation(VisionSystemSim visionSim, Transform3d robotToCam) {
         SimCameraProperties props = new SimCameraProperties();
-        props.setCalibration(VisionConstants.SIM_RES_WIDTH, VisionConstants.SIM_RES_HEIGHT, Rotation2d.fromDegrees(VisionConstants.SIM_DIAG_FOV));
+        props.setCalibration(VisionConstants.SIM_RES_WIDTH, VisionConstants.SIM_RES_HEIGHT,
+                Rotation2d.fromDegrees(VisionConstants.SIM_DIAG_FOV));
         props.setCalibError(VisionConstants.SIM_CALIB_ERROR_AVG, VisionConstants.SIM_CALIB_ERROR_STD_DEV);
         props.setFPS(VisionConstants.SIM_FPS);
         props.setAvgLatencyMs(VisionConstants.SIM_AVG_LATENCY_MS);

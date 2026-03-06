@@ -14,10 +14,10 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.Util.FuelSim;
-import frc.robot.subsystems.swerve.SwerveSubsystem;
+import frc.robot.Subsystems.swerve.SwerveSubsystem;
 import java.io.File;
 import swervelib.SwerveInputStream;
-import frc.robot.subsystems.vision.Vision;
+import frc.robot.Subsystems.vision.Vision;
 
 public class RobotContainer {
     // Controllers
@@ -106,6 +106,9 @@ public class RobotContainer {
 
         driver.Y.whileTrue(driveFieldOrientedAnglularVelocityKeyboard);
         driver.A.whileTrue(drivebase.driveToPose(() -> targetPoseForTESTING));
+    }
+
+    public void periodic() {
     }
 
     public void configureNamedCommands() {
