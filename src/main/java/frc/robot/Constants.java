@@ -78,11 +78,11 @@ public final class Constants {
       public static final int kMotor1 = 11;
       public static final int kMotor2 = 12;
 
-      public static final double kS = 0.18;
-      public static final double kV = 0.113;
-      public static final double kP = 0.04;
-      public static final double kI = 0;
-      public static final double kD = 0.01;
+      public static final double kS = 0.4;
+      public static final double kV = 0.1;
+      public static final double kP = 0.0;
+      public static final double kI = 0.0;
+      public static final double kD = 0.0;
     }
 
     public static final class Turret {
@@ -210,18 +210,18 @@ public final class Constants {
     public static double IndexerSpeed = 100;
     public static double HopperSpeed = 100;
     public static double IndexerGearRatio = 5 / 3;
-    public static double HopperGearRatio = 1;
+    public static double HopperGearRatio = 9 / 1;
     public static int HopperMotorId = 14;
-    public static double HopperMotorConfigsKs = 0.8;
-    public static double HopperMotorConfigsKv = 0.15;
-    public static double HopperMotorConfigsKp = 0.2;
+    public static double HopperMotorConfigsKs = 0.5;
+    public static double HopperMotorConfigsKv = 0.1;
+    public static double HopperMotorConfigsKp = 0.3;
     public static double HopperMotorConfigsKi = 0;
     public static double HopperMotorConfigsKd = 0;
 
     public static int IndexerMotorId = 15;
-    public static double IndexerMotorConfigsKs = 0.47;
-    public static double IndexerMotorConfigsKv = 0.15;
-    public static double IndexerMotorConfigsKp = 0.07;
+    public static double IndexerMotorConfigsKs = 0.5;
+    public static double IndexerMotorConfigsKv = 0.1;
+    public static double IndexerMotorConfigsKp = 0.3;
     public static double IndexerMotorConfigsKi = 0;
     public static double IndexerMotorConfigsKd = 0;
 

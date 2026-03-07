@@ -47,7 +47,7 @@ public class ShooterSubsystem extends AbsoluteSubsystem {
         rightMotor = new TalonFX(Constants.Shooting.Shooter.kMotor1);
         leftMotor = new TalonFX(Constants.Shooting.Shooter.kMotor2);
 
-        velocityVoltage = new VelocityVoltage(0);
+        velocityVoltage = new VelocityVoltage(0).withSlot(0);
 
         rightConfiguration = new TalonFXConfiguration();
         leftConfiguration = new TalonFXConfiguration();
@@ -78,8 +78,8 @@ public class ShooterSubsystem extends AbsoluteSubsystem {
     public void setTargetSpeed(double rpm) {
         this.targetRPM = rpm;
         // VelocityVoltage expects rotations per second (RPS). Convert RPM -> RPS.
-        velocityVoltage.Velocity = rpm / 60.0;
-        rightMotor.setControl(velocityVoltage);
+        rightMotor.setControl(velocityVoltage.withVelocity(rpm / 60.0));
+        // rightMotor.setVoltage(5);
     }
 
     public boolean isAtTargetSpeed() {
@@ -179,6 +179,7 @@ public class ShooterSubsystem extends AbsoluteSubsystem {
         }
 
         Logger.recordOutput("Subsystems/Shooter/CurRPM", getRPM());
+        Logger.recordOutput("Subsystems/Shooter/TargetRPM", targetRPM);
         Logger.recordOutput("Subsystems/Shooter/AtTargetSpeed", isAtTargetSpeed());
     }
 }

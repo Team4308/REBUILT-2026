@@ -38,11 +38,13 @@ public class RobotContainer {
         private final HoodSubsystem m_HoodSubsystem;
         // private final IntakeSubsystem m_IntakeSubsystem;
         // private final TurretSubsystem m_TurretSubsystem;
-        // private final IndexerSubsystem m_IndexerSubsystem;
+        private final IndexerSubsystem m_IndexerSubsystem;
         private final ShooterSubsystem m_ShooterSubsystem;
 
         private double m_hoodAngle = 7.5;
         private double m_turretAngle = 180;
+        private double m_shooterSpeed = 0.0;
+        private double m_indexerSpeed = 0.0;
 
         // Commands
         private final SendableChooser<Command> autoChooser;
@@ -91,7 +93,7 @@ public class RobotContainer {
                 drivebase.setVision(vision);
 
                 m_HoodSubsystem = new HoodSubsystem();
-                // m_IndexerSubsystem = new IndexerSubsystem();
+                m_IndexerSubsystem = new IndexerSubsystem();
                 // m_TurretSubsystem = new TurretSubsystem();
                 m_ShooterSubsystem = new ShooterSubsystem();
                 // m_IntakeSubsystem = new IntakeSubsystem();
@@ -156,8 +158,8 @@ public class RobotContainer {
                 driver.M2.onTrue(m_HoodSubsystem.resetHoodCommand());
                 driver.M2.onTrue(new InstantCommand(() -> m_hoodAngle = 7.5));
 
-                driver.povUp.onTrue(new InstantCommand(() -> m_hoodAngle += 7.5));
-                driver.povDown.onTrue(new InstantCommand(() -> m_hoodAngle -= 7.5));
+                driver.povUp.onTrue(new InstantCommand(() -> m_indexerSpeed += 60));
+                driver.povDown.onTrue(new InstantCommand(() -> m_indexerSpeed -= 60));
 
                 driver.povRight.onTrue(new InstantCommand(() -> m_turretAngle += 5));
                 driver.povLeft.onTrue(new InstantCommand(() -> m_turretAngle -= 5));
@@ -169,6 +171,9 @@ public class RobotContainer {
                 m_turretAngle += x * 5;
 
                 m_HoodSubsystem.setHoodAngle(m_hoodAngle);
+                m_ShooterSubsystem.setTargetSpeed(m_shooterSpeed);
+                m_IndexerSubsystem.setIndexerSpeed(m_indexerSpeed);
+                m_IndexerSubsystem.setHopperSpeed(0);
                 // m_TurretSubsystem.setTarget(m_turretAngle);
         }
 

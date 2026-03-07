@@ -163,7 +163,7 @@ public class IndexerSubsystem extends SubsystemBase {
         Logger.recordOutput("Subsystems/Indexer/HopperSpeed",
                 (Falcon.getVelocity().getValueAsDouble() / Constants.Indexer.HopperGearRatio) * 60.0);
         Logger.recordOutput("Subsystems/Indexer/IndexerSpeed",
-                (Kraken.getVelocity().getValueAsDouble() / Constants.Indexer.IndexerGearRatio) * 60.0);
+                (Kraken.getVelocity().getValueAsDouble() / Constants.Indexer.IndexerGearRatio) * -60.0);
         Logger.recordOutput("Subsystems/Indexer/TargetIndexerSpeed", indexerSpeed);
         Logger.recordOutput("Subsystems/Indexer/TargetHopperSpeed", hopperSpeed);
     }
