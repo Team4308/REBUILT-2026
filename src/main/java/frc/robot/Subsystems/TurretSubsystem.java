@@ -10,16 +10,14 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-import ca.team4308.absolutelib.math.ChineseRemainderSolver;
 import ca.team4308.absolutelib.wrapper.AbsoluteSubsystem;
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ArmFeedforward;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj.Preferences;
 import frc.robot.Constants;
 
 public class TurretSubsystem extends AbsoluteSubsystem {
@@ -28,43 +26,44 @@ public class TurretSubsystem extends AbsoluteSubsystem {
     private final CANcoder canCoder1;
     private final CANcoder canCoder2;
 
-    private double targetDeg = 0.0;
-    private double currentDeg = 0.0;
+    private double targetDegWrapped = 0.0;
+    private double targetDegUnWrapped = 0.0;
+    private double currentDegWrapped = 0.0;
+    private double currentDegUnWrapped = 0.0;
 
-    private double offset1 = Constants.Shooting.Turret.DEFAULT_OFFSET1;
-    private double offset2 = Constants.Shooting.Turret.DEFAULT_OFFSET2;
+    private double encoderOffset = 0;
 
-    // CRT is used only once at boot to establish absolute position.
-    // After that we track via encoder-1 deltas (no race conditions).
-    private boolean crtLocked = false;
-    private double lastRaw1 = 0.0; // previous encoder-1 reading for delta tracking
+    private final static double GEAR_RATIO_1 = (85. / 17.) * (40. / 31.);
+    private final static double GEAR_RATIO_2 = (85. / 17.) * (40. / 33.);
+    private final static double PERIOD = 1 / Math.abs(GEAR_RATIO_1 - GEAR_RATIO_2);
 
-    // Debug values for logging
-    private double dbgRaw1, dbgRaw2;
-    private long dbgVal1, dbgVal2, dbgCrtResult;
+    private final static double GEAR_RATIO = (12.0 / 50.0) * (10.0 / 85.0);
+    private final static double STOPPED_VELOCITY = 0.1;
+    private final static double START_ANGLE = 90;
+    private final static double END_ANGLE = 500;
 
-    private final TrapezoidProfile profile = new TrapezoidProfile(
-            new TrapezoidProfile.Constraints(
-                    Constants.Shooting.Turret.MAX_VELOCITY_DEG_S,
-                    Constants.Shooting.Turret.MAX_ACCEL_DEG_S2));
-    private TrapezoidProfile.State profileSetpoint = new TrapezoidProfile.State(0, 0);
-    private TrapezoidProfile.State profileGoal = new TrapezoidProfile.State(0, 0);
+    private final static boolean WRAPPING_TEST = false;
+    private final static boolean CANCODER_TEST = false;
 
-    private final PIDController pid = new PIDController(
-            Constants.Shooting.Turret.kP, Constants.Shooting.Turret.kI, Constants.Shooting.Turret.kD);
+    public final static ArmFeedforward feedforward = new ArmFeedforward(0.24, 0, 0.0075, 0.01);
+
+    public final static ProfiledPIDController pidController = new ProfiledPIDController(
+            0.035, 0.0, 0.0,
+            new TrapezoidProfile.Constraints(1500, 2000));
 
     public TurretSubsystem() {
         driveMotor = new TalonFX(Constants.Shooting.Turret.DRIVE_MOTOR_ID);
         canCoder1 = new CANcoder(Constants.Shooting.Turret.CANCODER1_ID);
         canCoder2 = new CANcoder(Constants.Shooting.Turret.CANCODER2_ID);
 
-        // Load persisted offsets if present (stored by calibrateZero()).
-        offset1 = Preferences.getDouble("turret.offset1", offset1);
-        offset2 = Preferences.getDouble("turret.offset2", offset2);
-        System.out.printf("Turret offsets loaded: offset1=%.6f offset2=%.6f%n", offset1, offset2);
-
-        // pid.enableContinuousInput(TurretSubsystem.MIN_DEGREES,
-        // TurretSubsystem.MAX_DEGREES);
+        // try one iteration of crt here to find pos
+        updateAngle();
+        encoderOffset = getAngleUnWrapped() - 180;
+        if (CANCODER_TEST) {
+            encoderOffset = calculateEncoderAngle();
+        } else {
+            calculateEncoderAngle();
+        }
 
         TalonFXConfiguration driveConfig = new TalonFXConfiguration();
         driveConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
@@ -73,68 +72,37 @@ public class TurretSubsystem extends AbsoluteSubsystem {
     }
 
     public double getAngleWrapped() {
-        return inputModulus(getAngle(), Constants.Shooting.Turret.MIN_DEGREES,
+        return currentDegWrapped;
+    }
+
+    public double getAngleUnWrapped() {
+        return currentDegUnWrapped;
+    }
+
+    public double calculateEncoderAngle() { // TOOD: do what gemini was
+        double enc1 = canCoder1.getAbsolutePosition().getValueAsDouble();
+        double enc2 = canCoder2.getAbsolutePosition().getValueAsDouble();
+
+        Logger.recordOutput("Subsystems/Turret/ENCODER 1", enc1);
+        Logger.recordOutput("Subsystems/Turret/ENCODER 2", enc2);
+
+        double diff = (enc1 % enc2) % 1.0;
+        double coarseRotations = diff * PERIOD;
+
+        double n1 = Math.round((coarseRotations * GEAR_RATIO_1) - enc1);
+
+        double preciseRotations = (n1 + enc1) / GEAR_RATIO_1;
+
+        double posDegrees = coarseRotations * 360;
+        Logger.recordOutput("Subsystems/Turret/Encoder Calculated Angle", posDegrees);
+        return posDegrees;
+    }
+
+    public void updateAngle() {
+        double rawAngle = driveMotor.getPosition().getValueAsDouble() * GEAR_RATIO * 360;
+        currentDegUnWrapped = rawAngle - encoderOffset;
+        currentDegWrapped = inputModulus(currentDegUnWrapped, Constants.Shooting.Turret.MIN_DEGREES,
                 Constants.Shooting.Turret.MAX_DEGREES, Constants.Shooting.Turret.FULL_REVOLUTION_DEG);
-    }
-
-    public double getAngle() {
-        return currentDeg;
-    }
-
-    private void updateCurrentAngle() {
-        double raw1 = canCoder1.getAbsolutePosition().getValueAsDouble() - offset1;
-        double raw2 = canCoder2.getAbsolutePosition().getValueAsDouble() - offset2;
-        Logger.recordOutput("Subsystems/Turret Encoder1", raw1);
-        Logger.recordOutput("Subsystems/Turret Encoder2", raw2);
-
-        dbgRaw1 = raw1;
-        dbgRaw2 = raw2;
-
-        if (!crtLocked) {
-
-            long val1 = Math.floorMod(Math.round(raw1 * Constants.Shooting.Turret.MOD1),
-                    Constants.Shooting.Turret.MOD1);
-            long val2 = Math.floorMod(Math.round(raw2 * Constants.Shooting.Turret.MOD2),
-                    Constants.Shooting.Turret.MOD2);
-            dbgVal1 = val1;
-            dbgVal2 = val2;
-
-            long[] result = ChineseRemainderSolver.solvePair(val1, Constants.Shooting.Turret.MOD1, val2,
-                    Constants.Shooting.Turret.MOD2);
-            if (result == null)
-                return;
-
-            long teeth = result[0]; // [0, 1023)
-            dbgCrtResult = teeth;
-
-            // Convert to degrees within [0, 360)
-            double deg = teeth / Constants.Shooting.Turret.TEETH_PER_TURRET_REV
-                    * Constants.Shooting.Turret.FULL_REVOLUTION_DEG;
-
-            Logger.recordOutput("HELP", deg);
-
-            currentDeg = deg;
-            targetDeg = deg; // start target at current so turret doesn't jump
-            profileSetpoint = new TrapezoidProfile.State(deg, 0);
-            profileGoal = new TrapezoidProfile.State(deg, 0);
-            lastRaw1 = raw1;
-            crtLocked = true;
-
-            return;
-        }
-        double deltaRaw = raw1 - lastRaw1;
-
-        // Handle CANcoder wrap-around (encoder values are in [0,1) turns)
-        if (deltaRaw > Constants.Shooting.Turret.CANCODER_WRAP_THRESHOLD)
-            deltaRaw -= 1.0;
-        if (deltaRaw < -Constants.Shooting.Turret.CANCODER_WRAP_THRESHOLD)
-            deltaRaw += 1.0;
-
-        double deltaDeg = deltaRaw / Constants.Shooting.Turret.CANCODER1_GEAR_RATIO
-                * Constants.Shooting.Turret.FULL_REVOLUTION_DEG;
-        currentDeg += deltaDeg;
-        lastRaw1 = raw1;
-
     }
 
     private double inputModulus(double value, double min, double max, double modulus) {
@@ -145,20 +113,36 @@ public class TurretSubsystem extends AbsoluteSubsystem {
     }
 
     public void setTarget(double degrees) {
-        targetDeg = inputModulus(degrees, Constants.Shooting.Turret.MIN_DEGREES,
-                Constants.Shooting.Turret.MAX_DEGREES, Constants.Shooting.Turret.FULL_REVOLUTION_DEG);
-        profileGoal = new TrapezoidProfile.State(targetDeg, 0);
-    }
+        // This can be updated to do proper shortestPath code
+        degrees = inputModulus(degrees, START_ANGLE, END_ANGLE, 360);
+        targetDegUnWrapped = degrees;
+        targetDegWrapped = inputModulus(degrees, 0, 360, 360);
 
-    public void nudgeTarget(double deltaDeg) {
-        targetDeg = MathUtil.clamp(
-                targetDeg + deltaDeg, Constants.Shooting.Turret.MIN_DEGREES, Constants.Shooting.Turret.MAX_DEGREES);
-        profileGoal = new TrapezoidProfile.State(targetDeg, 0);
+        if (WRAPPING_TEST) {
+            int kMin = (int) Math.ceil((START_ANGLE - targetDegWrapped) / 360.0);
+            int kMax = (int) Math.floor((END_ANGLE - targetDegWrapped) / 360.0);
+
+            double closestTarget = targetDegUnWrapped;
+            double minDistance = Double.MAX_VALUE;
+
+            for (int k = kMin; k <= kMax; k++) {
+                double candidate = targetDegWrapped + k * 360.0;
+                double distance = Math.abs(currentDegUnWrapped - candidate); // replace with your current angle variable
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestTarget = candidate;
+                }
+            }
+
+            targetDegUnWrapped = closestTarget;
+        }
     }
 
     public boolean isAtTarget() {
-        return Math.abs(getAngle() - targetDeg) <= Constants.Shooting.Turret.TURRET_TOLERANCE_DEGREES
-                && Math.abs(profileSetpoint.velocity) < Constants.Shooting.Turret.VELOCITY_STOPPED_THRESHOLD;
+
+        return Math.abs(currentDegWrapped - targetDegWrapped) <= Constants.Shooting.Turret.TURRET_TOLERANCE_DEGREES
+                && driveMotor.getVelocity().getValueAsDouble() < STOPPED_VELOCITY;
+
     }
 
     public Command moveToTarget(Supplier<Double> degrees) {
@@ -214,54 +198,38 @@ public class TurretSubsystem extends AbsoluteSubsystem {
         return run(() -> aimAtPassingZone(target));
     }
 
-    public void setYaw(double angle) {
-        setTarget(angle);
-    }
-
     public void setSafeAngle() {
         setTarget(Constants.Shooting.Turret.SAFE_ANGLE);
     }
 
     public void stopMotors() {
         driveMotor.setVoltage(0);
-        profileSetpoint = new TrapezoidProfile.State(getAngle(), 0);
-        profileGoal = profileSetpoint;
     }
 
     @Override
     public void periodic() {
-        updateCurrentAngle();
+        updateAngle();
 
-        profileSetpoint = profile.calculate(Constants.Shooting.Turret.LOOP_PERIOD_S, profileSetpoint, profileGoal);
+        double pidOutput = pidController.calculate(currentDegUnWrapped, targetDegUnWrapped);
 
-        double pidOutput = pid.calculate(getAngle(), profileSetpoint.position);
-
-        double ffOutput = Constants.Shooting.Turret.kS * Math.signum(profileSetpoint.velocity)
-                + Constants.Shooting.Turret.kV * profileSetpoint.velocity;
+        double ffOutput = feedforward.calculate(pidController.getSetpoint().position,
+                pidController.getSetpoint().velocity);
 
         double voltage = pidOutput + ffOutput;
 
         driveMotor.setVoltage(voltage);
 
-        Logger.recordOutput("Subsystems/Turret Angle (wrapped)", getAngleWrapped());
-        Logger.recordOutput("Subsystems/Turret Angle (unwrapped)", getAngle());
-        Logger.recordOutput("Subsystems/Turret Target (unwrapped)", targetDeg);
-        Logger.recordOutput("Subsystems/Turret Target (wrapped)",
-                MathUtil.inputModulus(targetDeg, 0, Constants.Shooting.Turret.FULL_REVOLUTION_DEG));
-        Logger.recordOutput("Subsystems/Turret Profile Setpoint", profileSetpoint.position);
-        Logger.recordOutput("Subsystems/Turret Profile Velocity", profileSetpoint.velocity);
-        Logger.recordOutput("Subsystems/Turret PID Output", pidOutput);
-        Logger.recordOutput("Subsystems/Turret FF Output", ffOutput);
-        Logger.recordOutput("Subsystems/Turret Voltage", voltage);
-        Logger.recordOutput("Subsystems/Turret At Target", isAtTarget());
-        Logger.recordOutput("Subsystems/Turret Min Limit (deg)", Constants.Shooting.Turret.MIN_DEGREES);
-        Logger.recordOutput("Subsystems/Turret Max Limit (deg)", Constants.Shooting.Turret.MAX_DEGREES);
-        // CRT debug
-        Logger.recordOutput("Subsystems/CRT/Enc1 Raw", dbgRaw1);
-        Logger.recordOutput("Subsystems/CRT/Enc2 Raw", dbgRaw2);
-        Logger.recordOutput("Subsystems/CRT/Residue1", (double) dbgVal1);
-        Logger.recordOutput("Subsystems/CRT/Residue2", (double) dbgVal2);
-        Logger.recordOutput("Subsystems/CRT/TeethPassed", (double) dbgCrtResult);
+        Logger.recordOutput("Subsystems/Turret/Angle (wrapped)", currentDegWrapped);
+        Logger.recordOutput("Subsystems/Turret/Angle (unwrapped)", currentDegUnWrapped);
+        Logger.recordOutput("Subsystems/Turret/Target (unwrapped)", targetDegUnWrapped);
+        Logger.recordOutput("Subsystems/Turret/Target (wrapped)", targetDegWrapped);
+        Logger.recordOutput("Subsystems/Turret/Profile Setpoint", pidController.getSetpoint().position);
+        Logger.recordOutput("Subsystems/Turret/Profile Velocity", pidController.getSetpoint().velocity);
+        Logger.recordOutput("Subsystems/Turret/PID Output", pidOutput);
+        Logger.recordOutput("Subsystems/Turret/FF Output", ffOutput);
+        Logger.recordOutput("Subsystems/Turret/Voltage", voltage);
+        Logger.recordOutput("Subsystems/Turret/At Target", isAtTarget());
+        Logger.recordOutput("Subsystems/Turret/Current", driveMotor.getStatorCurrent().getValueAsDouble());
     }
 
     @Override
