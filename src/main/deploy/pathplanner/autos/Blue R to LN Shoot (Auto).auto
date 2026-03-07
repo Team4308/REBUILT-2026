@@ -1,0 +1,25 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Blue R to LN(Shoot)"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": "Disruption Autos",
+  "choreoAuto": false
+}
