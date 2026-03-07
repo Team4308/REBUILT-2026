@@ -75,6 +75,10 @@ public class ShooterSubsystem extends AbsoluteSubsystem {
         targetRPM = 0;
     }
 
+    public void setTargetVoltage(double voltage) {
+        rightMotor.setVoltage(voltage);
+    }
+
     public void setTargetSpeed(double rpm) {
         this.targetRPM = rpm;
         // VelocityVoltage expects rotations per second (RPS). Convert RPM -> RPS.

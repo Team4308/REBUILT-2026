@@ -37,7 +37,7 @@ public class RobotContainer {
 
         private final HoodSubsystem m_HoodSubsystem;
         private final IntakeSubsystem m_IntakeSubsystem;
-        // private final TurretSubsystem m_TurretSubsystem;
+        private final TurretSubsystem m_TurretSubsystem;
         private final IndexerSubsystem m_IndexerSubsystem;
         private final ShooterSubsystem m_ShooterSubsystem;
 
@@ -95,12 +95,12 @@ public class RobotContainer {
 
                 m_HoodSubsystem = new HoodSubsystem();
                 m_IndexerSubsystem = new IndexerSubsystem();
-                // m_TurretSubsystem = new TurretSubsystem();
+                m_TurretSubsystem = new TurretSubsystem();
                 m_ShooterSubsystem = new ShooterSubsystem();
                 m_IntakeSubsystem = new IntakeSubsystem();
 
-                m_ShooterSubsystem.setDefaultCommand(
-                                new ShooterCommand(m_ShooterSubsystem, () -> driver.getRightTrigger()));
+                // m_ShooterSubsystem.setDefaultCommand(
+                // new ShooterCommand(m_ShooterSubsystem, () -> driver.getRightTrigger()));
 
                 // m_IntakeSubsystem.setDefaultCommand(new IntakeCommand(m_IntakeSubsystem, ()
                 // -> driver.getLeftTrigger()));
@@ -140,7 +140,7 @@ public class RobotContainer {
                 // driver.RB.whileTrue(drivebase.aimAtTarget(() -> driver.getLeftY() * -1, () ->
                 // driver.getLeftX() * -1));
 
-                // drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
+                drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
 
                 /*
                  * /
@@ -151,32 +151,34 @@ public class RobotContainer {
                  * () -> m_IntakeSubsystem.setIntakeAngle(Constants.Intake.INTAKE_ANGLE_DEG)));
                  */
 
-                driver.A.onTrue(new InstantCommand(() -> m_turretAngle = 180));
-                driver.B.onTrue(new InstantCommand(() -> m_turretAngle = 360));
-                driver.X.onTrue(new InstantCommand(() -> m_turretAngle = 90));
-                driver.Y.onTrue(new InstantCommand(() -> m_turretAngle = 420));
+                driver.A.onTrue(new InstantCommand(() -> m_intakeAngle -= 10));
+                // driver.B.onTrue(new InstantCommand(() -> m_turretAngle = 360));
+                // driver.X.onTrue(new InstantCommand(() -> m_turretAngle = 90));
+                driver.Y.onTrue(new InstantCommand(() -> m_intakeAngle += 10));
 
                 driver.M2.onTrue(m_HoodSubsystem.resetHoodCommand());
                 driver.M2.onTrue(new InstantCommand(() -> m_hoodAngle = 7.5));
 
-                driver.povUp.onTrue(new InstantCommand(() -> m_shooterSpeed += 600));
-                driver.povDown.onTrue(new InstantCommand(() -> m_shooterSpeed -= 600));
+                driver.povUp.onTrue(new InstantCommand(() -> m_hoodAngle += 5));
+                driver.povDown.onTrue(new InstantCommand(() -> m_hoodAngle -= 5));
 
                 driver.povRight.onTrue(new InstantCommand(() -> m_turretAngle += 5));
                 driver.povLeft.onTrue(new InstantCommand(() -> m_turretAngle -= 5));
         }
 
         public void periodic() {
-                double x = driver.getLeftX() * -1;
-                x = MathUtil.applyDeadband(x, 0.1);
-                m_turretAngle += x * 5;
+                // double x = driver.getLeftX() * -1;
+                // x = MathUtil.applyDeadband(x, 0.1);
+                // m_turretAngle += x * 5;
 
                 m_HoodSubsystem.setHoodAngle(m_hoodAngle);
-                m_ShooterSubsystem.setTargetSpeed(m_shooterSpeed);
-                m_IndexerSubsystem.setIndexerSpeed(0);
-                m_IndexerSubsystem.setHopperSpeed(0);
+                m_ShooterSubsystem.setTargetVoltage(driver.getLeftTrigger() * 6);
+                m_IndexerSubsystem.setIndexerSpeed(driver.getRightTrigger() * 600);
+                m_IndexerSubsystem.setHopperSpeed(driver.getRightTrigger() * 600);
+                m_IntakeSubsystem.setRollerSpeed(-driver.getRightTrigger() * 6
+                0);
                 m_IntakeSubsystem.setIntakeAngle(m_intakeAngle);
-                // m_TurretSubsystem.setTarget(m_turretAngle);
+                m_TurretSubsystem.setTarget(m_turretAngle);
         }
 
         public void configureNamedCommands() {
