@@ -36,7 +36,7 @@ public class RobotContainer {
                         new File(Filesystem.getDeployDirectory(), "swerve"));
 
         private final HoodSubsystem m_HoodSubsystem;
-        // private final IntakeSubsystem m_IntakeSubsystem;
+        private final IntakeSubsystem m_IntakeSubsystem;
         // private final TurretSubsystem m_TurretSubsystem;
         private final IndexerSubsystem m_IndexerSubsystem;
         private final ShooterSubsystem m_ShooterSubsystem;
@@ -45,6 +45,7 @@ public class RobotContainer {
         private double m_turretAngle = 180;
         private double m_shooterSpeed = 0.0;
         private double m_indexerSpeed = 0.0;
+        private double m_intakeAngle = 127.0;
 
         // Commands
         private final SendableChooser<Command> autoChooser;
@@ -96,7 +97,7 @@ public class RobotContainer {
                 m_IndexerSubsystem = new IndexerSubsystem();
                 // m_TurretSubsystem = new TurretSubsystem();
                 m_ShooterSubsystem = new ShooterSubsystem();
-                // m_IntakeSubsystem = new IntakeSubsystem();
+                m_IntakeSubsystem = new IntakeSubsystem();
 
                 m_ShooterSubsystem.setDefaultCommand(
                                 new ShooterCommand(m_ShooterSubsystem, () -> driver.getRightTrigger()));
@@ -158,8 +159,8 @@ public class RobotContainer {
                 driver.M2.onTrue(m_HoodSubsystem.resetHoodCommand());
                 driver.M2.onTrue(new InstantCommand(() -> m_hoodAngle = 7.5));
 
-                driver.povUp.onTrue(new InstantCommand(() -> m_indexerSpeed += 60));
-                driver.povDown.onTrue(new InstantCommand(() -> m_indexerSpeed -= 60));
+                driver.povUp.onTrue(new InstantCommand(() -> m_shooterSpeed += 600));
+                driver.povDown.onTrue(new InstantCommand(() -> m_shooterSpeed -= 600));
 
                 driver.povRight.onTrue(new InstantCommand(() -> m_turretAngle += 5));
                 driver.povLeft.onTrue(new InstantCommand(() -> m_turretAngle -= 5));
@@ -172,8 +173,9 @@ public class RobotContainer {
 
                 m_HoodSubsystem.setHoodAngle(m_hoodAngle);
                 m_ShooterSubsystem.setTargetSpeed(m_shooterSpeed);
-                m_IndexerSubsystem.setIndexerSpeed(m_indexerSpeed);
+                m_IndexerSubsystem.setIndexerSpeed(0);
                 m_IndexerSubsystem.setHopperSpeed(0);
+                m_IntakeSubsystem.setIntakeAngle(m_intakeAngle);
                 // m_TurretSubsystem.setTarget(m_turretAngle);
         }
 

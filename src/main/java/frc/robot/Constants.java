@@ -181,21 +181,22 @@ public final class Constants {
     public static final double ROLLER_INTAKE_RPM = 4500.0;
 
     // Pivot geometry
-    public static final double PIVOT_GEAR_RATIO = 100.0;
-    public static final double PIVOT_KP = 40.0;
+    public static final double PIVOT_GEAR_RATIO = 81;
+    public static final double PIVOT_KP = 0.0;
     public static final double PIVOT_KI = 0.0;
-    public static final double PIVOT_KD = 2.0;
-    public static final double PIVOT_KG = 0.35; // gravity feedforward
-    public static final double PIVOT_KV = 1.2;
-    public static final double PIVOT_KA = 0.08;
+    public static final double PIVOT_KD = 0.02;
+    public static final double PIVOT_KS = 0.15;
+    public static final double PIVOT_KG = 0.15; // gravity feedforward
+    public static final double PIVOT_KV = 0.03;
+    public static final double PIVOT_KA = 0.0;
 
     // Motion Magic
     public static final double MAX_VEL_DEG_PER_SEC = 300.0;
     public static final double MAX_ACCEL_DEG_PER_SEC2 = 600.0;
 
     // Angles
-    public static final double RETRACTED_ANGLE_DEG = 0.0;
-    public static final double INTAKE_ANGLE_DEG = 65.0;
+    public static final double RETRACTED_ANGLE_DEG = 127.0;
+    public static final double INTAKE_ANGLE_DEG = 0.0;
 
     // Agitate
     public static final double AGITATE_LOW_DEG = 45.0;
