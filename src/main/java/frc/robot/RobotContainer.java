@@ -156,8 +156,8 @@ public class RobotContainer {
                 driver.M2.onTrue(m_HoodSubsystem.resetHoodCommand());
                 driver.M2.onTrue(new InstantCommand(() -> m_hoodAngle = 7.5));
 
-                driver.povUp.onTrue(new InstantCommand(() -> m_hoodAngle += 5));
-                driver.povDown.onTrue(new InstantCommand(() -> m_hoodAngle -= 5));
+                driver.povUp.onTrue(new InstantCommand(() -> m_hoodAngle += 7.5));
+                driver.povDown.onTrue(new InstantCommand(() -> m_hoodAngle -= 7.5));
 
                 driver.povRight.onTrue(new InstantCommand(() -> m_turretAngle += 5));
                 driver.povLeft.onTrue(new InstantCommand(() -> m_turretAngle -= 5));

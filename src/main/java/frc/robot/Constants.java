@@ -158,9 +158,9 @@ public final class Constants {
       public static final double FORWARD_SOFT_LIMIT_ANGLE = 52.5;
       public static final double REVERSE_SOFT_LIMIT_ANGLE = 7.5;
       public static final double ampThreshold = 2;
-      public final static ArmFeedforward feedforward = new ArmFeedforward(0.262, 0, 0.027, 0.04);
+      public final static ArmFeedforward feedforward = new ArmFeedforward(0.2, 0.0, 0.025, 0.0);
       public final static ProfiledPIDController pidController = new ProfiledPIDController(
-          0.47, 0.0, 0.01,
+          0.005, 0.0, 0.0,
           new TrapezoidProfile.Constraints(2000, 2000));
     }
   }
@@ -200,7 +200,7 @@ public final class Constants {
     // Agitate
     public static final double AGITATE_LOW_DEG = 45.0;
     public static final double AGITATE_HIGH_DEG = 70.0;
-    
+
     // Tolerance
     public static final double ANGLE_TOLERANCE_DEG = 1.5;
     public static final double VELOCITY_TOLERANCE = 0.5;
