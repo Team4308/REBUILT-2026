@@ -37,7 +37,7 @@ public class RobotContainer {
 
         private final HoodSubsystem m_HoodSubsystem;
         // private final IntakeSubsystem m_IntakeSubsystem;
-        private final TurretSubsystem m_TurretSubsystem;
+        // private final TurretSubsystem m_TurretSubsystem;
         // private final IndexerSubsystem m_IndexerSubsystem;
         private final ShooterSubsystem m_ShooterSubsystem;
 
@@ -92,7 +92,7 @@ public class RobotContainer {
 
                 m_HoodSubsystem = new HoodSubsystem();
                 // m_IndexerSubsystem = new IndexerSubsystem();
-                m_TurretSubsystem = new TurretSubsystem();
+                // m_TurretSubsystem = new TurretSubsystem();
                 m_ShooterSubsystem = new ShooterSubsystem();
                 // m_IntakeSubsystem = new IntakeSubsystem();
 
@@ -156,8 +156,8 @@ public class RobotContainer {
                 driver.M2.onTrue(m_HoodSubsystem.resetHoodCommand());
                 driver.M2.onTrue(new InstantCommand(() -> m_hoodAngle = 7.5));
 
-                driver.povUp.onTrue(new InstantCommand(() -> m_hoodAngle += 2.5));
-                driver.povDown.onTrue(new InstantCommand(() -> m_hoodAngle -= 2.5));
+                driver.povUp.onTrue(new InstantCommand(() -> m_hoodAngle += 5));
+                driver.povDown.onTrue(new InstantCommand(() -> m_hoodAngle -= 5));
 
                 driver.povRight.onTrue(new InstantCommand(() -> m_turretAngle += 5));
                 driver.povLeft.onTrue(new InstantCommand(() -> m_turretAngle -= 5));
@@ -169,7 +169,7 @@ public class RobotContainer {
                 m_turretAngle += x * 5;
 
                 m_HoodSubsystem.setHoodAngle(m_hoodAngle);
-                m_TurretSubsystem.setTarget(m_turretAngle);
+                // m_TurretSubsystem.setTarget(m_turretAngle);
         }
 
         public void configureNamedCommands() {

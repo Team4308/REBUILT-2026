@@ -216,7 +216,7 @@ public class HoodSubsystem extends SubsystemBase {
 
         Logger.recordOutput("Subsystems/Hood/IsAtTarget", isAtPosition());
         Logger.recordOutput("Subsystems/Hood/CurrentAngle", currentAngle);
-        Logger.recordOutput("Subsystems/Hood/TargetAngle", targetAngle);
+        Logger.recordOutput("Subsystems/Hood/TargetAngle", Constants.Shooting.Hood.pidController.getSetpoint().position);
         Logger.recordOutput("Subsystems/Hood/PidOutput", pidOutput);
         Logger.recordOutput("Subsystems/Hood/FfVolts", ffVolts);
     }
