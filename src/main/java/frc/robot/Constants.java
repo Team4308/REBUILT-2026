@@ -112,15 +112,15 @@ public final class Constants {
       // revolution.
       public static final double TEETH_PER_TURRET_REV = 200.0;
 
-      public static final double kP = 0.02;
+      public static final double kP = 0.035;
       public static final double kI = 0.0;
       public static final double kD = 0.0;
 
-      public static final double MAX_VELOCITY_DEG_S = 260 * 4;
-      public static final double MAX_ACCEL_DEG_S2 = 310 * 6;
+      public static final double MAX_VELOCITY_DEG_S = 1500;
+      public static final double MAX_ACCEL_DEG_S2 = 3000;
 
-      public static final double kS = 0.35;
-      public static final double kV = 0.013;
+      public static final double kS = 0.24;
+      public static final double kV = 0.0078;
 
       public static boolean stateManagerEnabled = true;
       public static final double TURRET_TOLERANCE_DEGREES = 0.5;
@@ -130,8 +130,10 @@ public final class Constants {
       public static final int TICKS_PER_REV = (int) (MOD1 * MOD2);
       public static final double MIN_TICKS = -TICKS_PER_REV * 0.5;
       public static final double MAX_TICKS = TICKS_PER_REV * 0.5;
-      public static final double MIN_DEGREES = 180;
-      public static final double MAX_DEGREES = 580;
+      public static final double MIN_DEGREES = 90;
+      public static final double MAX_DEGREES = 480;
+
+      public static final double TURRET_OFFSET = 1179;
 
       /** One full turret revolution in degrees. */
       public static final double FULL_REVOLUTION_DEG = 360.0;
@@ -155,7 +157,7 @@ public final class Constants {
       public static final double TOTAL_GEAR_RATIO = 97.4;
       public static final double FORWARD_SOFT_LIMIT_ANGLE = 52.5;
       public static final double REVERSE_SOFT_LIMIT_ANGLE = 7.5;
-      public static final double ampThreshold = 3;
+      public static final double ampThreshold = 2;
       public final static ArmFeedforward feedforward = new ArmFeedforward(0.262, 0, 0.027, 0.04);
       public final static ProfiledPIDController pidController = new ProfiledPIDController(
           0.47, 0.0, 0.01,

@@ -1,6 +1,8 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
@@ -13,10 +15,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.Util.FuelSim;
-import frc.robot.Commands.HoodCommand;
-import frc.robot.Commands.IndexerCommand;
-import frc.robot.Commands.IntakeCommand;
-import frc.robot.Commands.ShooterCommand;
 import frc.robot.Subsystems.HoodSubsystem;
 import frc.robot.Subsystems.IndexerSubsystem;
 import frc.robot.Subsystems.IntakeSubsystem;
@@ -26,6 +24,7 @@ import frc.robot.Subsystems.swerve.SwerveSubsystem;
 import java.io.File;
 import swervelib.SwerveInputStream;
 import frc.robot.Subsystems.vision.Vision;
+import frc.robot.Commands.ShooterCommand;
 
 public class RobotContainer {
         // Controllers
@@ -37,16 +36,16 @@ public class RobotContainer {
                         new File(Filesystem.getDeployDirectory(), "swerve"));
 
         private final HoodSubsystem m_HoodSubsystem;
-        private final IntakeSubsystem m_IntakeSubsystem;
-        private final TurretSubsystem m_TurretSubsystem;
-        private final IndexerSubsystem m_IndexerSubsystem;
+        // private final IntakeSubsystem m_IntakeSubsystem;
+        // private final TurretSubsystem m_TurretSubsystem;
+        // private final IndexerSubsystem m_IndexerSubsystem;
         private final ShooterSubsystem m_ShooterSubsystem;
 
         private double m_hoodAngle = 7.5;
         private double m_turretAngle = 180;
 
         // Commands
-        private final SendableChooser<Command> autoChooser;
+        // private final SendableChooser<Command> autoChooser;
 
         SwerveInputStream driveAngularVelocity = SwerveInputStream.of(drivebase.getSwerveDrive(),
                         () -> driver.getLeftY() * -1,
@@ -58,9 +57,8 @@ public class RobotContainer {
 
         // Clone's the angular velocity input stream and converts it to a fieldRelative
         // input stream.
-        SwerveInputStream driveDirectAngle = driveAngularVelocity.copy().withControllerHeadingAxis(driver::getRightX,
-                        driver::getRightY)
-                        .headingWhile(true);
+        SwerveInputStream driveDirectAngle = driveAngularVelocity.copy()
+                        .withControllerHeadingAxis(driver::getRightX, driver::getRightY).headingWhile(true);
 
         // Clone's the angular velocity input stream and converts it to a roboRelative
         // input stream.
@@ -93,39 +91,40 @@ public class RobotContainer {
                 drivebase.setVision(vision);
 
                 m_HoodSubsystem = new HoodSubsystem();
-                m_IndexerSubsystem = new IndexerSubsystem();
-                m_TurretSubsystem = new TurretSubsystem();
+                // m_IndexerSubsystem = new IndexerSubsystem();
+                // m_TurretSubsystem = new TurretSubsystem();
                 m_ShooterSubsystem = new ShooterSubsystem();
-                m_IntakeSubsystem = new IntakeSubsystem();
-
-                new IntakeSubsystem().setDefaultCommand(getAutonomousCommand());
+                // m_IntakeSubsystem = new IntakeSubsystem();
 
                 m_ShooterSubsystem.setDefaultCommand(
                                 new ShooterCommand(m_ShooterSubsystem, () -> driver.getRightTrigger()));
 
-                m_IntakeSubsystem
-                                .setDefaultCommand(new IntakeCommand(m_IntakeSubsystem, () -> driver.getLeftTrigger()));
+                // m_IntakeSubsystem.setDefaultCommand(new IntakeCommand(m_IntakeSubsystem, ()
+                // -> driver.getLeftTrigger()));
 
                 configureNamedCommands();
                 configureBindings();
 
                 if (Robot.isSimulation()) {
-                        initFuelSim();
+                        // initFuelSim();
                 }
 
                 DriverStation.silenceJoystickConnectionWarning(true);
-                autoChooser = AutoBuilder.buildAutoChooser();
-                SmartDashboard.putData("Auto Chooser", autoChooser);
+                // autoChooser = AutoBuilder.buildAutoChooser();
+                // SmartDashboard.putData("Auto Chooser", autoChooser);
         }
 
         private void configureBindings() {
+
                 Command driveFieldOrientedAnglularVelocity = drivebase.driveFieldOriented(driveAngularVelocity);
                 Command driveRobotOrientedAngularVelocity = drivebase.driveFieldOriented(driveRobotOriented);
                 Command driveFieldOrientedAnglularVelocityKeyboard = drivebase
                                 .driveFieldOriented(driveAngularVelocityKeyboard);
-
-                driver.M1.onTrue(
-                                Commands.runOnce(() -> drivebase.resetOdometry(new Pose2d(0, 0, new Rotation2d()))));
+                /*
+                 * driver.M1.onTrue(
+                 * Commands.runOnce(() -> drivebase.resetOdometry(new Pose2d(0, 0, new
+                 * Rotation2d()))));
+                 */
 
                 driver.LB.whileTrue(driveRobotOrientedAngularVelocity);
 
@@ -135,15 +134,27 @@ public class RobotContainer {
                 // driver.M6.whileTrue(drivebase.moveDownRight());
 
                 // driver.RightTrigger.whileTrue(drivebase.driveTowardsTarget(driver::getRightTrigger));
-                driver.RB.whileTrue(drivebase.aimAtTarget(() -> driver.getLeftY() * -1, () -> driver.getLeftX() * -1));
+                // driver.RB.whileTrue(drivebase.aimAtTarget(() -> driver.getLeftY() * -1, () ->
+                // driver.getLeftX() * -1));
 
                 drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
 
-                driver.A.onTrue(new IndexerCommand(m_IndexerSubsystem, () -> 0.));
-                driver.X.onTrue(new IndexerCommand(m_IndexerSubsystem, () -> 1500.));
-                driver.Y.onTrue(new IndexerCommand(m_IndexerSubsystem, () -> 3000.));
-                driver.B.onTrue(new InstantCommand(
-                                () -> m_IntakeSubsystem.setIntakeAngle(Constants.Intake.INTAKE_ANGLE_DEG)));
+                /*
+                 * /
+                 * driver.A.onTrue(new IndexerCommand(m_IndexerSubsystem, () -> 0.));
+                 * driver.X.onTrue(new IndexerCommand(m_IndexerSubsystem, () -> 1500.));
+                 * driver.Y.onTrue(new IndexerCommand(m_IndexerSubsystem, () -> 3000.));
+                 * driver.B.onTrue(new InstantCommand(
+                 * () -> m_IntakeSubsystem.setIntakeAngle(Constants.Intake.INTAKE_ANGLE_DEG)));
+                 */
+
+                driver.A.onTrue(new InstantCommand(() -> m_turretAngle = 180));
+                driver.B.onTrue(new InstantCommand(() -> m_turretAngle = 360));
+                driver.X.onTrue(new InstantCommand(() -> m_turretAngle = 90));
+                driver.Y.onTrue(new InstantCommand(() -> m_turretAngle = 420));
+
+                driver.M2.onTrue(m_HoodSubsystem.resetHoodCommand());
+                driver.M2.onTrue(new InstantCommand(() -> m_hoodAngle = 7.5));
 
                 driver.povUp.onTrue(new InstantCommand(() -> m_hoodAngle += 2.5));
                 driver.povDown.onTrue(new InstantCommand(() -> m_hoodAngle -= 2.5));
@@ -153,33 +164,46 @@ public class RobotContainer {
         }
 
         public void periodic() {
-                m_HoodSubsystem.setHoodAngle(m_hoodAngle);
-                m_TurretSubsystem.setTarget(m_turretAngle);
+                double x = driver.getLeftX() * -1;
+                x = MathUtil.applyDeadband(x, 0.1);
+                double y = driver.getRightY() * -1;
+                y = MathUtil.applyDeadband(y, 0.1);
+                m_hoodAngle += y;
+                m_turretAngle += x * 5;
+
+                // m_HoodSubsystem.setHoodAngle(m_hoodAngle);
+                // m_TurretSubsystem.setTarget(m_turretAngle);
         }
 
         public void configureNamedCommands() {
         }
 
         public Command getAutonomousCommand() {
-                return autoChooser.getSelected();
+                return null;
+                // return autoChooser.getSelected();
         }
 
-        private void initFuelSim() {
-                FuelSim.getInstance(); // gets singleton instance of FuelSim
-                FuelSim.getInstance().spawnStartingFuel(); // spawns fuel in the depots and neutral zone
-
-                // Register a robot for collision with fuel
-                FuelSim.getInstance().registerRobot(
-                                Units.inchesToMeters(34), // from left to right
-                                Units.inchesToMeters(34), // from front to back
-                                Units.inchesToMeters(6), // from floor to top of bumpers
-                                drivebase::getPose, // Supplier<Pose2d> of robot pose
-                                drivebase::getFieldVelocity); // Supplier<ChassisSpeeds> of field-centric chassis speeds
-
-                FuelSim.getInstance().setSubticks(5); // sets the number of physics iterations to perform per 20ms loop.
-                                                      // Default
-                                                      // = 5
-
-                FuelSim.getInstance().start();
-        }
+        /*
+         * private void initFuelSim() {
+         * FuelSim.getInstance(); // gets singleton instance of FuelSim
+         * FuelSim.getInstance().spawnStartingFuel(); // spawns fuel in the depots and
+         * neutral zone
+         * 
+         * // Register a robot for collision with fuel
+         * FuelSim.getInstance().registerRobot(
+         * Units.inchesToMeters(34), // from left to right
+         * Units.inchesToMeters(34), // from front to back
+         * Units.inchesToMeters(6), // from floor to top of bumpers
+         * drivebase::getPose, // Supplier<Pose2d> of robot pose
+         * drivebase::getFieldVelocity); // Supplier<ChassisSpeeds> of field-centric
+         * chassis speeds
+         * 
+         * FuelSim.getInstance().setSubticks(5); // sets the number of physics
+         * iterations to perform per 20ms loop.
+         * // Default
+         * // = 5
+         * 
+         * FuelSim.getInstance().start();
+         * }
+         */
 }

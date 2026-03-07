@@ -21,7 +21,8 @@ public class Robot extends LoggedRobot {
   private final RobotContainer m_robotContainer;
 
   public Robot() {
-    Pathfinding.setPathfinder(new LocalADStarAK()); // Uses OBJ avoidance Path Finder
+    // Pathfinding.setPathfinder(new LocalADStarAK()); // Uses OBJ avoidance Path
+    // Finder
 
     Logger.recordMetadata("REBUILT-2026", "FRC-4308"); // Set a metadata value
 

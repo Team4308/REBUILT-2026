@@ -2,6 +2,8 @@ package frc.robot.Subsystems;
 
 import java.util.function.Supplier;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -70,9 +72,9 @@ public class TurretSubsystem extends AbsoluteSubsystem {
         driveMotor.getConfigurator().apply(driveConfig);
     }
 
-    public double getTurretAngle() {
-        return MathUtil.inputModulus(currentDeg, Constants.Shooting.Turret.MIN_DEGREES,
-                Constants.Shooting.Turret.MAX_DEGREES);
+    public double getAngleWrapped() {
+        return inputModulus(getAngle(), Constants.Shooting.Turret.MIN_DEGREES,
+                Constants.Shooting.Turret.MAX_DEGREES, Constants.Shooting.Turret.FULL_REVOLUTION_DEG);
     }
 
     public double getAngle() {
@@ -82,8 +84,8 @@ public class TurretSubsystem extends AbsoluteSubsystem {
     private void updateCurrentAngle() {
         double raw1 = canCoder1.getAbsolutePosition().getValueAsDouble() - offset1;
         double raw2 = canCoder2.getAbsolutePosition().getValueAsDouble() - offset2;
-        recordOutput("encoder1", raw1);
-        recordOutput("encoder2", raw2);
+        Logger.recordOutput("Subsystems/Turret Encoder1", raw1);
+        Logger.recordOutput("Subsystems/Turret Encoder2", raw2);
 
         dbgRaw1 = raw1;
         dbgRaw2 = raw2;
@@ -109,6 +111,8 @@ public class TurretSubsystem extends AbsoluteSubsystem {
             double deg = teeth / Constants.Shooting.Turret.TEETH_PER_TURRET_REV
                     * Constants.Shooting.Turret.FULL_REVOLUTION_DEG;
 
+            Logger.recordOutput("HELP", deg);
+
             currentDeg = deg;
             targetDeg = deg; // start target at current so turret doesn't jump
             profileSetpoint = new TrapezoidProfile.State(deg, 0);
@@ -116,8 +120,6 @@ public class TurretSubsystem extends AbsoluteSubsystem {
             lastRaw1 = raw1;
             crtLocked = true;
 
-            System.out.printf("CRT LOCK | res1=%d res2=%d | teeth=%d | deg=%.2f%n",
-                    val1, val2, teeth, deg);
             return;
         }
         double deltaRaw = raw1 - lastRaw1;
@@ -133,20 +135,18 @@ public class TurretSubsystem extends AbsoluteSubsystem {
         currentDeg += deltaDeg;
         lastRaw1 = raw1;
 
-        System.out.printf("ENC1 | raw1=%.4f deltaRaw=%.6f | deg=%.2f%n",
-                raw1, deltaRaw, currentDeg);
+    }
+
+    private double inputModulus(double value, double min, double max, double modulus) {
+        double wrappedValue = (value - min) % modulus;
+        if (wrappedValue < 0)
+            wrappedValue += modulus;
+        return wrappedValue + min;
     }
 
     public void setTarget(double degrees) {
-        // The valid unwrapped range [MIN, MAX] is exactly one revolution wide.
-        // For any requested angle there is exactly one equivalent value inside that
-        // band, so we simply map into it. The turret will always take the direct
-        // path through unwrapped space — which is the shortest path that respects
-        // the physical limits. If the turret is near MAX and the target is near
-        // MIN (or vice-versa), the motion naturally "unwinds the long way" because
-        // that is the only legal direction.
-        targetDeg = MathUtil.inputModulus(degrees, Constants.Shooting.Turret.MIN_DEGREES,
-                Constants.Shooting.Turret.MAX_DEGREES);
+        targetDeg = inputModulus(degrees, Constants.Shooting.Turret.MIN_DEGREES,
+                Constants.Shooting.Turret.MAX_DEGREES, Constants.Shooting.Turret.FULL_REVOLUTION_DEG);
         profileGoal = new TrapezoidProfile.State(targetDeg, 0);
     }
 
@@ -157,7 +157,7 @@ public class TurretSubsystem extends AbsoluteSubsystem {
     }
 
     public boolean isAtTarget() {
-        return Math.abs(currentDeg - targetDeg) <= Constants.Shooting.Turret.TURRET_TOLERANCE_DEGREES
+        return Math.abs(getAngle() - targetDeg) <= Constants.Shooting.Turret.TURRET_TOLERANCE_DEGREES
                 && Math.abs(profileSetpoint.velocity) < Constants.Shooting.Turret.VELOCITY_STOPPED_THRESHOLD;
     }
 
@@ -224,7 +224,7 @@ public class TurretSubsystem extends AbsoluteSubsystem {
 
     public void stopMotors() {
         driveMotor.setVoltage(0);
-        profileSetpoint = new TrapezoidProfile.State(currentDeg, 0);
+        profileSetpoint = new TrapezoidProfile.State(getAngle(), 0);
         profileGoal = profileSetpoint;
     }
 
@@ -234,35 +234,34 @@ public class TurretSubsystem extends AbsoluteSubsystem {
 
         profileSetpoint = profile.calculate(Constants.Shooting.Turret.LOOP_PERIOD_S, profileSetpoint, profileGoal);
 
-        double pidOutput = pid.calculate(currentDeg, profileSetpoint.position);
+        double pidOutput = pid.calculate(getAngle(), profileSetpoint.position);
 
         double ffOutput = Constants.Shooting.Turret.kS * Math.signum(profileSetpoint.velocity)
                 + Constants.Shooting.Turret.kV * profileSetpoint.velocity;
 
-        double voltage = MathUtil.clamp(pidOutput + ffOutput, -Constants.Shooting.Turret.MAX_VOLTAGE,
-                Constants.Shooting.Turret.MAX_VOLTAGE);
+        double voltage = pidOutput + ffOutput;
+
         driveMotor.setVoltage(voltage);
 
-        recordOutput("Turret Angle (wrapped)", getTurretAngle() + 20);
-        recordOutput("Turret Angle (unwrapped)", currentDeg + 20);
-        recordOutput("Target (unwrapped)", targetDeg);
-        recordOutput("Target (wrapped)",
+        Logger.recordOutput("Subsystems/Turret Angle (wrapped)", getAngleWrapped());
+        Logger.recordOutput("Subsystems/Turret Angle (unwrapped)", getAngle());
+        Logger.recordOutput("Subsystems/Turret Target (unwrapped)", targetDeg);
+        Logger.recordOutput("Subsystems/Turret Target (wrapped)",
                 MathUtil.inputModulus(targetDeg, 0, Constants.Shooting.Turret.FULL_REVOLUTION_DEG));
-        recordOutput("Profile Setpoint", profileSetpoint.position);
-        recordOutput("Profile Velocity", profileSetpoint.velocity);
-        recordOutput("PID Output", pidOutput);
-        recordOutput("FF Output", ffOutput);
-        recordOutput("Voltage", voltage);
-        recordOutput("At Target", isAtTarget());
-        recordOutput("Min Limit (deg)", Constants.Shooting.Turret.MIN_DEGREES);
-        recordOutput("Max Limit (deg)", Constants.Shooting.Turret.MAX_DEGREES);
-
+        Logger.recordOutput("Subsystems/Turret Profile Setpoint", profileSetpoint.position);
+        Logger.recordOutput("Subsystems/Turret Profile Velocity", profileSetpoint.velocity);
+        Logger.recordOutput("Subsystems/Turret PID Output", pidOutput);
+        Logger.recordOutput("Subsystems/Turret FF Output", ffOutput);
+        Logger.recordOutput("Subsystems/Turret Voltage", voltage);
+        Logger.recordOutput("Subsystems/Turret At Target", isAtTarget());
+        Logger.recordOutput("Subsystems/Turret Min Limit (deg)", Constants.Shooting.Turret.MIN_DEGREES);
+        Logger.recordOutput("Subsystems/Turret Max Limit (deg)", Constants.Shooting.Turret.MAX_DEGREES);
         // CRT debug
-        recordOutput("CRT/Enc1 Raw", dbgRaw1);
-        recordOutput("CRT/Enc2 Raw", dbgRaw2);
-        recordOutput("CRT/Residue1", (double) dbgVal1);
-        recordOutput("CRT/Residue2", (double) dbgVal2);
-        recordOutput("CRT/TeethPassed", (double) dbgCrtResult);
+        Logger.recordOutput("Subsystems/CRT/Enc1 Raw", dbgRaw1);
+        Logger.recordOutput("Subsystems/CRT/Enc2 Raw", dbgRaw2);
+        Logger.recordOutput("Subsystems/CRT/Residue1", (double) dbgVal1);
+        Logger.recordOutput("Subsystems/CRT/Residue2", (double) dbgVal2);
+        Logger.recordOutput("Subsystems/CRT/TeethPassed", (double) dbgCrtResult);
     }
 
     @Override
