@@ -154,6 +154,7 @@ public final class Constants {
     public static final class Hood {
       public static final int HoodMotor = 10; // CAN ID for the hood motor
       public static final double kToleranceDegrees = 2.0; // Tolerance for position control
+      public static final double kVelocityTolerance = 0.5;
       public static final double TOTAL_GEAR_RATIO = 97.4;
       public static final double FORWARD_SOFT_LIMIT_ANGLE = 52.5;
       public static final double REVERSE_SOFT_LIMIT_ANGLE = 7.5;
@@ -200,7 +201,10 @@ public final class Constants {
     // Agitate
     public static final double AGITATE_LOW_DEG = 45.0;
     public static final double AGITATE_HIGH_DEG = 70.0;
+    
+    // Tolerance
     public static final double ANGLE_TOLERANCE_DEG = 1.5;
+    public static final double VELOCITY_TOLERANCE = 0.5;
   }
 
   public static class Indexer {

@@ -64,7 +64,8 @@ public class HoodSubsystem extends SubsystemBase {
 
     public boolean isAtPosition() {
         // Uses a tolerance value from Constants
-        return Math.abs(getHoodAngle() - targetAngle) < Constants.Shooting.Hood.kToleranceDegrees;
+        return Math.abs(getHoodAngle() - targetAngle) < Constants.Shooting.Hood.kToleranceDegrees 
+            && m_hoodMotor.getVelocity().getValueAsDouble() < Constants.Shooting.Hood.kVelocityTolerance;
     }
 
     // Move to angle (Supplier allows for dynamic targets like Limelight)
