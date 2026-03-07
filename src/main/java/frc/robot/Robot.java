@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.Util.FuelSim;
+import frc.robot.Util.GameData;
 import frc.robot.Subsystems.swerve.LocalADStarAK;
 
 public class Robot extends LoggedRobot {
@@ -49,6 +50,9 @@ public class Robot extends LoggedRobot {
 
     SmartDashboard.putData("Command Scheduler", CommandScheduler.getInstance());
     Logger.recordOutput("Match Timer", DriverStation.getMatchTime());
+    Logger.recordOutput("Ally Hub Active", GameData.isHubActive(false));
+    Logger.recordOutput("Opposing Hub Active", GameData.isHubActive(true));
+    Logger.recordOutput("Time To Next Phase", GameData.timeToNextPhase());
   }
 
   @Override

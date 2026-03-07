@@ -60,7 +60,8 @@ public class IntakeSubsystem extends SubsystemBase {
 
   public boolean isAtAngle() {
     double currentDeg = rotToDeg(pivot.getPosition().getValueAsDouble());
-    return Math.abs(currentDeg - targetAngleDeg) < Constants.Intake.ANGLE_TOLERANCE_DEG;
+    return Math.abs(currentDeg - targetAngleDeg) < Constants.Intake.ANGLE_TOLERANCE_DEG
+        && pivot.getVelocity().getValueAsDouble() < Constants.Intake.VELOCITY_TOLERANCE;
   }
 
   public void stopMotors() {
