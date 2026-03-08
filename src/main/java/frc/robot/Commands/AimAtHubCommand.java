@@ -40,4 +40,20 @@ public class AimAtHubCommand extends Command {
         turretSubsystem.setTarget(Math.toDegrees(yawRad));
     }
 
+    @Override
+    public void end(boolean interrupted) {
+        turretSubsystem.stopMotors();
+    }
+
+    @Override
+    public boolean isFinished() {
+        return false;
+    }
+
+    
+    @Override
+    public void initialize() {
+        turretSubsystem.stopMotors();
+    }
+
 }
