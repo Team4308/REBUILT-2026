@@ -35,6 +35,8 @@ public class IntakeSubsystem extends SubsystemBase {
   private state currentState = state.REST;
   private boolean stateBased = false;
 
+  private double offset = 127;
+
   public final static ArmFeedforward feedforward = new ArmFeedforward(Constants.Intake.PIVOT_KS,
       Constants.Intake.PIVOT_KG, Constants.Intake.PIVOT_KV, Constants.Intake.PIVOT_KA);
   public final static ProfiledPIDController pidController = new ProfiledPIDController(
@@ -125,25 +127,14 @@ public class IntakeSubsystem extends SubsystemBase {
     roller.getConfigurator().apply(cfg);
   }
 
-  private double degToRot(double deg) {
-    return deg / 360.0 * Constants.Intake.PIVOT_GEAR_RATIO;
-  }
-
   private double rotToDeg(double rot) {
-    return rot / Constants.Intake.PIVOT_GEAR_RATIO * 360.0 + 127;
+    return rot / Constants.Intake.PIVOT_GEAR_RATIO * 360.0 + offset;
   }
 
   /* ---------------- Periodic --------------- */
 
   @Override
   public void periodic() {
-    double currentDeg = rotToDeg(pivot.getPosition().getValueAsDouble());
-    double pidOutput = pidController.calculate(currentDeg, targetAngleDeg);
-    double ffOutput = feedforward.calculate(pidController.getSetpoint().position,
-        pidController.getSetpoint().velocity);
-    double voltage = pidOutput + ffOutput;
-    pivot.setVoltage(voltage);
-
     if (stateBased) {
       switch (currentState) {
         case REST:
@@ -154,6 +145,13 @@ public class IntakeSubsystem extends SubsystemBase {
           intake();
       }
     }
+
+    double currentDeg = rotToDeg(pivot.getPosition().getValueAsDouble());
+    double pidOutput = pidController.calculate(currentDeg, targetAngleDeg);
+    double ffOutput = feedforward.calculate(pidController.getSetpoint().position,
+        pidController.getSetpoint().velocity);
+    double voltage = pidOutput + ffOutput;
+    pivot.setVoltage(voltage);
     Logger.recordOutput("Subsystems/Intake/CurrentIntakeAngle", currentDeg);
     Logger.recordOutput("Subsystems/Intake/TargetIntakeAngle", pidController.getSetpoint().position);
   }

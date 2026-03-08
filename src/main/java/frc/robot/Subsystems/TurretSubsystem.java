@@ -10,17 +10,16 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-import ca.team4308.absolutelib.wrapper.AbsoluteSubsystem;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
-public class TurretSubsystem extends AbsoluteSubsystem {
+public class TurretSubsystem extends SubsystemBase {
 
     private final TalonFX driveMotor;
     private final CANcoder canCoder1;
@@ -32,15 +31,6 @@ public class TurretSubsystem extends AbsoluteSubsystem {
     private double currentDegUnWrapped = 0.0;
 
     private double encoderOffset = 0;
-
-    private final static double GEAR_RATIO_1 = (85. / 17.) * (40. / 31.);
-    private final static double GEAR_RATIO_2 = (85. / 17.) * (40. / 33.);
-    private final static double PERIOD = 1 / Math.abs(GEAR_RATIO_1 - GEAR_RATIO_2);
-
-    private final static double GEAR_RATIO = (12.0 / 50.0) * (10.0 / 85.0);
-    private final static double STOPPED_VELOCITY = 0.1;
-    private final static double START_ANGLE = 90;
-    private final static double END_ANGLE = 500;
 
     private final static boolean WRAPPING_TEST = false;
     private final static boolean CANCODER_TEST = false;
@@ -87,11 +77,11 @@ public class TurretSubsystem extends AbsoluteSubsystem {
         Logger.recordOutput("Subsystems/Turret/ENCODER 2", enc2);
 
         double diff = (enc1 % enc2) % 1.0;
-        double coarseRotations = diff * PERIOD;
+        double coarseRotations = diff * Constants.Shooting.Turret.PERIOD;
 
-        double n1 = Math.round((coarseRotations * GEAR_RATIO_1) - enc1);
+        double n1 = Math.round((coarseRotations * Constants.Shooting.Turret.GEAR_RATIO_1) - enc1);
 
-        double preciseRotations = (n1 + enc1) / GEAR_RATIO_1;
+        double preciseRotations = (n1 + enc1) / Constants.Shooting.Turret.GEAR_RATIO_1;
 
         double posDegrees = coarseRotations * 360;
         Logger.recordOutput("Subsystems/Turret/Encoder Calculated Angle", posDegrees);
@@ -99,7 +89,8 @@ public class TurretSubsystem extends AbsoluteSubsystem {
     }
 
     public void updateAngle() {
-        double rawAngle = driveMotor.getPosition().getValueAsDouble() * GEAR_RATIO * 360;
+        double rawAngle = driveMotor.getPosition().getValueAsDouble() * Constants.Shooting.Turret.GEAR_RATIO_MOTOR
+                * 360;
         currentDegUnWrapped = rawAngle - encoderOffset;
         currentDegWrapped = inputModulus(currentDegUnWrapped, Constants.Shooting.Turret.MIN_DEGREES,
                 Constants.Shooting.Turret.MAX_DEGREES, Constants.Shooting.Turret.FULL_REVOLUTION_DEG);
@@ -114,13 +105,14 @@ public class TurretSubsystem extends AbsoluteSubsystem {
 
     public void setTarget(double degrees) {
         // This can be updated to do proper shortestPath code
-        degrees = inputModulus(degrees, START_ANGLE, END_ANGLE, 360);
+        degrees = inputModulus(degrees, Constants.Shooting.Turret.MIN_DEGREES, Constants.Shooting.Turret.MAX_DEGREES,
+                360);
         targetDegUnWrapped = degrees;
         targetDegWrapped = inputModulus(degrees, 0, 360, 360);
 
         if (WRAPPING_TEST) {
-            int kMin = (int) Math.ceil((START_ANGLE - targetDegWrapped) / 360.0);
-            int kMax = (int) Math.floor((END_ANGLE - targetDegWrapped) / 360.0);
+            int kMin = (int) Math.ceil((Constants.Shooting.Turret.MIN_DEGREES - targetDegWrapped) / 360.0);
+            int kMax = (int) Math.floor((Constants.Shooting.Turret.MAX_DEGREES - targetDegWrapped) / 360.0);
 
             double closestTarget = targetDegUnWrapped;
             double minDistance = Double.MAX_VALUE;
@@ -141,7 +133,7 @@ public class TurretSubsystem extends AbsoluteSubsystem {
     public boolean isAtTarget() {
 
         return Math.abs(currentDegWrapped - targetDegWrapped) <= Constants.Shooting.Turret.TURRET_TOLERANCE_DEGREES
-                && driveMotor.getVelocity().getValueAsDouble() < STOPPED_VELOCITY;
+                && driveMotor.getVelocity().getValueAsDouble() < Constants.Shooting.Turret.STOPPED_VELOCITY;
 
     }
 
@@ -191,15 +183,11 @@ public class TurretSubsystem extends AbsoluteSubsystem {
     }
 
     public void aimAtPassingSide() {
-        setTarget(Constants.Shooting.Turret.PASSING_SIDE_ANGLE);
+        setTarget(100);
     }
 
     public Command aimAtPassingZoneCommand(Pose2d target) {
         return run(() -> aimAtPassingZone(target));
-    }
-
-    public void setSafeAngle() {
-        setTarget(Constants.Shooting.Turret.SAFE_ANGLE);
     }
 
     public void stopMotors() {
@@ -230,10 +218,5 @@ public class TurretSubsystem extends AbsoluteSubsystem {
         Logger.recordOutput("Subsystems/Turret/Voltage", voltage);
         Logger.recordOutput("Subsystems/Turret/At Target", isAtTarget());
         Logger.recordOutput("Subsystems/Turret/Current", driveMotor.getStatorCurrent().getValueAsDouble());
-    }
-
-    @Override
-    public Sendable log() {
-        return null;
     }
 }

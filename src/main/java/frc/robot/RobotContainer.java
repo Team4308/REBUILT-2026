@@ -1,8 +1,10 @@
 package frc.robot;
 
+import java.io.File;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 
-import edu.wpi.first.math.MathUtil;
+import ca.team4308.absolutelib.control.RazerWrapper;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
@@ -10,21 +12,18 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import ca.team4308.absolutelib.control.RazerWrapper;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import frc.robot.Util.FuelSim;
 import frc.robot.Subsystems.HoodSubsystem;
 import frc.robot.Subsystems.IndexerSubsystem;
 import frc.robot.Subsystems.IntakeSubsystem;
 import frc.robot.Subsystems.ShooterSubsystem;
 import frc.robot.Subsystems.TurretSubsystem;
 import frc.robot.Subsystems.swerve.SwerveSubsystem;
-import java.io.File;
-import swervelib.SwerveInputStream;
 import frc.robot.Subsystems.vision.Vision;
-import frc.robot.Commands.ShooterCommand;
+import frc.robot.Util.FuelSim;
+import swervelib.SwerveInputStream;
 
 public class RobotContainer {
         // Controllers
@@ -90,7 +89,6 @@ public class RobotContainer {
          */
 
         public RobotContainer() {
-                // Configure the trigger bindings
                 drivebase.setVision(vision);
 
                 m_HoodSubsystem = new HoodSubsystem();
@@ -118,18 +116,40 @@ public class RobotContainer {
         }
 
         private void configureBindings() {
+                /*
+                 * Joysticks: swerve
+                 * POV: Hood & Turret Increments
+                 * X: Use Auto Targeting
+                 * Y: Extend / Retract Intake
+                 * A: Shooter at fixed speed a
+                 * B: Shooter at fixed speed b
+                 * Left Trigger: NOTHING
+                 * LB: Intake
+                 * Left Small Button: Reset Pose Odometry
+                 * Right Trigger: NOTHING
+                 * RB: Shoot 
+                 * Right Small Button: Reset Hood
+                 */
 
                 Command driveFieldOrientedAnglularVelocity = drivebase.driveFieldOriented(driveAngularVelocity);
                 Command driveRobotOrientedAngularVelocity = drivebase.driveFieldOriented(driveRobotOriented);
                 Command driveFieldOrientedAnglularVelocityKeyboard = drivebase
                                 .driveFieldOriented(driveAngularVelocityKeyboard);
-                /*
-                 * driver.M1.onTrue(
-                 * Commands.runOnce(() -> drivebase.resetOdometry(new Pose2d(0, 0, new
-                 * Rotation2d()))));
-                 */
 
-                driver.LB.whileTrue(driveRobotOrientedAngularVelocity);
+                drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
+
+                driver.povUp.onTrue(new InstantCommand(() -> m_hoodAngle += 5));
+                driver.povDown.onTrue(new InstantCommand(() -> m_hoodAngle -= 5));
+
+                driver.povRight.onTrue(new InstantCommand(() -> m_turretAngle += 5));
+                driver.povLeft.onTrue(new InstantCommand(() -> m_turretAngle -= 5));
+
+                driver.X.whileTrue(m_HoodSubsystem.)
+                driver.X.whileTrue(m_TurretSubsystem.);
+
+                driver.M1.onTrue(Commands.runOnce(() -> drivebase.resetOdometry(new Pose2d(0, 0, new Rotation2d()))));
+
+                //driver.LB.whileTrue(driveRobotOrientedAngularVelocity);
 
                 // driver.M3.whileTrue(drivebase.moveUpLeft());
                 // driver.M4.whileTrue(drivebase.moveUpRight());
@@ -140,7 +160,7 @@ public class RobotContainer {
                 // driver.RB.whileTrue(drivebase.aimAtTarget(() -> driver.getLeftY() * -1, () ->
                 // driver.getLeftX() * -1));
 
-                drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
+                
 
                 /*
                  * /
@@ -159,11 +179,7 @@ public class RobotContainer {
                 driver.M2.onTrue(m_HoodSubsystem.resetHoodCommand());
                 driver.M2.onTrue(new InstantCommand(() -> m_hoodAngle = 7.5));
 
-                driver.povUp.onTrue(new InstantCommand(() -> m_hoodAngle += 5));
-                driver.povDown.onTrue(new InstantCommand(() -> m_hoodAngle -= 5));
-
-                driver.povRight.onTrue(new InstantCommand(() -> m_turretAngle += 5));
-                driver.povLeft.onTrue(new InstantCommand(() -> m_turretAngle -= 5));
+                
         }
 
         public void periodic() {
@@ -175,8 +191,7 @@ public class RobotContainer {
                 m_ShooterSubsystem.setTargetVoltage(driver.getLeftTrigger() * 6);
                 m_IndexerSubsystem.setIndexerSpeed(driver.getRightTrigger() * 600);
                 m_IndexerSubsystem.setHopperSpeed(driver.getRightTrigger() * 600);
-                m_IntakeSubsystem.setRollerSpeed(-driver.getRightTrigger() * 6
-                0);
+                m_IntakeSubsystem.setRollerSpeed(-driver.getRightTrigger() * 60);
                 m_IntakeSubsystem.setIntakeAngle(m_intakeAngle);
                 m_TurretSubsystem.setTarget(m_turretAngle);
         }

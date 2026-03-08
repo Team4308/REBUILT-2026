@@ -13,14 +13,14 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-import ca.team4308.absolutelib.wrapper.AbsoluteSubsystem;
-import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Util.TrajectoryCalculations;
 
-public class ShooterSubsystem extends AbsoluteSubsystem {
+public class ShooterSubsystem extends SubsystemBase {
     public final TalonFX rightMotor;
     public final TalonFX leftMotor;
 
@@ -32,7 +32,9 @@ public class ShooterSubsystem extends AbsoluteSubsystem {
     public double bottomMultiplier;
     public double topMultiplier;
 
-    public double targetRPM;
+    public double targetRPM = 0;
+
+    private TrajectoryCalculations trajectoryCalculations;
 
     public enum ShooterState {
         IDLE,
@@ -72,7 +74,12 @@ public class ShooterSubsystem extends AbsoluteSubsystem {
         leftMotor.getConfigurator().apply(leftConfiguration);
         leftMotor.getConfigurator().apply(slot0Configs);
 
-        targetRPM = 0;
+        trajectoryCalculations = new TrajectoryCalculations();
+        trajectoryCalculations.setCurrentRPMsupply(() -> getRPM());
+    }
+
+    public void setPoseSupplier(Supplier<Pose2d>) {
+        trajectoryCalculations.setChassisSupplier(null);
     }
 
     public void setTargetVoltage(double voltage) {
@@ -81,14 +88,11 @@ public class ShooterSubsystem extends AbsoluteSubsystem {
 
     public void setTargetSpeed(double rpm) {
         this.targetRPM = rpm;
-        // VelocityVoltage expects rotations per second (RPS). Convert RPM -> RPS.
         rightMotor.setControl(velocityVoltage.withVelocity(rpm / 60.0));
-        // rightMotor.setVoltage(5);
     }
 
     public boolean isAtTargetSpeed() {
         double rightRpm = rightMotor.getVelocity().getValue().in(edu.wpi.first.units.Units.RPM);
-        // Compare measured RPM to the stored target RPM (both in RPM)
         double error = Math.abs(rightRpm - this.targetRPM);
         return error < Constants.Shooting.Shooter.kRPMTolerance;
     }
@@ -113,19 +117,6 @@ public class ShooterSubsystem extends AbsoluteSubsystem {
     public void setStateBased(boolean using) {
         this.usingStateBased = using;
     } // turns on/off the state manager
-
-    @Override
-    public Sendable log() {
-        return builder -> {
-            builder.addDoubleProperty("Target RPM", this::getTargetRPM, null);
-            builder.addDoubleProperty("Right Motor RPM",
-                    () -> rightMotor.getVelocity().getValue().in(edu.wpi.first.units.Units.RPM), null);
-            builder.addDoubleProperty("Left Motor RPM",
-                    () -> leftMotor.getVelocity().getValue().in(edu.wpi.first.units.Units.RPM), null);
-            builder.addBooleanProperty("At Target Speed", this::isAtTargetSpeed, null);
-            builder.addStringProperty("State", () -> this.currentState.toString(), null);
-        }; // publishes live shooter data
-    }
 
     public void selectProfileSlot(int i) {
         velocityVoltage.Slot = i;

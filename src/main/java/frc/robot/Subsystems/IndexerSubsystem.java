@@ -69,38 +69,29 @@ public class IndexerSubsystem extends SubsystemBase {
     }
 
     public void setHopperVelocity(double rpm) { // sets the velocity for Hopper
-
-        // motor.set(rpm);
         double motorRPS = (rpm * Constants.Indexer.HopperGearRatio) / 60.0;
         Falcon.setControl(m_hopperRequest.withVelocity(motorRPS));
 
     }
 
     public void setIndexerVelocity(double rpm) { // sets the velocity for Hopper
-
-        // motor.set(rpm);
         double motorRPS = (-rpm * Constants.Indexer.IndexerGearRatio) / 60.0;
         Kraken.setControl(m_indexerRequest.withVelocity(motorRPS));
 
     }
 
     public Command feedBalls() {
-
         return run(() -> runMotors()); // tells to run
     }
 
     public void runMotors() { // uh runs
-
         setHopperVelocity(hopperSpeed);
         setIndexerVelocity(indexerSpeed);
-
     }
 
     public void runMotorsAtReduceSpeed() { // uh runs "But slower Than normal Something like that" - lingfeng
-
         setHopperVelocity(hopperSpeed);
         setIndexerVelocity(indexerSpeed / (Constants.Indexer.SlowerIndexerSpeed));
-
     }
 
     public void stopMotors() {
@@ -115,13 +106,6 @@ public class IndexerSubsystem extends SubsystemBase {
     public void setIndexerSpeed(double value) {
         indexerSpeed = value;
     }
-
-    /*
-     * public void SetSlowerIndexerSpeed (double value){ might need later idk its
-     * too late for this
-     * slowerIndexerSpeed = indexerSpeed/(Constants.slowerIndexerSpeed);
-     * }
-     */
 
     public void setUsingState(boolean using) {
         usingState = using;
