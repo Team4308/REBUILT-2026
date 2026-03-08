@@ -46,9 +46,9 @@ public class AimAtHubCommand extends CommandBase {
         double yawRad = Math.atan2(dy, dx);
         turretSubsystem.setTarget(Math.toDegrees(yawRad));
 
-    Logger.recordOutput("Commands/AimAtHub/Robot/Rot", rot.getDegrees());
-    Logger.recordOutput("Commands/AimAtHub/Robot/X", shooterX);
-    Logger.recordOutput("Commands/AimAtHub/Robot/Y", shooterY);
+        Logger.recordOutput("Commands/AimAtHub/Robot/Rot", rot.getDegrees());
+        Logger.recordOutput("Commands/AimAtHub/Robot/X", shooterX);
+        Logger.recordOutput("Commands/AimAtHub/Robot/Y", shooterY);
         Logger.recordOutput("Commands/AimAtHub/Target/Deg", Math.toDegrees(yawRad));
         Logger.recordOutput("Commands/AimAtHub/Target/dX", dx);
         Logger.recordOutput("Commands/AimAtHub/Robot/dY", dy);
