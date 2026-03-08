@@ -8,26 +8,24 @@ import frc.robot.Constants;
 import frc.robot.FieldLayout;
 import frc.robot.Subsystems.TurretSubsystem;
 
-public class TurretCommand extends Command {
+public class MoveTurretCommand extends Command {
     private final TurretSubsystem m_subsystem;
-    private final Supplier<Double> control;
+    private final Supplier<Double> angleDifference;
 
-    private double targetAngle = 0;
-
-    public TurretCommand(TurretSubsystem subsystem, Supplier<Double> control) {
+    public MoveTurretCommand(TurretSubsystem subsystem, Supplier<Double> angleDifference) {
         m_subsystem = subsystem;
-        this.control = control;
+        this.angleDifference = angleDifference;
         addRequirements(subsystem);
     }
 
     @Override
     public void initialize() {
+        double targetAngle = m_subsystem.getAngleWrapped() + angleDifference.get();
+        m_subsystem.setTarget(targetAngle);
     }
 
     @Override
     public void execute() {
-        double angle = m_subsystem.getHubAngle(FieldLayout.ShooterTargets.kHUB_POSE);
-        m_subsystem.setTarget(targetAngle);
     }
 
     @Override
@@ -37,6 +35,6 @@ public class TurretCommand extends Command {
 
     @Override
     public boolean isFinished() {
-        return false;
+        return m_subsystem.isAtTarget();
     }
 }

@@ -3,40 +3,31 @@ package frc.robot.Commands;
 import java.util.function.Supplier;
 
 import ca.team4308.absolutelib.math.DoubleUtils;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.Subsystems.IntakeSubsystem;
 
-public class ToggleIntakeCommand extends Command {
+public class TriggerIntakeCommand extends Command {
     private final IntakeSubsystem m_subsystem;
 
-    String state;
+    private Supplier<Double> joystickInput;
 
-    public ToggleIntakeCommand(IntakeSubsystem subsystem) {
+    public TriggerIntakeCommand(IntakeSubsystem subsystem, Supplier<Double> joystickInput) {
         m_subsystem = subsystem;
 
-        if (Math.abs(m_subsystem.getIntakeAngle() - Constants.Intake.INTAKE_ANGLE_DEG) < 5) {
-            state = "INTAKING";
-        } else {
-            state = "UP";
-        }
+        this.joystickInput = joystickInput;
 
         addRequirements(subsystem);
     }
 
     @Override
     public void initialize() {
-        m_subsystem.stopMotors();
-        if (state == "INTAKING") {
-            m_subsystem.setIntakeAngle(Constants.Intake.RETRACTED_ANGLE_DEG);
-        } else {
-            m_subsystem.setIntakeAngle(Constants.Intake.INTAKE_ANGLE_DEG);
-        }
     }
 
     @Override
     public void execute() {
-
+        m_subsystem.setIntakeAngle(DoubleUtils.mapRange(joystickInput.get(), 0, 1, 0, 127));
     }
 
     @Override

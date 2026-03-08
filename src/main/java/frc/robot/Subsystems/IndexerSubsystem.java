@@ -119,6 +119,13 @@ public class IndexerSubsystem extends SubsystemBase {
         setIndexerVelocity(indexerSpeed);
 
         boolean BallsReady = !m_beambreak.get();
+        if (!BallsReady && hopperSpeed == 0 && indexerSpeed == 0) {
+            setHopperSpeed(50);
+            setIndexerSpeed(50);
+        } else {
+            setHopperVelocity(hopperSpeed);
+            setIndexerVelocity(indexerSpeed);
+        }
 
         if (usingState) {
 
