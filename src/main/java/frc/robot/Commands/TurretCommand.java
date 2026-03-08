@@ -5,6 +5,7 @@ import java.util.function.Supplier;
 import ca.team4308.absolutelib.math.DoubleUtils;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
+import frc.robot.FieldLayout;
 import frc.robot.Subsystems.TurretSubsystem;
 
 public class TurretCommand extends Command {
@@ -25,10 +26,7 @@ public class TurretCommand extends Command {
 
     @Override
     public void execute() {
-        double control = this.control.get();
-        targetAngle += control * 2;
-        targetAngle = DoubleUtils.clamp(targetAngle, Constants.Shooting.Turret.MIN_DEGREES,
-                Constants.Shooting.Turret.MAX_DEGREES);
+        double angle = m_subsystem.getHubAngle(FieldLayout.ShooterTargets.kHUB_POSE);
         m_subsystem.setTarget(targetAngle);
     }
 

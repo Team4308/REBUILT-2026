@@ -38,8 +38,8 @@ public class IndexerSubsystem extends SubsystemBase {
     private final VelocityVoltage m_indexerRequest = new VelocityVoltage(0).withSlot(0);
 
     public IndexerSubsystem() {
-        hopperSpeed = Constants.Indexer.HopperSpeed;
-        indexerSpeed = Constants.Indexer.IndexerSpeed;
+        hopperSpeed = 0;
+        indexerSpeed = 0;
         // in init function, set slot 0 gains
         var slot0Configs = new Slot0Configs();
         slot0Configs.kS = Constants.Indexer.HopperMotorConfigsKs; // Add 0.1 V output to overcome static friction
@@ -97,6 +97,8 @@ public class IndexerSubsystem extends SubsystemBase {
     public void stopMotors() {
         Falcon.stopMotor();
         Kraken.stopMotor();
+        hopperSpeed = 0;
+        indexerSpeed = 0;
     }
 
     public void setHopperSpeed(double value) {

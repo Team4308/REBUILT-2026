@@ -15,7 +15,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import frc.robot.Commands.HoodCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
+import frc.robot.Commands.MoveHoodCommand;
 import frc.robot.Commands.ShooterCommand;
 import frc.robot.Commands.ToggleIntakeCommand;
 import frc.robot.Commands.TurretCommand;
@@ -109,6 +110,11 @@ public class RobotContainer {
                 // m_IntakeSubsystem.setDefaultCommand(new IntakeCommand(m_IntakeSubsystem, ()
                 // -> driver.getLeftTrigger()));
 
+                // m_HoodSubsystem.setDefaultCommand(new HoodCommand(m_HoodSubsystem, () ->
+                // m_hoodAngle));
+                // m_TurretSubsystem.setDefaultCommand(new TurretCommand(m_TurretSubsystem, ()
+                // -> m_turretAngle));
+
                 configureNamedCommands();
                 configureBindings();
 
@@ -155,22 +161,25 @@ public class RobotContainer {
                 driver.povRight.onTrue(new InstantCommand(() -> m_turretAngle += 5));
                 driver.povLeft.onTrue(new InstantCommand(() -> m_turretAngle -= 5));
 
-                driver.X.whileTrue(new HoodCommand(m_HoodSubsystem, () -> m_TrajectoryCalculations.getNeededPitch()));
-                driver.X.whileTrue(new TurretCommand(m_TurretSubsystem, () -> m_TrajectoryCalculations.getNeededYaw()));
-                driver.X.whileTrue(
-                                new ShooterCommand(m_ShooterSubsystem, () -> m_TrajectoryCalculations.getNeededRPM()));
+                // driver.X.whileTrue(new HoodCommand(m_HoodSubsystem, () ->
+                // m_TrajectoryCalculations.getNeededPitch()));
+                // driver.X.whileTrue(new TurretCommand(m_TurretSubsystem, () ->
+                // m_TrajectoryCalculations.getNeededYaw()));
+                // driver.X.whileTrue(new ShooterCommand(m_ShooterSubsystem, () ->
+                // m_TrajectoryCalculations.getNeededRPM()));
+                // driver.X.whileTrue(m_TurretSubsystem.aimAtPointCommand(FieldLayout.ShooterTargets.kHUB_POSE));
+                // driver.X.whileTrue(new RunCommand(null, null));
 
-                driver.Y.onTrue(new ToggleIntakeCommand(m_IntakeSubsystem));
+                driver.Y.onTrue(new InstantCommand(() -> m_IntakeSubsystem.setIntakeAngle(127)));
+                driver.Y.onFalse(new InstantCommand(() -> m_IntakeSubsystem.setIntakeAngle(0)));
 
                 driver.A.whileTrue(m_ShooterSubsystem.setShooterSpeed(() -> 3000.));
-                driver.B.whileTrue(m_ShooterSubsystem.setShooterSpeed(() -> 1500.));
-
-                driver.LB.whileTrue(m_IntakeSubsystem.setRollerSpeed(() -> 1500.));
-                driver.LB.onFalse(new InstantCommand(() -> m_IntakeSubsystem.stopMotors()));
-
+                driver.B.whileTrue(m_ShooterSubsystem.setShooterSpeed(() -> 2000.));
                 driver.M1.onTrue(Commands.runOnce(() -> drivebase.resetOdometry(new Pose2d(0, 0, new Rotation2d()))));
 
-                driver.RB.whileTrue(m_IndexerSubsystem.feedBalls());
+                driver.RB.whileTrue(new InstantCommand(() -> m_IndexerSubsystem.setIndexerSpeed(500)));
+                driver.RB.whileTrue(new InstantCommand(() -> m_IndexerSubsystem.setHopperSpeed(500)));
+                driver.RB.onFalse(new InstantCommand(() -> m_IndexerSubsystem.stopMotors()));
 
                 driver.M2.onTrue(m_HoodSubsystem.resetHoodCommand());
 
@@ -205,7 +214,14 @@ public class RobotContainer {
         }
 
         public void periodic() {
-                m_TrajectoryCalculations.updateShot();
+                // m_TrajectoryCalculations.updateShot();
+
+                if (driver.X.getAsBoolean()) {
+                        m_turretAngle = m_TurretSubsystem.getHubAngle(FieldLayout.ShooterTargets.kHUB_POSE);
+                }
+                m_HoodSubsystem.setHoodAngle(m_hoodAngle);
+                m_TurretSubsystem.setTarget(m_turretAngle);
+                m_ShooterSubsystem.setTargetSpeed(m_shooterSpeed);
         }
 
         public void configureNamedCommands() {

@@ -26,7 +26,7 @@
             "type": "APRILTAG",
             "streamType": "PHOTON",
             "enabled": true,
-            "transform": { "x": -10.0, "y": 10.0, "z": 9.325, "roll": 0.0, "pitch": 65, "yaw": 135.0 },
+            "transform": { "x": -10.0, "y": 10.0, "z": 9.325, "roll": 0.0, "pitch": -65, "yaw": 135.0 },
             "resolution": { "width": 320, "height": 240, "fov": 70.0 }
         },
         {
@@ -34,7 +34,7 @@
             "type": "APRILTAG",
             "streamType": "PHOTON",
             "enabled": true,
-            "transform": { "x": -10.0, "y": -10.0, "z": 9.325, "roll": 0.0, "pitch": 65, "yaw": -135.0 },
+            "transform": { "x": -10.0, "y": -10.0, "z": 9.325, "roll": 0.0, "pitch": -65, "yaw": -135.0 },
             "resolution": { "width": 320, "height": 240, "fov": 70.0 }
         },
         {

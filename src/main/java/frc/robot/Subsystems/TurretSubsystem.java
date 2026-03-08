@@ -10,6 +10,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import ca.team4308.absolutelib.math.DoubleUtils;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -161,6 +162,16 @@ public class TurretSubsystem extends SubsystemBase {
         double robotHeadingDeg = robotPose.getRotation().getDegrees();
         double turretAngleDeg = fieldAngleDeg - robotHeadingDeg;
         setTarget(turretAngleDeg);
+    }
+
+    public double getHubAngle(Translation3d fieldTarget) {
+        Pose2d robotPose = robotPoseSupplier.get();
+        double dx = fieldTarget.getX() - robotPose.getX();
+        double dy = fieldTarget.getY() - robotPose.getY();
+        double fieldAngleDeg = Math.toDegrees(Math.atan2(dy, dx));
+        double robotHeadingDeg = robotPose.getRotation().getDegrees();
+        double turretAngleDeg = fieldAngleDeg - robotHeadingDeg;
+        return turretAngleDeg;
     }
 
     public Command aimAtPointCommand(Translation3d fieldTarget) {

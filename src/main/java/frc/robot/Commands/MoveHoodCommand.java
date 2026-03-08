@@ -7,15 +7,15 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.Subsystems.HoodSubsystem;
 
-public class HoodCommand extends Command {
+public class MoveHoodCommand extends Command {
     private final HoodSubsystem m_subsystem;
-    private final Supplier<Double> control;
+    private final Supplier<Double> angleDifference;
 
     private double targetAngle = 0;
 
-    public HoodCommand(HoodSubsystem subsystem, Supplier<Double> control) {
+    public MoveHoodCommand(HoodSubsystem subsystem, Supplier<Double> AngleDifference) {
         m_subsystem = subsystem;
-        this.control = control;
+        this.angleDifference = angleDifference;
         addRequirements(subsystem);
     }
 

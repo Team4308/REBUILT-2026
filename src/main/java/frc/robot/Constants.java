@@ -79,7 +79,7 @@ public final class Constants {
       public static final int kMotor2 = 12;
 
       public static final double kS = 0.4;
-      public static final double kV = 0.1;
+      public static final double kV = 0.11;
       public static final double kP = 0.0;
       public static final double kI = 0.0;
       public static final double kD = 0.0;
