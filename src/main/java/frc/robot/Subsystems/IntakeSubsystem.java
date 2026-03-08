@@ -64,6 +64,10 @@ public class IntakeSubsystem extends SubsystemBase {
     targetAngleDeg = MathUtil.clamp(angleDeg, 0, 127);
   }
 
+  public double getIntakeAngle() {
+    return rotToDeg(pivot.getPosition().getValueAsDouble());
+  }
+
   public boolean isAtAngle() {
     double currentDeg = rotToDeg(pivot.getPosition().getValueAsDouble());
     return Math.abs(currentDeg - targetAngleDeg) < Constants.Intake.ANGLE_TOLERANCE_DEG
@@ -71,6 +75,8 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   public void stopMotors() {
+    targetAngleDeg = rotToDeg(pivot.getPosition().getValueAsDouble());
+    setRollerSpeed(() -> 0.);
     roller.stopMotor();
     pivot.stopMotor();
   }

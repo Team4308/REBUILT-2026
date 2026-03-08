@@ -15,6 +15,10 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import frc.robot.Commands.HoodCommand;
+import frc.robot.Commands.ShooterCommand;
+import frc.robot.Commands.ToggleIntakeCommand;
+import frc.robot.Commands.TurretCommand;
 import frc.robot.Subsystems.HoodSubsystem;
 import frc.robot.Subsystems.IndexerSubsystem;
 import frc.robot.Subsystems.IntakeSubsystem;
@@ -23,6 +27,7 @@ import frc.robot.Subsystems.TurretSubsystem;
 import frc.robot.Subsystems.swerve.SwerveSubsystem;
 import frc.robot.Subsystems.vision.Vision;
 import frc.robot.Util.FuelSim;
+import frc.robot.Util.TrajectoryCalculations;
 import swervelib.SwerveInputStream;
 
 public class RobotContainer {
@@ -44,7 +49,8 @@ public class RobotContainer {
         private double m_turretAngle = 180;
         private double m_shooterSpeed = 0.0;
         private double m_indexerSpeed = 0.0;
-        private double m_intakeAngle = 127.0;
+
+        private TrajectoryCalculations m_TrajectoryCalculations;
 
         // Commands
         private final SendableChooser<Command> autoChooser;
@@ -113,6 +119,11 @@ public class RobotContainer {
                 DriverStation.silenceJoystickConnectionWarning(true);
                 autoChooser = AutoBuilder.buildAutoChooser();
                 SmartDashboard.putData("Auto Chooser", autoChooser);
+
+                m_TrajectoryCalculations = new TrajectoryCalculations();
+                m_TrajectoryCalculations.setChassisSupplier(() -> drivebase.getFieldVelocity());
+                m_TrajectoryCalculations.setCurrentRPMsupply(() -> m_ShooterSubsystem.getRPM());
+                m_TrajectoryCalculations.setPoseSupplier(() -> drivebase.getPose());
         }
 
         private void configureBindings() {
@@ -127,7 +138,7 @@ public class RobotContainer {
                  * LB: Intake
                  * Left Small Button: Reset Pose Odometry
                  * Right Trigger: NOTHING
-                 * RB: Shoot 
+                 * RB: Shoot
                  * Right Small Button: Reset Hood
                  */
 
@@ -144,12 +155,26 @@ public class RobotContainer {
                 driver.povRight.onTrue(new InstantCommand(() -> m_turretAngle += 5));
                 driver.povLeft.onTrue(new InstantCommand(() -> m_turretAngle -= 5));
 
-                driver.X.whileTrue(m_HoodSubsystem.)
-                driver.X.whileTrue(m_TurretSubsystem.);
+                driver.X.whileTrue(new HoodCommand(m_HoodSubsystem, () -> m_TrajectoryCalculations.getNeededPitch()));
+                driver.X.whileTrue(new TurretCommand(m_TurretSubsystem, () -> m_TrajectoryCalculations.getNeededYaw()));
+                driver.X.whileTrue(
+                                new ShooterCommand(m_ShooterSubsystem, () -> m_TrajectoryCalculations.getNeededRPM()));
+
+                driver.Y.onTrue(new ToggleIntakeCommand(m_IntakeSubsystem));
+
+                driver.A.whileTrue(m_ShooterSubsystem.setShooterSpeed(() -> 3000.));
+                driver.B.whileTrue(m_ShooterSubsystem.setShooterSpeed(() -> 1500.));
+
+                driver.LB.whileTrue(m_IntakeSubsystem.setRollerSpeed(() -> 1500.));
+                driver.LB.onFalse(new InstantCommand(() -> m_IntakeSubsystem.stopMotors()));
 
                 driver.M1.onTrue(Commands.runOnce(() -> drivebase.resetOdometry(new Pose2d(0, 0, new Rotation2d()))));
 
-                //driver.LB.whileTrue(driveRobotOrientedAngularVelocity);
+                driver.RB.whileTrue(m_IndexerSubsystem.feedBalls());
+
+                driver.M2.onTrue(m_HoodSubsystem.resetHoodCommand());
+
+                // driver.LB.whileTrue(driveRobotOrientedAngularVelocity);
 
                 // driver.M3.whileTrue(drivebase.moveUpLeft());
                 // driver.M4.whileTrue(drivebase.moveUpRight());
@@ -160,8 +185,6 @@ public class RobotContainer {
                 // driver.RB.whileTrue(drivebase.aimAtTarget(() -> driver.getLeftY() * -1, () ->
                 // driver.getLeftX() * -1));
 
-                
-
                 /*
                  * /
                  * driver.A.onTrue(new IndexerCommand(m_IndexerSubsystem, () -> 0.));
@@ -171,29 +194,18 @@ public class RobotContainer {
                  * () -> m_IntakeSubsystem.setIntakeAngle(Constants.Intake.INTAKE_ANGLE_DEG)));
                  */
 
-                driver.A.onTrue(new InstantCommand(() -> m_intakeAngle -= 10));
+                // driver.A.onTrue(new InstantCommand(() -> m_intakeAngle -= 10));
                 // driver.B.onTrue(new InstantCommand(() -> m_turretAngle = 360));
                 // driver.X.onTrue(new InstantCommand(() -> m_turretAngle = 90));
-                driver.Y.onTrue(new InstantCommand(() -> m_intakeAngle += 10));
+                // driver.Y.onTrue(new InstantCommand(() -> m_intakeAngle += 10));
 
-                driver.M2.onTrue(m_HoodSubsystem.resetHoodCommand());
-                driver.M2.onTrue(new InstantCommand(() -> m_hoodAngle = 7.5));
+                // driver.M2.onTrue(m_HoodSubsystem.resetHoodCommand());
+                // driver.M2.onTrue(new InstantCommand(() -> m_hoodAngle = 7.5));
 
-                
         }
 
         public void periodic() {
-                // double x = driver.getLeftX() * -1;
-                // x = MathUtil.applyDeadband(x, 0.1);
-                // m_turretAngle += x * 5;
-
-                m_HoodSubsystem.setHoodAngle(m_hoodAngle);
-                m_ShooterSubsystem.setTargetVoltage(driver.getLeftTrigger() * 6);
-                m_IndexerSubsystem.setIndexerSpeed(driver.getRightTrigger() * 600);
-                m_IndexerSubsystem.setHopperSpeed(driver.getRightTrigger() * 600);
-                m_IntakeSubsystem.setRollerSpeed(-driver.getRightTrigger() * 60);
-                m_IntakeSubsystem.setIntakeAngle(m_intakeAngle);
-                m_TurretSubsystem.setTarget(m_turretAngle);
+                m_TrajectoryCalculations.updateShot();
         }
 
         public void configureNamedCommands() {

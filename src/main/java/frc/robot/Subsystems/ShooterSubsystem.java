@@ -73,13 +73,6 @@ public class ShooterSubsystem extends SubsystemBase {
 
         leftMotor.getConfigurator().apply(leftConfiguration);
         leftMotor.getConfigurator().apply(slot0Configs);
-
-        trajectoryCalculations = new TrajectoryCalculations();
-        trajectoryCalculations.setCurrentRPMsupply(() -> getRPM());
-    }
-
-    public void setPoseSupplier(Supplier<Pose2d>) {
-        trajectoryCalculations.setChassisSupplier(null);
     }
 
     public void setTargetVoltage(double voltage) {
@@ -103,8 +96,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
     public Command setShooterSpeed(Supplier<Double> rpm) {
         return Commands.run(
-                () -> setTargetSpeed(rpm.get()),
-                this).until(this::isAtTargetSpeed);
+                () -> setTargetSpeed(rpm.get()));
     } // sets the speed to rpm, and runs until it has reached the target
 
     public Command setShooterSpeed(Supplier<Double> rpm, double timeoutMs) {

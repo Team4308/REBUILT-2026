@@ -64,8 +64,8 @@ public class HoodSubsystem extends SubsystemBase {
 
     public boolean isAtPosition() {
         // Uses a tolerance value from Constants
-        return Math.abs(getHoodAngle() - targetAngle) < Constants.Shooting.Hood.kToleranceDegrees 
-            && m_hoodMotor.getVelocity().getValueAsDouble() < Constants.Shooting.Hood.kVelocityTolerance;
+        return Math.abs(getHoodAngle() - targetAngle) < Constants.Shooting.Hood.kToleranceDegrees
+                && m_hoodMotor.getVelocity().getValueAsDouble() < Constants.Shooting.Hood.kVelocityTolerance;
     }
 
     // Move to angle (Supplier allows for dynamic targets like Limelight)
@@ -87,10 +87,10 @@ public class HoodSubsystem extends SubsystemBase {
     }
 
     public Command resetHoodCommand() {
+
         return run(this::resetHood)
                 .until(() -> m_hoodMotor.getSupplyCurrent().getValueAsDouble() > Constants.Shooting.Hood.ampThreshold)
-                .andThen(new InstantCommand(() -> setHoodAngle(Constants.Shooting.Hood.REVERSE_SOFT_LIMIT_ANGLE)))
-                .andThen(runOnce(() -> m_hoodMotor.setPosition(0)));
+                .andThen(new InstantCommand(() -> setHoodAngle(Constants.Shooting.Hood.REVERSE_SOFT_LIMIT_ANGLE)));
     }
 
     private RobotState currentState = RobotState.REST;
@@ -216,7 +216,8 @@ public class HoodSubsystem extends SubsystemBase {
 
         Logger.recordOutput("Subsystems/Hood/IsAtTarget", isAtPosition());
         Logger.recordOutput("Subsystems/Hood/CurrentAngle", currentAngle);
-        Logger.recordOutput("Subsystems/Hood/TargetAngle", Constants.Shooting.Hood.pidController.getSetpoint().position);
+        Logger.recordOutput("Subsystems/Hood/TargetAngle",
+                Constants.Shooting.Hood.pidController.getSetpoint().position);
         Logger.recordOutput("Subsystems/Hood/PidOutput", pidOutput);
         Logger.recordOutput("Subsystems/Hood/FfVolts", ffVolts);
     }
