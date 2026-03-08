@@ -14,6 +14,7 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -49,9 +50,10 @@ public class IntakeSubsystem extends SubsystemBase {
 
   /* ---------------- Roller ---------------- */
 
-  public void setRollerSpeed(double rpm) {
+  public void setRollerSpeedA(Supplier<Double> rpm) {
+    Logger.recordOutput("Subsystems/Intake/Target Roller Speed", rpm.get());
     roller.setControl(
-        rollerRequest.withVelocity(rpm * 60.0));
+        rollerRequest.withVelocity(rpm.get() * 60.0));
   }
 
   public void stopRoller() {
@@ -74,9 +76,24 @@ public class IntakeSubsystem extends SubsystemBase {
         && pivot.getVelocity().getValueAsDouble() < Constants.Intake.VELOCITY_TOLERANCE;
   }
 
+  public void resetIntake() {
+    if (pivot.getSupplyCurrent().getValueAsDouble() < 3) {
+      pivot.setVoltage(-2.0);
+    } else {
+      pivot.setVoltage(0);
+    }
+  }
+
+  public Command resetIntakeCommand() {
+    return run(this::resetIntake)
+        .until(() -> pivot.getSupplyCurrent().getValueAsDouble() > 3)
+        .andThen(new InstantCommand(() -> setIntakeAngle(0)))
+        .andThen(new InstantCommand(() -> pivot.setPosition(0)));
+  }
+
   public void stopMotors() {
     targetAngleDeg = rotToDeg(pivot.getPosition().getValueAsDouble());
-    setRollerSpeed(() -> 0.);
+    setRollerSpeedA(() -> 0.);
     roller.stopMotor();
     pivot.stopMotor();
   }
@@ -84,7 +101,7 @@ public class IntakeSubsystem extends SubsystemBase {
   /* --------------- Commands ---------------- */
 
   public Command setRollerSpeed(Supplier<Double> rpmSupplier) {
-    return run(() -> setRollerSpeed(rpmSupplier.get()));
+    return run(() -> setRollerSpeedA(rpmSupplier));
   }
 
   public Command moveIntakeToAngle(double targetAngle) {
@@ -160,5 +177,6 @@ public class IntakeSubsystem extends SubsystemBase {
     pivot.setVoltage(voltage);
     Logger.recordOutput("Subsystems/Intake/CurrentIntakeAngle", currentDeg);
     Logger.recordOutput("Subsystems/Intake/TargetIntakeAngle", pidController.getSetpoint().position);
+    Logger.recordOutput("Subsystems/Intake/RollerSpeed", roller.getVelocity().getValueAsDouble());
   }
 }

@@ -90,7 +90,8 @@ public class HoodSubsystem extends SubsystemBase {
 
         return run(this::resetHood)
                 .until(() -> m_hoodMotor.getSupplyCurrent().getValueAsDouble() > Constants.Shooting.Hood.ampThreshold)
-                .andThen(new InstantCommand(() -> setHoodAngle(Constants.Shooting.Hood.REVERSE_SOFT_LIMIT_ANGLE)));
+                .andThen(new InstantCommand(() -> setHoodAngle(Constants.Shooting.Hood.REVERSE_SOFT_LIMIT_ANGLE)))
+                .andThen(new InstantCommand(() -> m_hoodMotor.setPosition(0)));
     }
 
     private RobotState currentState = RobotState.REST;

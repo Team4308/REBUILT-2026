@@ -99,7 +99,7 @@ public final class Constants {
       public final static double MIN_DEGREES = 90;
       public final static double MAX_DEGREES = 500;
       public final static double FULL_REVOLUTION_DEG = 360;
-      public final static double TURRET_TOLERANCE_DEGREES = 1;
+      public final static double TURRET_TOLERANCE_DEGREES = 3;
 
       public final static ArmFeedforward feedforward = new ArmFeedforward(0.24, 0, 0.0075, 0.01);
 

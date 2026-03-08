@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import frc.robot.Commands.AimAtHubCommand;
 import frc.robot.Commands.MoveHoodCommand;
 import frc.robot.Commands.ShooterCommand;
 import frc.robot.Commands.TriggerIntakeCommand;
@@ -170,15 +171,23 @@ public class RobotContainer {
                 // driver.X.whileTrue(m_TurretSubsystem.aimAtPointCommand(FieldLayout.ShooterTargets.kHUB_POSE));
                 // driver.X.whileTrue(new RunCommand(null, null));
 
+                driver.X.whileTrue(new AimAtHubCommand(() -> drivebase.getPose(), m_TurretSubsystem));
+
                 driver.A.whileTrue(m_ShooterSubsystem.setShooterSpeed(() -> 3000.));
-                driver.B.whileTrue(m_ShooterSubsystem.setShooterSpeed(() -> 2700.));
+                driver.A.onFalse(new InstantCommand(() -> m_ShooterSubsystem.stopMotors()));
+                driver.B.whileTrue(m_ShooterSubsystem.setShooterSpeed(() -> 2300.));
+                driver.B.onFalse(new InstantCommand(() -> m_ShooterSubsystem.stopMotors()));
                 driver.M1.onTrue(Commands.runOnce(() -> drivebase.resetOdometry(new Pose2d(0, 0, new Rotation2d()))));
 
                 driver.RB.whileTrue(new InstantCommand(() -> m_IndexerSubsystem.setIndexerSpeed(500)));
                 driver.RB.whileTrue(new InstantCommand(() -> m_IndexerSubsystem.setHopperSpeed(500)));
                 driver.RB.onFalse(new InstantCommand(() -> m_IndexerSubsystem.stopMotors()));
 
+                driver.LB.onTrue(new InstantCommand(() -> m_IntakeSubsystem.setRollerSpeedA(() -> -100.)));
+                driver.LB.onFalse(new InstantCommand(() -> m_IntakeSubsystem.stopMotors()));
+
                 driver.M2.onTrue(m_HoodSubsystem.resetHoodCommand());
+                driver.M2.onTrue(m_IntakeSubsystem.resetIntakeCommand());
 
                 // driver.LB.whileTrue(driveRobotOrientedAngularVelocity);
 
@@ -211,14 +220,6 @@ public class RobotContainer {
         }
 
         public void periodic() {
-                // m_TrajectoryCalculations.updateShot();
-
-                if (driver.X.getAsBoolean()) {
-                        m_turretAngle = m_TurretSubsystem.getHubAngle(FieldLayout.ShooterTargets.kHUB_POSE);
-                }
-                m_HoodSubsystem.setHoodAngle(m_hoodAngle);
-                m_TurretSubsystem.setTarget(m_turretAngle);
-                m_ShooterSubsystem.setTargetSpeed(m_shooterSpeed);
         }
 
         public void configureNamedCommands() {

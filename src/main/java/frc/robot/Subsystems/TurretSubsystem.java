@@ -49,7 +49,7 @@ public class TurretSubsystem extends SubsystemBase {
 
         // try one iteration of crt here to find pos
         updateAngle();
-        encoderOffset = getAngleUnWrapped() - 180;
+        encoderOffset = getAngleUnWrapped();
         if (CANCODER_TEST) {
             encoderOffset = calculateEncoderAngle();
         } else {

@@ -34,8 +34,6 @@ public class ShooterSubsystem extends SubsystemBase {
 
     public double targetRPM = 0;
 
-    private TrajectoryCalculations trajectoryCalculations;
-
     public enum ShooterState {
         IDLE,
         SHOOTING,
