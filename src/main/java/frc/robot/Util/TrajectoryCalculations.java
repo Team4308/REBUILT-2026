@@ -6,8 +6,12 @@ import org.littletonrobotics.junction.Logger;
 
 import ca.team4308.absolutelib.math.trajectories.ShotInput;
 import ca.team4308.absolutelib.math.trajectories.TrajectorySolver;
+import ca.team4308.absolutelib.math.trajectories.flywheel.FlywheelConfig;
+import ca.team4308.absolutelib.math.trajectories.flywheel.FlywheelConfig.WheelArrangement;
+import ca.team4308.absolutelib.math.trajectories.flywheel.WheelMaterial;
 import ca.team4308.absolutelib.math.trajectories.gamepiece.GamePiece;
 import ca.team4308.absolutelib.math.trajectories.gamepiece.GamePieces;
+import ca.team4308.absolutelib.math.trajectories.motor.FRCMotors;
 import ca.team4308.absolutelib.math.trajectories.shooter.ShooterConfig;
 import ca.team4308.absolutelib.math.trajectories.shooter.ShooterSystem;
 import ca.team4308.absolutelib.math.trajectories.shooter.ShotLookupTable;
@@ -35,6 +39,7 @@ public class TrajectoryCalculations {
     private Translation2d shooterOffset = new Translation2d(0.1, 0.1);
     private Supplier<Translation3d> targetSupplier = () -> new Translation3d(4.0, 0.0, 2.1); // default: center hub
 
+    
     // Setters
     public void setPoseSupplier(Supplier<Pose2d> supplier) {
         this.poseSupplier = supplier;
@@ -67,7 +72,7 @@ public class TrajectoryCalculations {
         GamePiece gamePiece = GamePieces.REBUILT_2026_BALL;
 
         ShotLookupTable table = new ShotLookupTable();
-
+ 
         ShooterConfig shooterConfig = ShooterConfig.builder()
                 .pitchLimits(Constants.Shooting.Hood.REVERSE_SOFT_LIMIT_ANGLE,
                         Constants.Shooting.Hood.FORWARD_SOFT_LIMIT_ANGLE)
@@ -81,11 +86,24 @@ public class TrajectoryCalculations {
                 .movingIterations(5)
                 .safetyMaxExitVelocity(30)
                 .build();
+        FlywheelConfig flywheelConfig = FlywheelConfig.builder()
+                .arrangement(WheelArrangement.DUAL_OVER_UNDER)
+                .wheelDiameterInches(4.0)
+                .material(WheelMaterial.HARD)
+                .compressionRatio(0.10)
+                .motor(FRCMotors.KRAKEN_X60)
+                .motorsPerWheel(2)
+                .gearRatio(1.0) 
+                .build();
+
         trajectorySolver = new TrajectorySolver(gamePiece, solverConfig);
-        trajectorySolver.setSolveMode(TrajectorySolver.SolveMode.SWEEP);
+        trajectorySolver.setFlywheel(flywheelConfig);
+        trajectorySolver.setDebugEnabled(true); //Disable to clean up NetworkTables
+        trajectorySolver.setSolveMode(TrajectorySolver.SolveMode.CONSTRAINT); // Change to SWEEP for more accuracy, but longer solve times.
 
         shooterSystem = new ShooterSystem(shooterConfig, table, trajectorySolver);
-        shooterSystem.setMode(ShotMode.SOLVER_WITH_LOOKUP_FALLBACK);
+        shooterSystem.setMode(ShotMode.LOOKUP_ONLY);
+
 
     }
 
