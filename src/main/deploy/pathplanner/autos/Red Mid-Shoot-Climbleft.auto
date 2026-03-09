@@ -7,19 +7,19 @@
         {
           "type": "named",
           "data": {
-            "name": "Shoot"
+            "name": "Intake and Shoot"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": null
+            "pathName": "Red Mid - Climbleft"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": null,
+  "folder": "Starting Left",
   "choreoAuto": false
 }
