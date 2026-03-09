@@ -11,7 +11,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Blue Mid to Neu"
+                  "pathName": "Blue Left to Neutral"
                 }
               },
               {
@@ -26,7 +26,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": null
+            "pathName": "Blue Neu to Back"
           }
         },
         {
@@ -36,15 +36,40 @@
           }
         },
         {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Blue Left to Neutral"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Intake and Shoot"
+                }
+              }
+            ]
+          }
+        },
+        {
           "type": "path",
           "data": {
-            "pathName": "Blue Mid to Left Climb"
+            "pathName": "Blue Neu to Back"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": "Starting Mid",
+  "folder": "Starting Left",
   "choreoAuto": false
 }
