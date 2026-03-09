@@ -9,6 +9,12 @@
           "data": {
             "pathName": "Blue R to RN"
           }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Right Neu to Left Neu (disrupt)"
+          }
         }
       ]
     }
