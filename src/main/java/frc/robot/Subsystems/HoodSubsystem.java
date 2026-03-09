@@ -37,7 +37,7 @@ public class HoodSubsystem extends SubsystemBase {
     }
 
     public HoodSubsystem() {
-        trajectory = new TrajectoryCalculations();
+        trajectory = null;
         var talonFXConfigs = new TalonFXConfiguration();
         talonFXConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         talonFXConfigs.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
@@ -98,7 +98,11 @@ public class HoodSubsystem extends SubsystemBase {
 
     private boolean usingState = false;
 
-    private final TrajectoryCalculations trajectory;
+    private TrajectoryCalculations trajectory;
+
+    public void setTrajectoryCalculations(TrajectoryCalculations trajectoryCalc) {
+        this.trajectory = trajectoryCalc;
+    }
 
     public void setState(RobotState state) {
         this.currentState = state;
@@ -134,6 +138,7 @@ public class HoodSubsystem extends SubsystemBase {
     }
 
     private void passRightState() {
+        if (trajectory == null || !trajectory.suppliersAreSet()) return;
         final Translation3d passRightPose = (getAlliance() == Alliance.Red)
                 ? new Translation3d(
                         FieldLayout.kFieldLength - FieldLayout.ShooterTargets.kPASS_RIGHT_POSE.getX(),
@@ -148,6 +153,7 @@ public class HoodSubsystem extends SubsystemBase {
     }
 
     private void passLeftState() {
+        if (trajectory == null || !trajectory.suppliersAreSet()) return;
         final Translation3d passLeftPose = (getAlliance() == Alliance.Red)
                 ? new Translation3d(
                         FieldLayout.kFieldLength - FieldLayout.ShooterTargets.kPASS_LEFT_POSE.getX(),
@@ -162,12 +168,10 @@ public class HoodSubsystem extends SubsystemBase {
     }
 
     private void shootHubState() {
+        if (trajectory == null || !trajectory.suppliersAreSet()) return;
         final Translation3d hubPose = (getAlliance() == Alliance.Red)
-                ? new Translation3d(
-                        FieldLayout.kFieldLength - FieldLayout.ShooterTargets.kHUB_POSE.getX(),
-                        FieldLayout.ShooterTargets.kHUB_POSE.getY(),
-                        FieldLayout.ShooterTargets.kHUB_POSE.getZ())
-                : FieldLayout.ShooterTargets.kHUB_POSE;
+                ? FieldLayout.ShooterTargets.kRED_HUB_POSE
+                : FieldLayout.ShooterTargets.kBLUE_HUB_POSE;
         trajectory.setTargetSupplier(() -> {
             return hubPose;
         });

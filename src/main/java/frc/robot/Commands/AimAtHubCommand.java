@@ -8,15 +8,14 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.FieldLayout;
 import frc.robot.Subsystems.TurretSubsystem;
 
-public class AimAtHubCommand extends CommandBase {
+public class AimAtHubCommand extends Command {
     private Supplier<Pose2d> botPose;
     private Translation2d shooterOffset = new Translation2d(0.1, 0.1);
-    private Translation3d hubTransalation = new Translation3d(4.0, 0.0, 2.1); // Blue hub
+    private Translation3d hubTranslation;
     private TurretSubsystem turretSubsystem;
 
     public AimAtHubCommand(Supplier<Pose2d> botPosetPose, TurretSubsystem turretSubsystem) {
@@ -27,9 +26,7 @@ public class AimAtHubCommand extends CommandBase {
 
     @Override
     public void initialize() {
-        if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red) {
-            hubTransalation = new Translation3d(4.0, 0.0, 9.9);
-        }
+        hubTranslation = FieldLayout.ShooterTargets.getAllianceHub();
     }
 
     @Override
@@ -41,15 +38,18 @@ public class AimAtHubCommand extends CommandBase {
         double worldOffsetY = shooterOffset.getX() * rot.getSin() + shooterOffset.getY() * rot.getCos();
         double shooterX = pose.getX() + worldOffsetX;
         double shooterY = pose.getY() + worldOffsetY;
-        double dx = hubTransalation.getX() - shooterX;
-        double dy = hubTransalation.getY() - shooterY;
-        double yawRad = Math.atan2(dy, dx);
-        turretSubsystem.setTarget(Math.toDegrees(yawRad));
+        double dx = hubTranslation.getX() - shooterX;
+        double dy = hubTranslation.getY() - shooterY;
+        double fieldAngleDeg = Math.toDegrees(Math.atan2(dy, dx));
+        double robotHeadingDeg = rot.getDegrees();
+        double turretAngleDeg = fieldAngleDeg - robotHeadingDeg;
+        turretSubsystem.setTarget(turretAngleDeg);
 
         Logger.recordOutput("Commands/AimAtHub/Robot/Rot", rot.getDegrees());
         Logger.recordOutput("Commands/AimAtHub/Robot/X", shooterX);
         Logger.recordOutput("Commands/AimAtHub/Robot/Y", shooterY);
-        Logger.recordOutput("Commands/AimAtHub/Target/Deg", Math.toDegrees(yawRad));
+        Logger.recordOutput("Commands/AimAtHub/Target/FieldDeg", fieldAngleDeg);
+        Logger.recordOutput("Commands/AimAtHub/Target/TurretDeg", turretAngleDeg);
         Logger.recordOutput("Commands/AimAtHub/Target/dX", dx);
         Logger.recordOutput("Commands/AimAtHub/Robot/dY", dy);
 

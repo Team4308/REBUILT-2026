@@ -121,6 +121,40 @@ public final class Constants {
           0.005, 0.0, 0.0,
           new TrapezoidProfile.Constraints(2000, 2000));
     }
+
+    public static final class TrajectoryCalc {
+      // Rate-limiting
+      public static final double MIN_SOLVE_INTERVAL_MS = 100.0;
+      public static final double DISTANCE_CHANGE_THRESHOLD_M = 0.05;
+      public static final double YAW_CHANGE_THRESHOLD_DEG = 1.0;
+
+      // Shooter geometry
+      public static final double SHOOTER_HEIGHT_M = 0.5;
+      public static final double SHOOTER_OFFSET_X_M = 0.1;
+      public static final double SHOOTER_OFFSET_Y_M = 0.1;
+
+      // Target
+      public static final double TARGET_RADIUS_M = 0.45;
+
+      // ShooterConfig
+      public static final double MIN_RPM = 0.0;
+      public static final double MAX_RPM = Shooter.kMaxRPM;
+      public static final double RPM_TO_VELOCITY_FACTOR = 0.00532;
+      public static final double MIN_DISTANCE_M = 0.5;
+      public static final double MAX_DISTANCE_M = 12.0;
+      public static final double RPM_FEEDBACK_THRESHOLD = 50.0;
+      public static final double RPM_ABORT_THRESHOLD = 500.0;
+      public static final double PITCH_CORRECTION_PER_RPM_DEFICIT = 0.05;
+      public static final double MOVING_COMPENSATION_GAIN = 1.0;
+      public static final int MOVING_ITERATIONS = 5;
+      public static final double SAFETY_MAX_EXIT_VELOCITY = 30.0;
+
+      // FlywheelConfig
+      public static final double FLYWHEEL_DIAMETER_IN = 4.0;
+      public static final double FLYWHEEL_COMPRESSION_RATIO = 0.10;
+      public static final double FLYWHEEL_GEAR_RATIO = 1.0;
+      public static final int FLYWHEEL_MOTORS_PER_WHEEL = 2;
+    }
   }
 
   public static final class Intake {

@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import frc.robot.Commands.AimAtHubCommand;
 import frc.robot.Commands.MoveHoodCommand;
+import frc.robot.FieldLayout;
 import frc.robot.Commands.ShooterCommand;
 import frc.robot.Commands.TriggerIntakeCommand;
 import frc.robot.Commands.MoveTurretCommand;
@@ -131,6 +132,9 @@ public class RobotContainer {
                 m_TrajectoryCalculations.setChassisSupplier(() -> drivebase.getFieldVelocity());
                 m_TrajectoryCalculations.setCurrentRPMsupply(() -> m_ShooterSubsystem.getRPM());
                 m_TrajectoryCalculations.setPoseSupplier(() -> drivebase.getPose());
+                m_TrajectoryCalculations.setTargetSupplier(() -> FieldLayout.ShooterTargets.getAllianceHub());
+
+                m_HoodSubsystem.setTrajectoryCalculations(m_TrajectoryCalculations);
         }
 
         private void configureBindings() {
