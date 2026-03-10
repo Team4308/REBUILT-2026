@@ -13,13 +13,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": null
+            "pathName": "Blue Left to Neutral"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": null,
+  "folder": "Starting Left",
   "choreoAuto": false
 }

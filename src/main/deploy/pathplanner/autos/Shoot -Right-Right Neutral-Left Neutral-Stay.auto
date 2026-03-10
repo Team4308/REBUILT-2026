@@ -13,13 +13,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": null
+            "pathName": "Blue R to RN"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Right Neu to Left Neu (disrupt)"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": null,
+  "folder": "Disruption",
   "choreoAuto": false
 }

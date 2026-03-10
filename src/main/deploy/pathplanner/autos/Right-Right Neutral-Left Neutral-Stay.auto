@@ -5,15 +5,15 @@
     "data": {
       "commands": [
         {
-          "type": "named",
+          "type": "path",
           "data": {
-            "name": "Shoot"
+            "pathName": "Blue R to RN"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": null
+            "pathName": "Right Neu to Left Neu (disrupt)"
           }
         }
       ]

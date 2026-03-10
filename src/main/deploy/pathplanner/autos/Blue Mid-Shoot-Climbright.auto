@@ -7,19 +7,19 @@
         {
           "type": "named",
           "data": {
-            "name": "Shoot"
+            "name": "Intake and Shoot"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": null
+            "pathName": "Blue Mid - Climbright"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": null,
+  "folder": "Starting Mid",
   "choreoAuto": false
 }

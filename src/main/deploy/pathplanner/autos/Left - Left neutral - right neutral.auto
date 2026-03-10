@@ -5,21 +5,21 @@
     "data": {
       "commands": [
         {
-          "type": "named",
+          "type": "path",
           "data": {
-            "name": "Shoot"
+            "pathName": "Blue L to LN (disrupt)"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Blue SHOOT to CLIMB"
+            "pathName": "LN to RN (disrupt)"
           }
         }
       ]
     }
   },
-  "resetOdom": false,
-  "folder": "Starting Left",
+  "resetOdom": true,
+  "folder": "Disruption",
   "choreoAuto": false
 }
