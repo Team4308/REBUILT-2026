@@ -7,19 +7,31 @@
         {
           "type": "path",
           "data": {
-            "pathName": null
+            "pathName": "Right to Neutral"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Intake and Shoot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Neutral to Left Neutral"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Left Neutral to shooter"
           }
         },
         {
           "type": "named",
           "data": {
             "name": "Shoot"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": null
           }
         }
       ]

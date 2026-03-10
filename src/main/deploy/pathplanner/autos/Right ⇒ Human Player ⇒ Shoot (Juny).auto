@@ -5,15 +5,15 @@
     "data": {
       "commands": [
         {
-          "type": "named",
+          "type": "path",
           "data": {
-            "name": "Shoot"
+            "pathName": "Right to Human Player"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": null
+            "pathName": "Human player to shoot"
           }
         }
       ]
