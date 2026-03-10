@@ -110,10 +110,13 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void testExit() {
+    
   }
 
   @Override
   public void simulationPeriodic() {
     FuelSim.getInstance().updateSim();
+    // Update Logger
+    m_robotContainer.getTrajectoryCalculations().periodic();
   }
 }

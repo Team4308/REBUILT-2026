@@ -1,5 +1,5 @@
 {
-    "name": "ROBOT_4308", 
+    "name": "Robot_4308", 
     "rotations": [{"axis": "x", "degrees": 90},
                     {"axis": "z", "degrees": 270}],
     "position": [0, 0.0, 0],

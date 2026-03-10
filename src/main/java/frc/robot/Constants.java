@@ -124,7 +124,7 @@ public final class Constants {
 
     public static final class TrajectoryCalc {
       // Rate-limiting
-      public static final double MIN_SOLVE_INTERVAL_MS = 100.0;
+      public static final double MIN_SOLVE_INTERVAL_MS = 10.0;
       public static final double DISTANCE_CHANGE_THRESHOLD_M = 0.05;
       public static final double YAW_CHANGE_THRESHOLD_DEG = 1.0;
 
@@ -144,10 +144,10 @@ public final class Constants {
       public static final double MAX_DISTANCE_M = 12.0;
       public static final double RPM_FEEDBACK_THRESHOLD = 50.0;
       public static final double RPM_ABORT_THRESHOLD = 500.0;
-      public static final double PITCH_CORRECTION_PER_RPM_DEFICIT = 0.05;
+      public static final double PITCH_CORRECTION_PER_RPM_DEFICIT = 0.005; // Match ExampleShooter (was 0.05)
       public static final double MOVING_COMPENSATION_GAIN = 1.0;
       public static final int MOVING_ITERATIONS = 5;
-      public static final double SAFETY_MAX_EXIT_VELOCITY = 30.0;
+      public static final double SAFETY_MAX_EXIT_VELOCITY = 30.0; // Match ExampleShooter default
 
       // FlywheelConfig
       public static final double FLYWHEEL_DIAMETER_IN = 4.0;

@@ -8,23 +8,18 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 public class GameData {
     public static boolean isHubActive(boolean opponent) {
         Optional<Alliance> alliance = DriverStation.getAlliance();
-        // If we have no alliance, we cannot be enabled, therefore no hub.
         if (alliance.isEmpty()) {
             return false;
         }
-        // Hub is always enabled in autonomous.
         if (DriverStation.isAutonomousEnabled()) {
             return true;
         }
-        // At this point, if we're not teleop enabled, there is no hub.
         if (!DriverStation.isTeleopEnabled()) {
             return false;
         }
 
-        // We're teleop enabled, compute.
         double matchTime = DriverStation.getMatchTime();
         String gameData = DriverStation.getGameSpecificMessage();
-        // If we have no game data, we cannot compute, assume hub is active, as its likely early in teleop.
         if (gameData.isEmpty()) {
             return true;
         }
@@ -33,7 +28,6 @@ public class GameData {
             case 'R' -> redInactiveFirst = true;
             case 'B' -> redInactiveFirst = false;
             default -> {
-                // If we have invalid game data, assume hub is active.
                 return true;
             }
         }

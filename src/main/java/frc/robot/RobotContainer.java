@@ -133,7 +133,6 @@ public class RobotContainer {
                 m_TrajectoryCalculations.setCurrentRPMsupply(() -> m_ShooterSubsystem.getRPM());
                 m_TrajectoryCalculations.setPoseSupplier(() -> drivebase.getPose());
                 m_TrajectoryCalculations.setTargetSupplier(() -> FieldLayout.ShooterTargets.getAllianceHub());
-
                 m_HoodSubsystem.setTrajectoryCalculations(m_TrajectoryCalculations);
         }
 
@@ -224,6 +223,11 @@ public class RobotContainer {
         }
 
         public void periodic() {
+
+        }
+
+        public TrajectoryCalculations getTrajectoryCalculations() {
+                return m_TrajectoryCalculations;
         }
 
         public void configureNamedCommands() {
