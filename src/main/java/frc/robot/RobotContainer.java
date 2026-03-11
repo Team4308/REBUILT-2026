@@ -3,6 +3,7 @@ package frc.robot;
 import java.io.File;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 
 import ca.team4308.absolutelib.control.RazerWrapper;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -42,11 +43,11 @@ public class RobotContainer {
         private final SwerveSubsystem drivebase = new SwerveSubsystem(
                         new File(Filesystem.getDeployDirectory(), "swerve"));
 
-        private final HoodSubsystem m_HoodSubsystem;
-        private final IntakeSubsystem m_IntakeSubsystem;
-        private final TurretSubsystem m_TurretSubsystem;
-        private final IndexerSubsystem m_IndexerSubsystem;
-        private final ShooterSubsystem m_ShooterSubsystem;
+        private final HoodSubsystem m_hoodSubsystem;
+        private final IntakeSubsystem m_intakeSubsystem;
+        private final TurretSubsystem m_turretSubsystem;
+        private final IndexerSubsystem m_indexerSubsystem;
+        private final ShooterSubsystem m_shooterSubsystem;
 
         private double m_hoodAngle = 7.5;
         private double m_turretAngle = 180;
@@ -100,17 +101,17 @@ public class RobotContainer {
         public RobotContainer() {
                 drivebase.setVision(vision);
 
-                m_HoodSubsystem = new HoodSubsystem();
-                m_IndexerSubsystem = new IndexerSubsystem();
-                m_TurretSubsystem = new TurretSubsystem();
-                m_ShooterSubsystem = new ShooterSubsystem();
-                m_IntakeSubsystem = new IntakeSubsystem();
+                m_hoodSubsystem = new HoodSubsystem();
+                m_indexerSubsystem = new IndexerSubsystem();
+                m_turretSubsystem = new TurretSubsystem();
+                m_shooterSubsystem = new ShooterSubsystem();
+                m_intakeSubsystem = new IntakeSubsystem();
 
                 // m_ShooterSubsystem.setDefaultCommand(
                 // new ShooterCommand(m_ShooterSubsystem, () -> driver.getRightTrigger()));
 
-                m_IntakeSubsystem.setDefaultCommand(
-                                new TriggerIntakeCommand(m_IntakeSubsystem, () -> driver.getRightTrigger()));
+                m_intakeSubsystem.setDefaultCommand(
+                                new TriggerIntakeCommand(m_intakeSubsystem, () -> driver.getRightTrigger()));
 
                 // m_HoodSubsystem.setDefaultCommand(new HoodCommand(m_HoodSubsystem, () ->
                 // m_hoodAngle));
@@ -130,10 +131,10 @@ public class RobotContainer {
 
                 m_TrajectoryCalculations = new TrajectoryCalculations();
                 m_TrajectoryCalculations.setChassisSupplier(() -> drivebase.getFieldVelocity());
-                m_TrajectoryCalculations.setCurrentRPMsupply(() -> m_ShooterSubsystem.getRPM());
+                m_TrajectoryCalculations.setCurrentRPMsupply(() -> m_shooterSubsystem.getRPM());
                 m_TrajectoryCalculations.setPoseSupplier(() -> drivebase.getPose());
                 m_TrajectoryCalculations.setTargetSupplier(() -> FieldLayout.ShooterTargets.getAllianceHub());
-                m_HoodSubsystem.setTrajectoryCalculations(m_TrajectoryCalculations);
+                m_hoodSubsystem.setTrajectoryCalculations(m_TrajectoryCalculations);
         }
 
         private void configureBindings() {
@@ -151,6 +152,16 @@ public class RobotContainer {
                  * RB: Shoot
                  * Right Small Button: Reset Hood
                  */
+
+                NamedCommands.registerCommand("Shoot", m_turretSubsystem.aimAtHub(), //Turret Subsystem does not have a state manager
+                    m_hoodSubsystem.setState(HoodSubsystem.RobotState.SHOOT),
+                    m_shooterSubsystem.setState(ShooterSubsystem.ShooterState.SHOOTING));
+                NamedCommands.registerCommand("Intake", m_intakeSubsystem.setState(state.INTAKING);));
+                NamedCommands.registerCommand("Intake and Shoot", m_intakeSubsystem.setState(state.INTAKING),
+                    m_turretSubsystem.aimAtHub(),
+                    m_hoodSubsystem.setState(HoodSubsystem.RobotState.SHOOT),
+                    m_shooterSubsystem.setState(ShooterSubsystem.ShooterState.SHOOTING));
+
 
                 Command driveFieldOrientedAnglularVelocity = drivebase.driveFieldOriented(driveAngularVelocity);
                 Command driveRobotOrientedAngularVelocity = drivebase.driveFieldOriented(driveRobotOriented);
