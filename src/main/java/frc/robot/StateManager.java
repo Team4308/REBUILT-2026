@@ -8,8 +8,6 @@ import ca.team4308.absolutelib.control.XBoxWrapper;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.subsystems.HoodSubsystem;
-import frc.robot.subsystems.HoodSubsystem.RobotState;
 
 public class StateManager {
 
@@ -35,9 +33,6 @@ public class StateManager {
         InactiveTeleopOpponentZoneResting,
         InactiveTeleopOpponentZoneIntaking,
         InactiveTeleopOpponentZonePassingIntaking,
-        ClimbPrepareLeft,
-        ClimbPrepareRight,
-        ClimbedUp,
         Home
     }
 
@@ -56,7 +51,6 @@ public class StateManager {
     HoodSubsystem m_hoodSubsystem = new HoodSubsystem();
     ShooterSubsystem m_shooterSubsystem = new ShooterSubsystem();
     TurretSubsystem m_turretSubsystem = new TurretSubsystem();
-    ClimberSubsystem m_climberSubsystem = new ClimberSubsystem();
     SwerveSubsystem m_swerveSubsystem = new SwerveSubsystem();
 
     // Togglable booleans for the secondary controller
@@ -89,7 +83,6 @@ public class StateManager {
             setRobotState(State.Home);
             m_hoodSubsystem.stopMotors();
             m_intakeSubsystem.stopRoller();
-            m_climberSubsystem.stopMotors(); // Climber DOES NOT have a stop method
             m_indexerSubsystem.stopMotors();
             m_shooterSubsystem.stopMotors();
             m_turretSubsystem.stopTurret();
@@ -97,7 +90,6 @@ public class StateManager {
             m_hoodSubsystem.setUsingState(false);
             m_swerveSubsystem.setUsingState(false);
             m_intakeSubsystem.setStateBased(false);
-            m_climberSubsystem.setStateBased(false);
             m_indexerSubsystem.setUsingState(false);
             m_shooterSubsystem.setStateBased(false);
             m_turretSubsystem.setStateBased(false); // Turret DOES NOT have a setstatebased, needs to be added.
@@ -106,14 +98,12 @@ public class StateManager {
             setRobotState(State.Home); // the middle of field we can still drive the bot back to safety
             m_hoodSubsystem.stopMotors();
             m_intakeSubsystem.stopRoller();
-            m_climberSubsystem.stopMotors(); // Climber DOES NOT have a stop method
             m_indexerSubsystem.stopMotors();
             m_shooterSubsystem.stopMotors();
             m_turretSubsystem.stopTurret();
             m_hoodSubsystem.setUsingState(false);
             m_swerveSubsystem.setUsingState(false);
             m_intakeSubsystem.setStateBased(false);
-            m_climberSubsystem.setStateBased(false);
             m_indexerSubsystem.setUsingState(false);
             m_shooterSubsystem.setStateBased(false);
             m_turretSubsystem.setStateBased(false); // Turret DOES NOT have a setstatebased, needs to be added.
@@ -125,7 +115,6 @@ public class StateManager {
                 m_hoodSubsystem.setUsingState(false);
                 m_swerveSubsystem.setUsingState(false);
                 m_intakeSubsystem.setStateBased(false);
-                m_climberSubsystem.setStateBased(false);
                 m_indexerSubsystem.setUsingState(false);
                 m_shooterSubsystem.setStateBased(false);
                 m_turretSubsystem.setStateBased(false); // Turret DOES NOT have a setstatebased, needs to be added.
@@ -134,7 +123,6 @@ public class StateManager {
                 m_hoodSubsystem.setUsingState(true);
                 m_swerveSubsystem.setUsingState(true);
                 m_intakeSubsystem.setStateBased(true);
-                m_climberSubsystem.setStateBased(true);
                 m_indexerSubsystem.setUsingState(true);
                 m_shooterSubsystem.setStateBased(true);
                 m_turretSubsystem.setStateBased(true); // Turret DOES NOT have a setstatebased, needs to be added.
@@ -289,7 +277,6 @@ public class StateManager {
                 m_hoodSubsystem.setState(RobotState.REST);
                 m_indexerSubsystem.setState(State.IDLE);
                 m_shooterSubsystem.setState(ShooterState.IDLE);
-                m_climberSubsystem.setState(States.NOT_CLIMBING);
                 // Turret does not have a state manager, requires hard coded implementation if
                 // not added...
                 m_turretSubsystem.setState(/* whatever the rest state is */);
@@ -300,7 +287,6 @@ public class StateManager {
                 m_hoodSubsystem.setState(RobotState.SHOOT);
                 m_indexerSubsystem.setState(State.SHOOTING);
                 m_shooterSubsystem.setState(ShooterState.SHOOTING);
-                m_climberSubsystem.setState(States.NOT_CLIMBING);
                 m_turretSubsystem.setState(/* whatever the shooting state is */);
                 break;
             // All of the intaking states (active/inactive) should do the same thing
@@ -315,7 +301,6 @@ public class StateManager {
                 m_hoodSubsystem.setState(RobotState.SHOOT);
                 m_indexerSubsystem.setState(State.IDLE);
                 m_shooterSubsystem.setState(ShooterState.IDLE);
-                m_climberSubsystem.setState(States.NOT_CLIMBING);
                 m_turretSubsystem.setState(/* whatever the aiming (not shooting) state is */);
                 break;
             case ActiveTeleopAllianceZoneShootingIntaking:
@@ -323,7 +308,6 @@ public class StateManager {
                 m_hoodSubsystem.setState(RobotState.SHOOT);
                 m_indexerSubsystem.setState(State.SHOOTING);
                 m_shooterSubsystem.setState(ShooterState.SHOOTING);
-                m_climberSubsystem.setState(States.NOT_CLIMBING);
                 m_turretSubsystem.setState(/* whatever the shooting state is */);
                 break;
             // passing implementation needs to be more clear, this is a general outline,
@@ -332,11 +316,9 @@ public class StateManager {
             case ActiveTeleopOpponentZonePassing:
 
                 m_intakeSubsystem.setState(state.REST); // does not agitate tho...
-                m_hoodSubsystem.setState(RobotState.PASS_LEFT); // set to PASS_LEFT as a placeholder, implementation
-                                                                // needs to be refined
+                m_hoodSubsystem.setState(RobotState.PASS_LEFT); // set to PASS_LEFT as a placeholder, implementation                                                 // needs to be refined
                 m_indexerSubsystem.setState(State.SHOOTING);
                 m_shooterSubsystem.setState(ShooterState.PASSING);
-                m_climberSubsystem.setState(States.NOT_CLIMBING);
                 m_turretSubsystem.setState(/* whatever the passing state is */);
                 break;
 
@@ -352,38 +334,9 @@ public class StateManager {
                                                                 // needs to be refined
                 m_indexerSubsystem.setState(State.SHOOTING);
                 m_shooterSubsystem.setState(ShooterState.PASSING);
-                m_climberSubsystem.setState(States.NOT_CLIMBING);
                 m_turretSubsystem.setState(/* whatever the passing state is */);
                 break;
-
-            // Climbing states don't have any setup logic so these statements are never
-            // called, update when more info is added
-            case ClimbPrepareLeft:
-                m_intakeSubsystem.setState(state.REST);
-                m_hoodSubsystem.setState(RobotState.REST);
-                m_indexerSubsystem.setState(State.IDLE);
-                m_shooterSubsystem.setState(ShooterState.IDLE);
-                m_climberSubsystem.setState(States.GOING_TO_CLIMB);
-                m_turretSubsystem.setState(/* whatever the rest/idle state is */);
-                break;
-
-            case ClimbPrepareRight:
-                m_intakeSubsystem.setState(state.REST);
-                m_hoodSubsystem.setState(RobotState.REST);
-                m_indexerSubsystem.setState(State.IDLE);
-                m_shooterSubsystem.setState(ShooterState.IDLE);
-                m_climberSubsystem.setState(States.GOING_TO_CLIMB);
-                m_turretSubsystem.setState(/* whatever the rest/idle state is */);
-                break;
-
-            case ClimbedUp:
-                m_intakeSubsystem.setState(state.REST);
-                m_hoodSubsystem.setState(RobotState.REST);
-                m_indexerSubsystem.setState(State.IDLE);
-                m_shooterSubsystem.setState(ShooterState.IDLE);
-                m_climberSubsystem.setState(States.IN_CLIMB);
-                m_turretSubsystem.setState(/* whatever the rest/idle state is */);
-                break;
+            
 
             // similar to resting states, however intake is retracted
             case Home:
@@ -391,7 +344,6 @@ public class StateManager {
                 m_hoodSubsystem.setState(RobotState.REST);
                 m_indexerSubsystem.setState(State.IDLE);
                 m_shooterSubsystem.setState(ShooterState.IDLE);
-                m_climberSubsystem.setState(States.NOT_CLIMBING);
                 m_turretSubsystem.setState(/* whatever the resting state is */);
                 break;
 
@@ -435,8 +387,5 @@ public class StateManager {
  * states: REST, SHOOT, PASS_LEFT, PASS_RIGHT
  * setter: setState()
  * 
- * ClimberSubsystem:
- * enum: States
- * states: NOT_CLIMBING, GOING_TO_CLIMB, IN_CLIMB
- * setter: setState()
+ *
  */
