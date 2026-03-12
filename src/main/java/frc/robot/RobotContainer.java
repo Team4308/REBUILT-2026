@@ -25,6 +25,7 @@ import frc.robot.Commands.MoveTurretCommand;
 import frc.robot.Subsystems.HoodSubsystem;
 import frc.robot.Subsystems.IndexerSubsystem;
 import frc.robot.Subsystems.IntakeSubsystem;
+import frc.robot.Subsystems.LedSubsystem;
 import frc.robot.Subsystems.ShooterSubsystem;
 import frc.robot.Subsystems.TurretSubsystem;
 import frc.robot.Subsystems.swerve.SwerveSubsystem;
@@ -47,6 +48,7 @@ public class RobotContainer {
         private final TurretSubsystem m_TurretSubsystem;
         private final IndexerSubsystem m_IndexerSubsystem;
         private final ShooterSubsystem m_ShooterSubsystem;
+        private final LedSubsystem m_LedSubsystem;
 
         private double m_hoodAngle = 7.5;
         private double m_turretAngle = 180;
@@ -105,6 +107,7 @@ public class RobotContainer {
                 m_TurretSubsystem = new TurretSubsystem();
                 m_ShooterSubsystem = new ShooterSubsystem();
                 m_IntakeSubsystem = new IntakeSubsystem();
+                m_LedSubsystem = new LedSubsystem();
 
                 // m_ShooterSubsystem.setDefaultCommand(
                 // new ShooterCommand(m_ShooterSubsystem, () -> driver.getRightTrigger()));
