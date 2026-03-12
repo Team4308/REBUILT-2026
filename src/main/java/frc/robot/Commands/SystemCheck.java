@@ -7,6 +7,7 @@ import frc.robot.Subsystems.swerve.SwerveSubsystem;
 import frc.robot.Subsystems.LedSubsystem;
 import frc.robot.Subsystems.ShooterSubsystem;
 import frc.robot.Subsystems.TurretSubsystem;
+import frc.robot.Subsystems.IntakeSubsystem;
 
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
@@ -24,8 +25,8 @@ import frc.robot.Commands.TriggerIntakeCommand;
 
 public class SystemCheck extends SequentialCommandGroup {
         public SystemCheck(HoodSubsystem hoodSubsystem, IndexerSubsystem indexerSubsystem, IntakeSubsystem intakeSubsystem,
-                        SwerveSubsystem swerveSubsystem, LedSubsystem ledSubsystem, ShooterSubsystem shootersubsystem, 
-                                        TurretSubsystem turretsubsystem) {
+                        SwerveSubsystem swerveSubsystem, LedSubsystem ledSubsystem, ShooterSubsystem shooterSubsystem, 
+                                        TurretSubsystem turretSubsystem) {
                 addCommands(
                                 new ParallelDeadlineGroup(new WaitCommand(1),
                                                 swerveSubsystem.driveCommand(() -> 5, () -> 0, () -> 0)),
@@ -39,17 +40,32 @@ public class SystemCheck extends SequentialCommandGroup {
                                 new WaitCommand(1),
                                 new InstantCommand(() -> swerveSubsystem.lock()),
 
-                                new ParallelDeadlineGroup(new WaitCommand(1)),
-                                                hoodSubsystem.moveHood(() -> 15, () -> 5),
+                                new ParallelDeadlineGroup(new WaitCommand(1),
+                                                hoodSubsystem.moveHood(() -> 15.0, 5.0)),
                                 new WaitCommand(1),
-                                new InstantCommand(() -> hoodSubsytem.resetHood()),
+                                new InstantCommand(() -> hoodSubsystem.resetHood()),
 
-                                new ParallelDeadlineGroup(new WaitCommand(1)),
-                                                intakeSubsystem.setIntakeAngle(() -> 25),
-                                                intakeSubsystem.setRollerSpeedA(() -> 15),
+                                new ParallelDeadlineGroup(new WaitCommand(1),
+                                                intakeSubsystem.moveIntakeToAngle(25.0),
+                                                intakeSubsystem.setRollerSpeed(() -> 15.0)),
                                 new WaitCommand(1),
-                                new Instant
-                )
+                                new InstantCommand(() -> intakeSubsystem.resetIntake()),
+                                new InstantCommand(() -> intakeSubsystem.stopRoller()),
+                                
+                                new ParallelDeadlineGroup(new WaitCommand(1), 
+                                                turretSubsystem.moveToTarget(() -> 15.0)),
+                                new InstantCommand(() -> turretSubsystem.resetTurretCommand()),
+
+                                new ParallelDeadlineGroup(new WaitCommand(1),
+                                                shooterSubsystem.setShooterSpeed(() -> 10.0)),
+                                new WaitCommand(1),
+                                new InstantCommand(() -> shooterSubsystem.setShooterSpeed(() -> 0.0)),
+
+                                new ParallelDeadlineGroup(new WaitCommand(1), 
+                                               indexerSubsystem.feedBalls())
+
+                                );
+        
         }
 }
 
