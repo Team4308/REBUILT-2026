@@ -177,14 +177,18 @@ public class RobotContainer {
                 // driver.X.whileTrue(m_TurretSubsystem.aimAtPointCommand(FieldLayout.ShooterTargets.kHUB_POSE));
                 // driver.X.whileTrue(new RunCommand(null, null));
 
+                // Semi Auto Shooting
+                
                 driver.X.whileTrue(new AimAtHubCommand(() -> drivebase.getPose(), m_TurretSubsystem));
-
                 driver.A.whileTrue(m_ShooterSubsystem.setShooterSpeed(() -> 3000.));
                 driver.A.onFalse(new InstantCommand(() -> m_ShooterSubsystem.stopMotors()));
                 driver.B.whileTrue(m_ShooterSubsystem.setShooterSpeed(() -> 2300.));
                 driver.B.onFalse(new InstantCommand(() -> m_ShooterSubsystem.stopMotors()));
+                // Reset Gyro 
                 driver.M1.onTrue(Commands.runOnce(() -> drivebase.resetOdometry(new Pose2d(0, 0, new Rotation2d()))));
 
+
+                // Intaking 
                 driver.RB.whileTrue(new InstantCommand(() -> m_IndexerSubsystem.setIndexerSpeed(500)));
                 driver.RB.whileTrue(new InstantCommand(() -> m_IndexerSubsystem.setHopperSpeed(500)));
                 driver.RB.onFalse(new InstantCommand(() -> m_IndexerSubsystem.stopMotors()));
@@ -192,6 +196,7 @@ public class RobotContainer {
                 driver.LB.onTrue(new InstantCommand(() -> m_IntakeSubsystem.setRollerSpeedA(() -> -100.)));
                 driver.LB.onFalse(new InstantCommand(() -> m_IntakeSubsystem.stopMotors()));
 
+                // Reset Hood and Intake
                 driver.M2.onTrue(m_HoodSubsystem.resetHoodCommand());
                 driver.M2.onTrue(m_IntakeSubsystem.resetIntakeCommand());
 
@@ -216,7 +221,7 @@ public class RobotContainer {
                  */
 
                 // driver.A.onTrue(new InstantCommand(() -> m_intakeAngle -= 10));
-                // driver.B.onTrue(new InstantCommand(() -> m_turretAngle = 360));
+                // dri[]\[]\[]\]er.B.onTrue(new InstantCommand(() -> m_turretAngle = 360));
                 // driver.X.onTrue(new InstantCommand(() -> m_turretAngle = 90));
                 // driver.Y.onTrue(new InstantCommand(() -> m_intakeAngle += 10));
 
@@ -226,7 +231,8 @@ public class RobotContainer {
         }
 
         public void periodic() {
-
+                m_TrajectoryCalculations.periodic();
+        
         }
 
         public TrajectoryCalculations getTrajectoryCalculations() {

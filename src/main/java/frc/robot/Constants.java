@@ -99,7 +99,7 @@ public final class Constants {
       public final static double MIN_DEGREES = 90;
       public final static double MAX_DEGREES = 500;
       public final static double FULL_REVOLUTION_DEG = 360;
-      public final static double TURRET_TOLERANCE_DEGREES = 3;
+      public final static double TURRET_TOLERANCE_DEGREES = 5;
 
       public final static ArmFeedforward feedforward = new ArmFeedforward(0.24, 0, 0.0075, 0.01);
 
@@ -114,7 +114,7 @@ public final class Constants {
       public static final double kVelocityTolerance = 0.5;
       public static final double TOTAL_GEAR_RATIO = 97.4;
       public static final double FORWARD_SOFT_LIMIT_ANGLE = 52.5;
-      public static final double REVERSE_SOFT_LIMIT_ANGLE = 7.5;
+      public static final double REVERSE_SOFT_LIMIT_ANGLE = 0.1;
       public static final double ampThreshold = 2;
       public final static ArmFeedforward feedforward = new ArmFeedforward(0.2, 0.0, 0.025, 0.0);
       public final static ProfiledPIDController pidController = new ProfiledPIDController(
@@ -124,7 +124,7 @@ public final class Constants {
 
     public static final class TrajectoryCalc {
       // Rate-limiting
-      public static final double MIN_SOLVE_INTERVAL_MS = 10.0;
+      public static final double MIN_SOLVE_INTERVAL_MS = 250.0;
       public static final double DISTANCE_CHANGE_THRESHOLD_M = 0.05;
       public static final double YAW_CHANGE_THRESHOLD_DEG = 1.0;
 

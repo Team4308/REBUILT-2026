@@ -40,12 +40,11 @@ public class AimAtHubCommand extends Command {
         double shooterY = pose.getY() + worldOffsetY;
         double dx = hubTranslation.getX() - shooterX;
         double dy = hubTranslation.getY() - shooterY;
-        double fieldAngleDeg = Math.toDegrees(Math.atan2(dy, dx));
-        double robotHeadingDeg = rot.getDegrees();
-        double turretAngleDeg = fieldAngleDeg - robotHeadingDeg;
+    double fieldAngleDeg = Math.toDegrees(Math.atan2(dy, dx));
+    double turretAngleDeg = Rotation2d.fromDegrees(fieldAngleDeg).minus(rot).getDegrees();
         turretSubsystem.setTarget(turretAngleDeg);
 
-        Logger.recordOutput("Commands/AimAtHub/Robot/Rot", rot.getDegrees());
+    Logger.recordOutput("Commands/AimAtHub/Robot/Rot", rot.getDegrees());
         Logger.recordOutput("Commands/AimAtHub/Robot/X", shooterX);
         Logger.recordOutput("Commands/AimAtHub/Robot/Y", shooterY);
         Logger.recordOutput("Commands/AimAtHub/Target/FieldDeg", fieldAngleDeg);

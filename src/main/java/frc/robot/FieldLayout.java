@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Util.FieldZone;
 
 public class FieldLayout {
@@ -29,9 +30,9 @@ public class FieldLayout {
         public static class ShooterTargets {
                 public static final double kHUB_HEIGHT = 2.6;
 
-                public static final Translation3d kBLUE_HUB_POSE = new Translation3d(4.0, kFieldWidth / 2.0, kHUB_HEIGHT);
-                public static final Translation3d kRED_HUB_POSE = new Translation3d(kFieldLength - 4.0, kFieldWidth / 2.0, kHUB_HEIGHT);
-
+                public static final Translation3d kBLUE_HUB_POSE = new Translation3d(4.5, kFieldWidth / 2.0, kHUB_HEIGHT);
+                public static final Translation3d kRED_HUB_POSE = new Translation3d(kFieldLength - 4.5, kFieldWidth / 2.0, kHUB_HEIGHT);
+                
                 public static final Translation3d kHUB_POSE = kBLUE_HUB_POSE; 
 
                 public static final Translation3d kPASS_RIGHT_POSE = new Translation3d(4.0, kFieldWidth / 2.0 + 0.5, kHUB_HEIGHT);

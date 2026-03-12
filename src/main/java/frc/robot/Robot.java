@@ -53,6 +53,9 @@ public class Robot extends LoggedRobot {
     Logger.recordOutput("Ally Hub Active", GameData.isHubActive(false));
     Logger.recordOutput("Opposing Hub Active", GameData.isHubActive(true));
     Logger.recordOutput("Time To Next Phase", GameData.timeToNextPhase());
+
+    // Ensure trajectory logging runs in all modes (real + sim).
+    m_robotContainer.periodic();
   }
 
   @Override
@@ -92,7 +95,7 @@ public class Robot extends LoggedRobot {
   }
 
   public void teleopPeriodic() {
-    m_robotContainer.periodic();
+    // No-op: periodic work is handled in robotPeriodic so it runs in all modes.
   }
 
   @Override

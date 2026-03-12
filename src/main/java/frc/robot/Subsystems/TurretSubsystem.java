@@ -33,7 +33,6 @@ public class TurretSubsystem extends SubsystemBase {
 
     private double encoderOffset = 0;
 
-    private final static boolean WRAPPING_TEST = false;
     private final static boolean CANCODER_TEST = false;
 
     public final static ArmFeedforward feedforward = new ArmFeedforward(0.24, 0, 0.0075, 0.01);
@@ -47,7 +46,6 @@ public class TurretSubsystem extends SubsystemBase {
         canCoder1 = new CANcoder(Constants.Shooting.Turret.CANCODER1_ID);
         canCoder2 = new CANcoder(Constants.Shooting.Turret.CANCODER2_ID);
 
-        // try one iteration of crt here to find pos
         updateAngle();
         encoderOffset = getAngleUnWrapped();
         if (CANCODER_TEST) {
@@ -70,7 +68,7 @@ public class TurretSubsystem extends SubsystemBase {
         return currentDegUnWrapped;
     }
 
-    public double calculateEncoderAngle() { // TOOD: do what gemini was
+    public double calculateEncoderAngle() {
         double enc1 = canCoder1.getAbsolutePosition().getValueAsDouble();
         double enc2 = canCoder2.getAbsolutePosition().getValueAsDouble();
 
@@ -93,8 +91,8 @@ public class TurretSubsystem extends SubsystemBase {
         double rawAngle = driveMotor.getPosition().getValueAsDouble() * Constants.Shooting.Turret.GEAR_RATIO_MOTOR
                 * 360;
         currentDegUnWrapped = rawAngle - encoderOffset;
-        currentDegWrapped = inputModulus(currentDegUnWrapped, Constants.Shooting.Turret.MIN_DEGREES,
-                Constants.Shooting.Turret.MAX_DEGREES, Constants.Shooting.Turret.FULL_REVOLUTION_DEG);
+    currentDegWrapped = inputModulus(currentDegUnWrapped, 0.0,
+        Constants.Shooting.Turret.FULL_REVOLUTION_DEG, Constants.Shooting.Turret.FULL_REVOLUTION_DEG);
     }
 
     private double inputModulus(double value, double min, double max, double modulus) {
@@ -104,37 +102,45 @@ public class TurretSubsystem extends SubsystemBase {
         return wrappedValue + min;
     }
 
-    public void setTarget(double degrees) {
-        // This can be updated to do proper shortestPath code
-        degrees = inputModulus(degrees, Constants.Shooting.Turret.MIN_DEGREES, Constants.Shooting.Turret.MAX_DEGREES,
-                360);
-        targetDegUnWrapped = degrees;
-        targetDegWrapped = inputModulus(degrees, 0, 360, 360);
-
-        if (WRAPPING_TEST) {
-            int kMin = (int) Math.ceil((Constants.Shooting.Turret.MIN_DEGREES - targetDegWrapped) / 360.0);
-            int kMax = (int) Math.floor((Constants.Shooting.Turret.MAX_DEGREES - targetDegWrapped) / 360.0);
-
-            double closestTarget = targetDegUnWrapped;
-            double minDistance = Double.MAX_VALUE;
-
-            for (int k = kMin; k <= kMax; k++) {
-                double candidate = targetDegWrapped + k * 360.0;
-                double distance = Math.abs(currentDegUnWrapped - candidate); // replace with your current angle variable
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    closestTarget = candidate;
-                }
-            }
-
-            targetDegUnWrapped = closestTarget;
+    private double getWrappedError(double currentDeg, double targetDeg) {
+        double modulus = Constants.Shooting.Turret.FULL_REVOLUTION_DEG;
+        double diff = (targetDeg - currentDeg) % modulus;
+        if (diff > modulus / 2.0) {
+            diff -= modulus;
+        } else if (diff < -modulus / 2.0) {
+            diff += modulus;
         }
+        return diff;
+    }
+
+    public void setTarget(double degrees) {
+        double wrappedTarget = inputModulus(degrees, 0.0,
+                Constants.Shooting.Turret.FULL_REVOLUTION_DEG, Constants.Shooting.Turret.FULL_REVOLUTION_DEG);
+
+        int kMin = (int) Math.ceil((Constants.Shooting.Turret.MIN_DEGREES - wrappedTarget) / 360.0);
+        int kMax = (int) Math.floor((Constants.Shooting.Turret.MAX_DEGREES - wrappedTarget) / 360.0);
+
+        double closestTarget = wrappedTarget;
+        double minDistance = Double.MAX_VALUE;
+
+        for (int k = kMin; k <= kMax; k++) {
+            double candidate = wrappedTarget + k * 360.0;
+            double distance = Math.abs(currentDegUnWrapped - candidate);
+            if (distance < minDistance) {
+                minDistance = distance;
+                closestTarget = candidate;
+            }
+        }
+
+        targetDegUnWrapped = closestTarget;
+        targetDegWrapped = inputModulus(targetDegUnWrapped, 0.0,
+                Constants.Shooting.Turret.FULL_REVOLUTION_DEG, Constants.Shooting.Turret.FULL_REVOLUTION_DEG);
     }
 
     public boolean isAtTarget() {
-
-        return Math.abs(currentDegWrapped - targetDegWrapped) <= Constants.Shooting.Turret.TURRET_TOLERANCE_DEGREES
-                && driveMotor.getVelocity().getValueAsDouble() < Constants.Shooting.Turret.STOPPED_VELOCITY;
+    double wrappedError = getWrappedError(currentDegWrapped, targetDegWrapped);
+    return Math.abs(wrappedError) <= Constants.Shooting.Turret.TURRET_TOLERANCE_DEGREES
+        && driveMotor.getVelocity().getValueAsDouble() < Constants.Shooting.Turret.STOPPED_VELOCITY;
 
     }
 
@@ -229,5 +235,7 @@ public class TurretSubsystem extends SubsystemBase {
         Logger.recordOutput("Subsystems/Turret/Voltage", voltage);
         Logger.recordOutput("Subsystems/Turret/At Target", isAtTarget());
         Logger.recordOutput("Subsystems/Turret/Current", driveMotor.getStatorCurrent().getValueAsDouble());
+    Logger.recordOutput("Subsystems/Turret/Degree Difference",
+        Math.abs(getWrappedError(currentDegWrapped, targetDegWrapped)));
     }
 }
