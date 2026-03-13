@@ -53,10 +53,10 @@ public class Simulation extends SubsystemBase {
                 0.2032, // arm length (m)
                 Units.degreesToRadians(0),
                 Units.degreesToRadians(45),
-                true, // gravity — this is the one that matters most for stiction
-                0.15, // static friction (N·m) — light mechanism, but gravity will hold it if below
-                      // this
-                0.08, // kinetic friction (N·m)
+                false, // gravity — this is the one that matters most for stiction
+                7, // static friction (N·m) — light mechanism, but gravity will hold it if below
+                   // this
+                0.5, // kinetic friction (N·m)
                 Units.degreesToRadians(0));
 
         m_turretSim = new SingleJointedArmSim(
@@ -72,7 +72,7 @@ public class Simulation extends SubsystemBase {
                 Units.degreesToRadians(360));
 
         m_IntakeSubsystem.setSimSupplier(() -> Math.toDegrees(m_intakeSim.getAngleRads()));
-        m_HoodSubsystem.setSimSupplier(() -> Math.toDegrees(m_hoodSim.getAngleRads()) + 7.5);
+        m_HoodSubsystem.setSimSupplier(() -> Math.toDegrees(m_hoodSim.getAngleRads()));
         m_TurretSubsystem.setSimSupplier(() -> Math.toDegrees(m_turretSim.getAngleRads()));
 
         initFuelSim();

@@ -11,6 +11,7 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -31,7 +32,7 @@ import frc.robot.Util.TrajectoryCalculations;
 public class HoodSubsystem extends SubsystemBase {
     private final TalonFX m_hoodMotor = new TalonFX(Ports.Shooting.Hood.kHoodId);
 
-    private double targetAngle = 0;
+    private double targetAngle = 7.5;
 
     private double angleOffset = Constants.Shooting.Hood.REVERSE_SOFT_LIMIT_ANGLE;
 
@@ -54,6 +55,8 @@ public class HoodSubsystem extends SubsystemBase {
     private Supplier<Double> simSupplier;
     private double voltage;
 
+    private ProfiledPIDController pidController = Constants.Shooting.Hood.pidController;
+
     public HoodSubsystem() {
         trajectory = null;
         var talonFXConfigs = new TalonFXConfiguration();
@@ -64,6 +67,10 @@ public class HoodSubsystem extends SubsystemBase {
         m_hoodMotor.setPosition(0);
 
         verbosity = SubsystemVerbosity.HIGH;
+
+        if (Robot.isSimulation()) { // Brute force sim
+            pidController.setP(1);
+        }
     }
 
     public double getVoltage() {
@@ -221,7 +228,7 @@ public class HoodSubsystem extends SubsystemBase {
         double offsetZ = 0.08255;
         double rotatedX = offsetX * Math.cos(turretYawRad);
         double rotatedY = offsetX * Math.sin(turretYawRad);
-        double pitchRad = Math.toRadians(getHoodAngle());
+        double pitchRad = Math.toRadians(getHoodAngle() - 7.5);
         return new Pose3d(
                 0.1362075 + rotatedX, rotatedY, 0.3370134992 + offsetZ,
                 new Rotation3d(0, pitchRad, turretYawRad));
@@ -261,10 +268,10 @@ public class HoodSubsystem extends SubsystemBase {
         }
 
         double currentAngle = getHoodAngle();
-        double pidOutput = Constants.Shooting.Hood.pidController.calculate(currentAngle, targetAngle);
+        double pidOutput = pidController.calculate(currentAngle, targetAngle);
         double ffVolts = Constants.Shooting.Hood.feedforward.calculate(
-                Constants.Shooting.Hood.pidController.getSetpoint().position,
-                Constants.Shooting.Hood.pidController.getSetpoint().velocity);
+                pidController.getSetpoint().position,
+                pidController.getSetpoint().velocity);
         voltage = pidOutput + ffVolts;
         m_hoodMotor.setVoltage(voltage);
 
