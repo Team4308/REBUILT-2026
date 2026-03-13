@@ -221,7 +221,12 @@ public class RobotContainer {
 
         public void periodic() {
                 m_TrajectoryCalculations.periodic();
-
+                if (drivebase.getFieldLocation().equals("AllianceZone")) {
+                        m_TurretSubsystem.setTarget(getTrajectoryCalculations().getNeededYaw());
+                        m_HoodSubsystem.setHoodAngle(getTrajectoryCalculations().getNeededPitch());
+                } else {
+                        // set trajectory calculations to correct field area
+                }
         }
 
         public TrajectoryCalculations getTrajectoryCalculations() {

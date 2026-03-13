@@ -328,7 +328,7 @@ public class SwerveSubsystem extends SubsystemBase {
     return alliance.get();
   }
 
-  private String getFieldLocation() {
+  public String getFieldLocation() {
     Pose2d curPose = swerveDrive.getPose();
     if (FieldLayout.Zones.redAllianceZone.contains(curPose)) {
       if (getAlliance() == Alliance.Blue) {
