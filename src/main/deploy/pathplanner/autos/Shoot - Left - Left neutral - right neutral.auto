@@ -5,6 +5,12 @@
     "data": {
       "commands": [
         {
+          "type": "path",
+          "data": {
+            "pathName": null
+          }
+        },
+        {
           "type": "named",
           "data": {
             "name": "Shoot"
@@ -13,6 +19,7 @@
         {
           "type": "path",
           "data": {
+            "pathName": null
             "pathName": "Blue L to LN (disrupt)"
           }
         },
