@@ -23,6 +23,7 @@ public final class Constants {
   public static final double MAX_SPEED = Units.feetToMeters(15.1);
 
   public static final double BOT_WIDTH = Units.inchesToMeters(35);
+  public static final double BUMPER_HEIGHT = Units.inchesToMeters(6);
 
   public static final class VisionConstants {
     // GLOBAL CONFIG
@@ -75,9 +76,6 @@ public final class Constants {
       public static final int kRPMTolerance = 100;
       public static final double kPassingRPM = 3000.0;
 
-      public static final int kMotor1 = 11;
-      public static final int kMotor2 = 12;
-
       public static final double kS = 0.4;
       public static final double kV = 0.11;
       public static final double kP = 0.0;
@@ -86,10 +84,6 @@ public final class Constants {
     }
 
     public static final class Turret {
-      public static final int DRIVE_MOTOR_ID = 13;
-      public static final int CANCODER1_ID = 17;
-      public static final int CANCODER2_ID = 18;
-
       public final static double GEAR_RATIO_1 = (85. / 17.) * (40. / 31.);
       public final static double GEAR_RATIO_2 = (85. / 17.) * (40. / 33.);
       public final static double PERIOD = 1 / Math.abs(GEAR_RATIO_1 - GEAR_RATIO_2);
@@ -99,7 +93,8 @@ public final class Constants {
       public final static double MIN_DEGREES = 90;
       public final static double MAX_DEGREES = 500;
       public final static double FULL_REVOLUTION_DEG = 360;
-      public final static double TURRET_TOLERANCE_DEGREES = 3;
+      public final static double TURRET_TOLERANCE_DEGREES = 5;
+      public final static double TURRET_START_ANGLE = 360;
 
       public final static ArmFeedforward feedforward = new ArmFeedforward(0.24, 0, 0.0075, 0.01);
 
@@ -109,13 +104,12 @@ public final class Constants {
     }
 
     public static final class Hood {
-      public static final int HoodMotor = 10; // CAN ID for the hood motor
-      public static final double kToleranceDegrees = 2.0; // Tolerance for position control
-      public static final double kVelocityTolerance = 0.5;
+      public static final double TOLERANCE_DEGREES = 2.0; // Tolerance for position control
+      public static final double TOLERANCE_VELOCITY = 0.5;
       public static final double TOTAL_GEAR_RATIO = 97.4;
       public static final double FORWARD_SOFT_LIMIT_ANGLE = 52.5;
       public static final double REVERSE_SOFT_LIMIT_ANGLE = 7.5;
-      public static final double ampThreshold = 2;
+      public static final double AMP_THRESHOLD = 2;
       public final static ArmFeedforward feedforward = new ArmFeedforward(0.2, 0.0, 0.025, 0.0);
       public final static ProfiledPIDController pidController = new ProfiledPIDController(
           0.005, 0.0, 0.0,
@@ -124,7 +118,7 @@ public final class Constants {
 
     public static final class TrajectoryCalc {
       // Rate-limiting
-      public static final double MIN_SOLVE_INTERVAL_MS = 10.0;
+      public static final double MIN_SOLVE_INTERVAL_MS = 250.0;
       public static final double DISTANCE_CHANGE_THRESHOLD_M = 0.05;
       public static final double YAW_CHANGE_THRESHOLD_DEG = 1.0;
 
@@ -158,11 +152,6 @@ public final class Constants {
   }
 
   public static final class Intake {
-
-    // CAN IDs
-    public static final int ROLLER_ID = 20;
-    public static final int PIVOT_ID = 21;
-
     // Roller tuning
     public static final double ROLLER_GEAR_RATIO = 1.0;
     public static final double ROLLER_KP = 0.12;
@@ -174,17 +163,10 @@ public final class Constants {
 
     // Pivot geometry
     public static final double PIVOT_GEAR_RATIO = 81;
-    public static final double PIVOT_KP = 0.0;
-    public static final double PIVOT_KI = 0.0;
-    public static final double PIVOT_KD = 0.02;
-    public static final double PIVOT_KS = 0.15;
-    public static final double PIVOT_KG = 0.15; // gravity feedforward
-    public static final double PIVOT_KV = 0.03;
-    public static final double PIVOT_KA = 0.0;
 
-    // Motion Magic
-    public static final double MAX_VEL_DEG_PER_SEC = 300.0;
-    public static final double MAX_ACCEL_DEG_PER_SEC2 = 600.0;
+    public static final ArmFeedforward feedforward = new ArmFeedforward(0.15, 0.15, 0.03, 0.0);
+    public static final ProfiledPIDController pidController = new ProfiledPIDController(1, 0.0, 0.02,
+        new TrapezoidProfile.Constraints(300, 600));
 
     // Angles
     public static final double RETRACTED_ANGLE_DEG = 127.0;
@@ -194,32 +176,32 @@ public final class Constants {
     public static final double AGITATE_LOW_DEG = 45.0;
     public static final double AGITATE_HIGH_DEG = 70.0;
 
-    // Tolerance
-    public static final double ANGLE_TOLERANCE_DEG = 1.5;
-    public static final double VELOCITY_TOLERANCE = 0.5;
+    // ToleranceW
+    public static final double ANGLE_TOLERANCE_DEG = 3;
+    public static final double VELOCITY_TOLERANCE = 3;
   }
 
   public static class Indexer {
-    public static double IndexerSpeed = 100;
-    public static double HopperSpeed = 100;
-    public static double IndexerGearRatio = 5 / 3;
-    public static double HopperGearRatio = 9 / 1;
-    public static int HopperMotorId = 14;
-    public static double HopperMotorConfigsKs = 0.5;
-    public static double HopperMotorConfigsKv = 0.1;
-    public static double HopperMotorConfigsKp = 0.3;
-    public static double HopperMotorConfigsKi = 0;
-    public static double HopperMotorConfigsKd = 0;
+    public static double DEFAULT_INDEXER_VELOCITY = 100;
+    public static double DEFAULT_HOPPER_VELOCITY = 100;
 
-    public static int IndexerMotorId = 15;
-    public static double IndexerMotorConfigsKs = 0.5;
-    public static double IndexerMotorConfigsKv = 0.1;
-    public static double IndexerMotorConfigsKp = 0.3;
-    public static double IndexerMotorConfigsKi = 0;
-    public static double IndexerMotorConfigsKd = 0;
+    public static double BALL_TUNNEL_GEAR_RATIO = 5 / 3;
+    public static double HOPPER_GEAR_RATIO = 9 / 1;
 
-    public static int BeambreakSensor = 9;
-    public static double SlowerIndexerSpeed = 50;
+    public static double HOPPER_Ks = 0.5;
+    public static double HOPPER_Kv = 0.1;
+    public static double HOPPER_Kp = 0.3;
+    public static double HOPPER_Ki = 0;
+    public static double HOPPER_Kd = 0;
+
+    public static double BALL_TUNNEL_Ks = 0.5;
+    public static double BALL_TUNNEL_Kv = 0.1;
+    public static double BALL_TUNNEL_Kp = 0.3;
+    public static double BALL_TUNNEL_Ki = 0;
+    public static double BALL_TUNNEL_Kd = 0;
+
+    public static double PASSIVE_INDEXER_VELOCITY = 50;
+    public static double PASSIVE_HOPEPR_VELOCITY = 50;
   }
 
   public static class OperatorConstants {
@@ -232,5 +214,24 @@ public final class Constants {
 
   public static class Auton {
     public static final int maxLength = 10;
+  }
+
+  public static final class Leds {
+    public static final int LED_PORT = 0;
+    public static final int LED_LENGTH = 60;
+    public static final int[] startIndexes = new int[] { 0, 1, 2, 3, 60 }; // Front, Back, Left, Right, UnderGlow
+    public static final int[] viewAngles = new int[] { 0, 90, 180, 270 }; // Front, Back, Left, Right (in Degrees from
+                                                                          // facing the front of the robot)
+  }
+
+  public static final class Simulation {
+    public static final int MAX_FUEL = 50;
+
+    public static final class FuelSim {
+      public static final double xMin = -0.6096;
+      public static final double xMax = -0.4318;
+      public static final double yMin = -0.31623;
+      public static final double yMax = 0.31623;
+    }
   }
 }

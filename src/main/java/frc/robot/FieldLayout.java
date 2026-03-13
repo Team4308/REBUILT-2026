@@ -22,20 +22,24 @@ public class FieldLayout {
         public static final double kTapeWidth = Units.inchesToMeters(2.0);
 
         public static final double kCenterLineX = kFieldLength / 2.0;
-        public static final double kZoneDepth = 4; 
+        public static final double kZoneDepth = 4;
         public static final double kObstacleWidth = Units.inchesToMeters(47);
         public static final double kTrenchWidth = Units.inchesToMeters(50.59);
 
         public static class ShooterTargets {
                 public static final double kHUB_HEIGHT = 2.6;
 
-                public static final Translation3d kBLUE_HUB_POSE = new Translation3d(4.0, kFieldWidth / 2.0, kHUB_HEIGHT);
-                public static final Translation3d kRED_HUB_POSE = new Translation3d(kFieldLength - 4.0, kFieldWidth / 2.0, kHUB_HEIGHT);
+                public static final Translation3d kBLUE_HUB_POSE = new Translation3d(4.5, kFieldWidth / 2.0,
+                                kHUB_HEIGHT);
+                public static final Translation3d kRED_HUB_POSE = new Translation3d(kFieldLength - 4.5,
+                                kFieldWidth / 2.0, kHUB_HEIGHT);
 
-                public static final Translation3d kHUB_POSE = kBLUE_HUB_POSE; 
+                public static final Translation3d kHUB_POSE = kBLUE_HUB_POSE;
 
-                public static final Translation3d kPASS_RIGHT_POSE = new Translation3d(4.0, kFieldWidth / 2.0 + 0.5, kHUB_HEIGHT);
-                public static final Translation3d kPASS_LEFT_POSE = new Translation3d(4.0, kFieldWidth / 2.0 - 0.5, kHUB_HEIGHT);
+                public static final Translation3d kPASS_RIGHT_POSE = new Translation3d(4.0, kFieldWidth / 2.0 + 0.5,
+                                kHUB_HEIGHT);
+                public static final Translation3d kPASS_LEFT_POSE = new Translation3d(4.0, kFieldWidth / 2.0 - 0.5,
+                                kHUB_HEIGHT);
 
                 public static Translation3d getAllianceHub() {
                         return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red

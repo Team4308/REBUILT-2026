@@ -67,7 +67,7 @@ public class TrajectoryCalculations {
         SolverConstants.setMinTargetDistanceMeters(0.05);
         SolverConstants.setVelocityBufferMultiplier(1.2);
         SolverConstants.setRimClearanceMeters(0.05);
-        SolverConstants.setMinEntryAngleDegrees(10.0);
+        SolverConstants.setMinEntryAngleDegrees(45.0);
         SolverConstants.setDragCompensationMultiplier(1.5);
 
         TrajectorySolver.SolverConfig solverConfig = TrajectorySolver.SolverConfig.defaults()
@@ -114,7 +114,7 @@ public class TrajectoryCalculations {
 
         shooterSystem = new ShooterSystem(shooterConfig, table, trajectorySolver);
         shooterSystem.setMode(ShotMode.SOLVER_ONLY);
-        shooterSystem.setFallbackShot(60.0, 6000);
+        shooterSystem.setFallbackShot(60.0, 3000);
     }
 
     public void setPoseSupplier(Supplier<Pose2d> supplier) {
@@ -287,6 +287,12 @@ public class TrajectoryCalculations {
             Logger.recordOutput("TrajectoryCalc/RobotY", pose.getY());
             Logger.recordOutput("TrajectoryCalc/ShooterX", shooterX);
             Logger.recordOutput("TrajectoryCalc/ShooterY", shooterY);
+            Logger.recordOutput("TrajectoryCalc/RPM Required", currentShot.rpm);
+            Logger.recordOutput("TrajectoryCalc/Pitch Required", currentShot.pitchDegrees);
+            Logger.recordOutput("TrajectoryCalc/Yaw Required", targetYawDegrees);
+            Logger.recordOutput("TrajectoryCalc/Distance", lastDistanceMeters);
+            Logger.recordOutput("TrajectoryCalc/ComputationTimeMs", lastComputationTimeMs);
+
         }
     }
 
@@ -337,6 +343,7 @@ public class TrajectoryCalculations {
         FuelSim.getInstance().spawnFuel(pos, vel);
     }
 
+    // Do not log this every cycle - only when a new shot is calculated or when significant changes occur
     private void logShotOutput() {
         if (!loggingEnabled) {
             return;
@@ -489,7 +496,7 @@ public class TrajectoryCalculations {
         if (trackingEnabled && poseSupplier != null) {
             updateShot();
         }
-        logShotOutput();
-        logTrajectoryDebug();
+        //logShotOutput();
+        //logTrajectoryDebug();
     }
 }
