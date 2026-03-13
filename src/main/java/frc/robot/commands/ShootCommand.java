@@ -4,7 +4,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.HoodSubsystem;
 import frc.robot.subsystems.HoodSubsystem.RobotState;
 
-public class IntakeWhileShooting extends Command {
+public class ShootCommand extends Command {
     IntakeSubsystem m_IntakeSubsystem = new IntakeSubsystem();
     IndexerSubsystem m_IndexerSubsystem = new IndexerSubsystem();
     HoodSubsystem m_HoodSubsystem = new HoodSubsystem();
