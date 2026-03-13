@@ -1,0 +1,8 @@
+Todo:
+
+
+AimAtHub Fix
+Test and Run Trajectory calculations 
+Tune Indexer when controls gets it
+Write full system test code
+Test bot with commands and such

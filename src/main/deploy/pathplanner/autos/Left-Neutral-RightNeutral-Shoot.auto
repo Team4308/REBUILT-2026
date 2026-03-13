@@ -1,0 +1,63 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Blue Left to Neutral"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Intake and Shoot"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Left Neu to Right Neu"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Intake and Shoot"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Right Neu to Left Neu"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Blue Neu to Back"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": "Starting Left",
+  "choreoAuto": false
+}
