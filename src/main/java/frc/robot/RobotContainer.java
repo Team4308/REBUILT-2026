@@ -30,6 +30,7 @@ import frc.robot.Subsystems.IndexerSubsystem;
 import frc.robot.Subsystems.IntakeSubsystem;
 import frc.robot.Subsystems.LedSubsystem;
 import frc.robot.Subsystems.ShooterSubsystem;
+import frc.robot.Subsystems.Simulation;
 import frc.robot.Subsystems.TurretSubsystem;
 import frc.robot.Subsystems.swerve.SwerveSubsystem;
 import frc.robot.Subsystems.vision.Vision;
@@ -52,6 +53,7 @@ public class RobotContainer {
         private final IndexerSubsystem m_IndexerSubsystem;
         private final ShooterSubsystem m_ShooterSubsystem;
         private final LedSubsystem m_LedSubsystem;
+        private Simulation m_Simulation = null;
 
         private double m_hoodAngle = 7.5;
         private double m_turretAngle = 180;
@@ -112,26 +114,17 @@ public class RobotContainer {
                 m_IntakeSubsystem = new IntakeSubsystem();
                 m_LedSubsystem = new LedSubsystem();
 
+                if (Robot.isSimulation())
+                        m_Simulation = new Simulation(m_HoodSubsystem, m_IndexerSubsystem, m_IntakeSubsystem,
+                                        m_ShooterSubsystem, m_TurretSubsystem, drivebase);
+
                 m_HoodSubsystem.setTurretSupplier(() -> m_TurretSubsystem.getAngleWrapped());
 
-                // m_ShooterSubsystem.setDefaultCommand(
-                // new ShooterCommand(m_ShooterSubsystem, () -> driver.getRightTrigger()));
-
-                m_IntakeSubsystem.setDefaultCommand(
-                                new TriggerIntakeCommand(m_IntakeSubsystem, () -> driver.getRightTrigger()));
-
-                // m_HoodSubsystem.setDefaultCommand(new HoodCommand(m_HoodSubsystem, () ->
-                // m_hoodAngle));
-                // m_TurretSubsystem.setDefaultCommand(new TurretCommand(m_TurretSubsystem, ()
-                // -> m_turretAngle));
+                // m_IntakeSubsystem.setDefaultCommand(
+                // new TriggerIntakeCommand(m_IntakeSubsystem, () -> driver.getRightTrigger()));
 
                 configureNamedCommands();
                 configureBindings();
-
-                if (Robot.isSimulation()) {
-                        initFuelSim();
-
-                }
 
                 DriverStation.silenceJoystickConnectionWarning(true);
                 autoChooser = AutoBuilder.buildAutoChooser();
@@ -190,6 +183,12 @@ public class RobotContainer {
                 driver.A.onFalse(new InstantCommand(() -> m_ShooterSubsystem.stopMotors()));
                 driver.B.whileTrue(m_ShooterSubsystem.setShooterSpeed(() -> 2300.));
                 driver.B.onFalse(new InstantCommand(() -> m_ShooterSubsystem.stopMotors()));
+
+                driver.X.onTrue(new InstantCommand(() -> m_IntakeSubsystem.setIntakeAngle(127)));
+                driver.Y.onTrue(new InstantCommand(() -> m_IntakeSubsystem.setIntakeAngle(90)));
+                driver.B.onTrue(new InstantCommand(() -> m_IntakeSubsystem.setIntakeAngle(60)));
+                driver.A.onTrue(new InstantCommand(() -> m_IntakeSubsystem.setIntakeAngle(0)));
+
                 // Reset Gyro
                 driver.M1.onTrue(Commands.runOnce(() -> drivebase.resetOdometry(new Pose2d(0, 0, new Rotation2d()))));
 
@@ -207,31 +206,9 @@ public class RobotContainer {
 
                 // driver.LB.whileTrue(driveRobotOrientedAngularVelocity);
 
-                // driver.M3.whileTrue(drivebase.moveUpLeft());
-                // driver.M4.whileTrue(drivebase.moveUpRight());
-                // driver.M5.whileTrue(drivebase.moveDownLeft());
-                // driver.M6.whileTrue(drivebase.moveDownRight());
-
-                // driver.RightTrigger.whileTrue(drivebase.driveTowardsTarget(driver::getRightTrigger));
-                // driver.RB.whileTrue(drivebase.aimAtTarget(() -> driver.getLeftY() * -1, () ->
-                // driver.getLeftX() * -1));
-
-                /*
-                 * /
-                 * driver.A.onTrue(new IndexerCommand(m_IndexerSubsystem, () -> 0.));
-                 * driver.X.onTrue(new IndexerCommand(m_IndexerSubsystem, () -> 1500.));
-                 * driver.Y.onTrue(new IndexerCommand(m_IndexerSubsystem, () -> 3000.));
-                 * driver.B.onTrue(new InstantCommand(
-                 * () -> m_IntakeSubsystem.setIntakeAngle(Constants.Intake.INTAKE_ANGLE_DEG)));
-                 */
-
-                // driver.A.onTrue(new InstantCommand(() -> m_intakeAngle -= 10));
-                // dri[]\[]\[]\]er.B.onTrue(new InstantCommand(() -> m_turretAngle = 360));
-                // driver.X.onTrue(new InstantCommand(() -> m_turretAngle = 90));
-                // driver.Y.onTrue(new InstantCommand(() -> m_intakeAngle += 10));
-
-                // driver.M2.onTrue(m_HoodSubsystem.resetHoodCommand());
-                // driver.M2.onTrue(new InstantCommand(() -> m_hoodAngle = 7.5));
+                if (Robot.isSimulation()) {
+                        drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocityKeyboard);
+                }
 
         }
 
@@ -250,24 +227,4 @@ public class RobotContainer {
         public Command getAutonomousCommand() {
                 return autoChooser.getSelected();
         }
-
-        private void initFuelSim() {
-                FuelSim.getInstance(); // gets singleton instance of FuelSim
-                FuelSim.getInstance().spawnStartingFuel(); // spawns fuel in the depots and neutral zone
-
-                // Register a robot for collision with fuel
-                FuelSim.getInstance().registerRobot(
-                                Units.inchesToMeters(34), // from left to right
-                                Units.inchesToMeters(34), // from front to back
-                                Units.inchesToMeters(6), // from floor to top of bumpers
-                                drivebase::getPose, // Supplier<Pose2d> of robot pose
-                                drivebase::getFieldVelocity); // Supplier<ChassisSpeeds> of field-centric chassis speeds
-
-                FuelSim.getInstance().setSubticks(5); // sets the number of physics iterations to perform per 20ms loop.
-                // Default
-                // = 5
-
-                FuelSim.getInstance().start();
-        }
-
 }

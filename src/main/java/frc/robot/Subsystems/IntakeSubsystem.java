@@ -16,13 +16,13 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Ports;
+import frc.robot.Robot;
 import frc.robot.Util.SubsystemVerbosity;
 
 public class IntakeSubsystem extends SubsystemBase {
@@ -50,6 +50,10 @@ public class IntakeSubsystem extends SubsystemBase {
   public final static ArmFeedforward feedforward = Constants.Intake.feedforward;
   public final static ProfiledPIDController pidController = Constants.Intake.pidController;
 
+  private Supplier<Double> simSupplier;
+
+  private double voltage;
+
   public IntakeSubsystem() {
     verbosity = SubsystemVerbosity.HIGH;
     configureRoller();
@@ -74,11 +78,17 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   public double getIntakeAngle() {
+    if (Robot.isSimulation()) {
+      if (simSupplier == null) {
+        return 0;
+      }
+      return simSupplier.get();
+    }
     return rotToDeg(m_pivotMotor.getPosition().getValueAsDouble());
   }
 
   public boolean isAtAngle() {
-    double currentDeg = rotToDeg(m_pivotMotor.getPosition().getValueAsDouble());
+    double currentDeg = getIntakeAngle();
     return Math.abs(currentDeg - targetAngleDeg) < Constants.Intake.ANGLE_TOLERANCE_DEG
         && m_pivotMotor.getVelocity().getValueAsDouble() < Constants.Intake.VELOCITY_TOLERANCE;
   }
@@ -168,18 +178,20 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   private Pose3d getPivotPose() {
-    return new Pose3d(-0.292810438, 0, 0.219075, new Rotation3d(0, getIntakeAngle(), 0));
+    return new Pose3d(-0.292810438, 0, 0.219075, new Rotation3d(0, Math.toRadians(getIntakeAngle()), 0));
   }
 
-  private Pose3d getHopperPoseS() {
-    return new Pose3d(
-        DoubleUtils.mapRange(Math.pow(Math.sin(Timer.getFPGATimestamp()) * 0.5 + 0.5, 2) * 127, 0, 127, 0, 0.3048),
-        0, 0, new Rotation3d());
+  public double getVoltage() {
+    return voltage;
   }
 
-  private Pose3d getPivotPoseS() {
-    return new Pose3d(-0.292810438, 0, 0.219075,
-        new Rotation3d(0, Math.toRadians((Math.sin(Timer.getFPGATimestamp()) * 0.5 + 0.5) * 127), 0));
+  /**
+   * This is for Sim only
+   * 
+   * @return
+   */
+  public void setSimSupplier(Supplier<Double> supplier) {
+    simSupplier = supplier;
   }
 
   /* ---------------- Periodic --------------- */
@@ -197,17 +209,17 @@ public class IntakeSubsystem extends SubsystemBase {
       }
     }
 
-    double currentDeg = rotToDeg(m_pivotMotor.getPosition().getValueAsDouble());
+    double currentDeg = getIntakeAngle();
     double pidOutput = pidController.calculate(currentDeg, targetAngleDeg);
     double ffOutput = feedforward.calculate(pidController.getSetpoint().position,
         pidController.getSetpoint().velocity);
-    double voltage = pidOutput + ffOutput;
+    voltage = pidOutput + ffOutput;
     m_pivotMotor.setVoltage(voltage);
 
     if (verbosity == SubsystemVerbosity.LOW || verbosity == SubsystemVerbosity.HIGH) {
-      Logger.recordOutput("Subsystems/Intake/Is At Angle?", isAtAngle());
-      Logger.recordOutput("Subsystems/Intake/Current Angle", currentDeg);
-      Logger.recordOutput("Subsystems/Intake/Roller Speed", m_rollerMotor.getVelocity().getValueAsDouble());
+      Logger.recordOutput("Subsystems/Intake/Pivot/Is At Angle?", isAtAngle());
+      Logger.recordOutput("Subsystems/Intake/Pivot/Current Angle", currentDeg);
+      Logger.recordOutput("Subsystems/Intake/Roller/Roller Speed", m_rollerMotor.getVelocity().getValueAsDouble());
       Logger.recordOutput("Subsystems/Intake/Hopper Pose", getHopperPose());
       Logger.recordOutput("Subsystems/Intake/Pivot Pose", getPivotPose());
     }

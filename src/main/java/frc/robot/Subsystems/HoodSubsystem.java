@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.FieldLayout;
 import frc.robot.Ports;
+import frc.robot.Robot;
 import frc.robot.Util.SubsystemVerbosity;
 import frc.robot.Util.TrajectoryCalculations;
 
@@ -50,6 +51,8 @@ public class HoodSubsystem extends SubsystemBase {
     private SubsystemVerbosity verbosity;
 
     private Supplier<Double> turretSupplier;
+    private Supplier<Double> simSupplier;
+    private double voltage;
 
     public HoodSubsystem() {
         trajectory = null;
@@ -63,7 +66,17 @@ public class HoodSubsystem extends SubsystemBase {
         verbosity = SubsystemVerbosity.HIGH;
     }
 
+    public double getVoltage() {
+        return voltage;
+    }
+
     public double getHoodAngle() {
+        if (Robot.isSimulation()) {
+            if (simSupplier == null) {
+                return 0;
+            }
+            return simSupplier.get();
+        }
         return angleOffset
                 + (m_hoodMotor.getPosition().getValueAsDouble() / Constants.Shooting.Hood.TOTAL_GEAR_RATIO) * 360.0;
     }
@@ -193,20 +206,17 @@ public class HoodSubsystem extends SubsystemBase {
         this.turretSupplier = turretSupplier;
     }
 
-    private Pose3d getHoodPoseS() {
-        double turretYawRad = Math.toRadians((Math.sin(Timer.getFPGATimestamp()) * 0.5 + 0.5) * 360);
-        double offsetX = 0.109474;
-        double offsetZ = 0.08255;
-        double rotatedX = offsetX * Math.cos(turretYawRad);
-        double rotatedY = offsetX * Math.sin(turretYawRad);
-        double pitchRad = Math.toRadians((Math.sin(Timer.getFPGATimestamp()) * 0.5 + 0.5) * (52.5 - 7.5));
-        return new Pose3d(
-                0.1362075 + rotatedX, rotatedY, 0.3370134992 + offsetZ,
-                new Rotation3d(0, pitchRad, turretYawRad));
+    /**
+     * This is for Sim only
+     * 
+     * @return
+     */
+    public void setSimSupplier(Supplier<Double> supplier) {
+        simSupplier = supplier;
     }
 
     private Pose3d getHoodPose() {
-        double turretYawRad = Math.toRadians(turretSupplier.get());
+        double turretYawRad = turretSupplier.get();
         double offsetX = 0.109474;
         double offsetZ = 0.08255;
         double rotatedX = offsetX * Math.cos(turretYawRad);
@@ -255,7 +265,8 @@ public class HoodSubsystem extends SubsystemBase {
         double ffVolts = Constants.Shooting.Hood.feedforward.calculate(
                 Constants.Shooting.Hood.pidController.getSetpoint().position,
                 Constants.Shooting.Hood.pidController.getSetpoint().velocity);
-        m_hoodMotor.setVoltage(pidOutput + ffVolts);
+        voltage = pidOutput + ffVolts;
+        m_hoodMotor.setVoltage(voltage);
 
         if (verbosity == SubsystemVerbosity.LOW || verbosity == SubsystemVerbosity.HIGH) {
             Logger.recordOutput("Subsystems/Hood/Is At Target?", isAtPosition());

@@ -2,12 +2,9 @@ package frc.robot;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
-
 import swervelib.math.Matter;
 
 import com.pathplanner.lib.config.PIDConstants;
@@ -23,6 +20,7 @@ public final class Constants {
   public static final double MAX_SPEED = Units.feetToMeters(15.1);
 
   public static final double BOT_WIDTH = Units.inchesToMeters(35);
+  public static final double BUMPER_HEIGHT = Units.inchesToMeters(6);
 
   public static final class VisionConstants {
     // GLOBAL CONFIG
@@ -163,7 +161,7 @@ public final class Constants {
     public static final double PIVOT_GEAR_RATIO = 81;
 
     public static final ArmFeedforward feedforward = new ArmFeedforward(0.15, 0.15, 0.03, 0.0);
-    public static final ProfiledPIDController pidController = new ProfiledPIDController(0.0, 0.0, 0.02,
+    public static final ProfiledPIDController pidController = new ProfiledPIDController(1, 0.0, 0.02,
         new TrapezoidProfile.Constraints(300, 600));
 
     // Angles
@@ -175,8 +173,8 @@ public final class Constants {
     public static final double AGITATE_HIGH_DEG = 70.0;
 
     // ToleranceW
-    public static final double ANGLE_TOLERANCE_DEG = 1.5;
-    public static final double VELOCITY_TOLERANCE = 0.5;
+    public static final double ANGLE_TOLERANCE_DEG = 3;
+    public static final double VELOCITY_TOLERANCE = 3;
   }
 
   public static class Indexer {
@@ -220,5 +218,16 @@ public final class Constants {
     public static final int[] startIndexes = new int[] { 0, 1, 2, 3, 60 }; // Front, Back, Left, Right, UnderGlow
     public static final int[] viewAngles = new int[] { 0, 90, 180, 270 }; // Front, Back, Left, Right (in Degrees from
                                                                           // facing the front of the robot)
+  }
+
+  public static final class Simulation {
+    public static final int MAX_FUEL = 50;
+
+    public static final class FuelSim {
+      public static final double xMin = -0.6096;
+      public static final double xMax = -0.4318;
+      public static final double yMin = -0.31623;
+      public static final double yMax = 0.31623;
+    }
   }
 }

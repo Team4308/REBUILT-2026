@@ -10,19 +10,18 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-import ca.team4308.absolutelib.math.DoubleUtils;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Ports;
+import frc.robot.Robot;
 import frc.robot.Util.SubsystemVerbosity;
 
 public class TurretSubsystem extends SubsystemBase {
@@ -45,6 +44,9 @@ public class TurretSubsystem extends SubsystemBase {
     public final static ArmFeedforward feedforward = Constants.Shooting.Turret.feedforward;
 
     public final static ProfiledPIDController pidController = Constants.Shooting.Turret.pidController;
+
+    private Supplier<Double> simSupplier;
+    private double voltage;
 
     public TurretSubsystem() {
         m_driveMotor = new TalonFX(Ports.Shooting.Turret.kTurretMotorId);
@@ -94,12 +96,30 @@ public class TurretSubsystem extends SubsystemBase {
         return posDegrees;
     }
 
+    public void setSimSupplier(Supplier<Double> supplier) {
+        simSupplier = supplier;
+    }
+
+    public double getVoltage() {
+        return voltage;
+    }
+
     public void updateAngle() {
-        double rawAngle = m_driveMotor.getPosition().getValueAsDouble() * Constants.Shooting.Turret.GEAR_RATIO_MOTOR
-                * 360;
-        m_currentDegUnWrapped = rawAngle - m_encoderOffset;
-        m_currentDegWrapped = inputModulus(m_currentDegUnWrapped, 0.0,
-                Constants.Shooting.Turret.FULL_REVOLUTION_DEG, Constants.Shooting.Turret.FULL_REVOLUTION_DEG);
+        if (Robot.isSimulation()) {
+            if (simSupplier == null) {
+                m_currentDegUnWrapped = 0;
+            } else {
+                m_currentDegUnWrapped = simSupplier.get();
+            }
+            m_currentDegWrapped = inputModulus(m_currentDegUnWrapped, 0.0,
+                    Constants.Shooting.Turret.FULL_REVOLUTION_DEG, Constants.Shooting.Turret.FULL_REVOLUTION_DEG);
+        } else {
+            double rawAngle = m_driveMotor.getPosition().getValueAsDouble() * Constants.Shooting.Turret.GEAR_RATIO_MOTOR
+                    * 360;
+            m_currentDegUnWrapped = rawAngle - m_encoderOffset;
+            m_currentDegWrapped = inputModulus(m_currentDegUnWrapped, 0.0,
+                    Constants.Shooting.Turret.FULL_REVOLUTION_DEG, Constants.Shooting.Turret.FULL_REVOLUTION_DEG);
+        }
     }
 
     private double inputModulus(double value, double min, double max, double modulus) {
@@ -221,11 +241,6 @@ public class TurretSubsystem extends SubsystemBase {
         return new Pose3d(0.1362075, 0, 0.3370134992, new Rotation3d(0, 0, getAngleWrapped()));
     }
 
-    private Pose3d getTurretPoseS() {
-        return new Pose3d(0.1362075, 0, 0.3370134992,
-                new Rotation3d(0, 0, Math.toRadians((Math.sin(Timer.getFPGATimestamp()) * 0.5 + 0.5) * 360)));
-    }
-
     @Override
     public void periodic() {
         updateAngle();
@@ -235,7 +250,7 @@ public class TurretSubsystem extends SubsystemBase {
         double ffOutput = feedforward.calculate(pidController.getSetpoint().position,
                 pidController.getSetpoint().velocity);
 
-        double voltage = pidOutput + ffOutput;
+        voltage = pidOutput + ffOutput;
 
         m_driveMotor.setVoltage(voltage);
 

@@ -124,11 +124,12 @@ public class IndexerSubsystem extends SubsystemBase {
         }
 
         if (verbosity == SubsystemVerbosity.LOW || verbosity == SubsystemVerbosity.HIGH) {
-            Logger.recordOutput("Subsystems/BallTunnel/Velocity", m_ballTunnelMotor.getVelocity().getValueAsDouble()
-                    / Constants.Indexer.BALL_TUNNEL_GEAR_RATIO * 60.0);
-            Logger.recordOutput("Subsystems/BallTunnel/Target Velocity", targetBallTunnelVelocity);
+            Logger.recordOutput("Subsystems/Indexer/BallTunnel/Velocity",
+                    m_ballTunnelMotor.getVelocity().getValueAsDouble()
+                            / Constants.Indexer.BALL_TUNNEL_GEAR_RATIO * 60.0);
+            Logger.recordOutput("Subsystems/Indexer/BallTunnel/Target Velocity", targetBallTunnelVelocity);
 
-            Logger.recordOutput("Subsystems/Hopper/Velocity",
+            Logger.recordOutput("Subsystems/Indexer/Hopper/Velocity",
                     m_hopperMotor1.getVelocity().getValueAsDouble() / Constants.Indexer.HOPPER_GEAR_RATIO * 60.0);
             Logger.recordOutput("Subsystems/Hopper/Target Velocity", targetHopperVelocity);
         }
@@ -137,18 +138,20 @@ public class IndexerSubsystem extends SubsystemBase {
             double ballTunnelVelocity = m_ballTunnelMotor.getVelocity().getValueAsDouble()
                     / Constants.Indexer.BALL_TUNNEL_GEAR_RATIO * 60.0;
             double ballTunnelError = targetBallTunnelVelocity - ballTunnelVelocity;
-            Logger.recordOutput("Subsystems/BallTunnel/Error", ballTunnelError);
-            Logger.recordOutput("Subsystems/BallTunnel/Voltage",
+            Logger.recordOutput("Subsystems/Indexer/BallTunnel/Error", ballTunnelError);
+            Logger.recordOutput("Subsystems/Indexer/BallTunnel/Voltage",
                     m_ballTunnelMotor.getMotorVoltage().getValueAsDouble());
-            Logger.recordOutput("Subsystems/BallTunnel/Current",
+            Logger.recordOutput("Subsystems/Indexer/BallTunnel/Current",
                     m_ballTunnelMotor.getStatorCurrent().getValueAsDouble());
 
             double hopperVelocity = m_hopperMotor1.getVelocity().getValueAsDouble()
                     / Constants.Indexer.HOPPER_GEAR_RATIO * 60.0;
             double hopperError = targetHopperVelocity - hopperVelocity;
-            Logger.recordOutput("Subsystems/Hopper/Error", hopperError);
-            Logger.recordOutput("Subsystems/Hopper/Voltage", m_hopperMotor1.getMotorVoltage().getValueAsDouble());
-            Logger.recordOutput("Subsystems/Hopper/Current", m_hopperMotor1.getStatorCurrent().getValueAsDouble());
+            Logger.recordOutput("Subsystems/Indexer/Hopper/Error", hopperError);
+            Logger.recordOutput("Subsystems/Indexer/Hopper/Voltage",
+                    m_hopperMotor1.getMotorVoltage().getValueAsDouble());
+            Logger.recordOutput("Subsystems/Indexer/Hopper/Current",
+                    m_hopperMotor1.getStatorCurrent().getValueAsDouble());
         }
     }
 }
