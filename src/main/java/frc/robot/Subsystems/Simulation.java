@@ -1,7 +1,5 @@
 package frc.robot.Subsystems;
 
-import java.util.logging.LogRecord;
-
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -126,8 +124,6 @@ public class Simulation extends SubsystemBase {
         m_intakeSim.setInputVoltage(m_IntakeSubsystem.getVoltage());
         m_hoodSim.setInputVoltage(m_HoodSubsystem.getVoltage());
         m_turretSim.setInputVoltage(m_TurretSubsystem.getVoltage());
-
-        Logger.recordOutput("a", m_turretSim.getAngleRads());
 
         m_intakeSim.update(0.020);
         m_hoodSim.update(0.020);
