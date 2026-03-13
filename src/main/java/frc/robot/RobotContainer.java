@@ -178,19 +178,18 @@ public class RobotContainer {
                 // driver.X.whileTrue(new RunCommand(null, null));
 
                 // Semi Auto Shooting
-                
+
                 driver.X.whileTrue(new AimAtHubCommand(() -> drivebase.getPose(), m_TurretSubsystem));
                 driver.A.whileTrue(m_ShooterSubsystem.setShooterSpeed(() -> 3000.));
                 driver.A.onFalse(new InstantCommand(() -> m_ShooterSubsystem.stopMotors()));
                 driver.B.whileTrue(m_ShooterSubsystem.setShooterSpeed(() -> 2300.));
                 driver.B.onFalse(new InstantCommand(() -> m_ShooterSubsystem.stopMotors()));
-                // Reset Gyro 
+                // Reset Gyro
                 driver.M1.onTrue(Commands.runOnce(() -> drivebase.resetOdometry(new Pose2d(0, 0, new Rotation2d()))));
 
-
-                // Intaking 
-                driver.RB.whileTrue(new InstantCommand(() -> m_IndexerSubsystem.setIndexerSpeed(500)));
-                driver.RB.whileTrue(new InstantCommand(() -> m_IndexerSubsystem.setHopperSpeed(500)));
+                // Intaking
+                driver.RB.whileTrue(new InstantCommand(() -> m_IndexerSubsystem.setIndexerVelocity(500)));
+                driver.RB.whileTrue(new InstantCommand(() -> m_IndexerSubsystem.setHopperVelocity(500)));
                 driver.RB.onFalse(new InstantCommand(() -> m_IndexerSubsystem.stopMotors()));
 
                 driver.LB.onTrue(new InstantCommand(() -> m_IntakeSubsystem.setRollerSpeedA(() -> -100.)));
@@ -232,7 +231,7 @@ public class RobotContainer {
 
         public void periodic() {
                 m_TrajectoryCalculations.periodic();
-        
+
         }
 
         public TrajectoryCalculations getTrajectoryCalculations() {

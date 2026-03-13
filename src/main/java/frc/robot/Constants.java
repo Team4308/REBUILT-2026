@@ -109,13 +109,12 @@ public final class Constants {
     }
 
     public static final class Hood {
-      public static final int HoodMotor = 10; // CAN ID for the hood motor
-      public static final double kToleranceDegrees = 2.0; // Tolerance for position control
-      public static final double kVelocityTolerance = 0.5;
+      public static final double TOLERANCE_DEGREES = 2.0; // Tolerance for position control
+      public static final double TOLERANCE_VELOCITY = 0.5;
       public static final double TOTAL_GEAR_RATIO = 97.4;
       public static final double FORWARD_SOFT_LIMIT_ANGLE = 52.5;
       public static final double REVERSE_SOFT_LIMIT_ANGLE = 0.1;
-      public static final double ampThreshold = 2;
+      public static final double AMP_THRESHOLD = 2;
       public final static ArmFeedforward feedforward = new ArmFeedforward(0.2, 0.0, 0.025, 0.0);
       public final static ProfiledPIDController pidController = new ProfiledPIDController(
           0.005, 0.0, 0.0,
@@ -158,11 +157,6 @@ public final class Constants {
   }
 
   public static final class Intake {
-
-    // CAN IDs
-    public static final int ROLLER_ID = 20;
-    public static final int PIVOT_ID = 21;
-
     // Roller tuning
     public static final double ROLLER_GEAR_RATIO = 1.0;
     public static final double ROLLER_KP = 0.12;
@@ -194,32 +188,32 @@ public final class Constants {
     public static final double AGITATE_LOW_DEG = 45.0;
     public static final double AGITATE_HIGH_DEG = 70.0;
 
-    // Tolerance
+    // ToleranceW
     public static final double ANGLE_TOLERANCE_DEG = 1.5;
     public static final double VELOCITY_TOLERANCE = 0.5;
   }
 
   public static class Indexer {
-    public static double IndexerSpeed = 100;
-    public static double HopperSpeed = 100;
-    public static double IndexerGearRatio = 5 / 3;
-    public static double HopperGearRatio = 9 / 1;
-    public static int HopperMotorId = 14;
-    public static double HopperMotorConfigsKs = 0.5;
-    public static double HopperMotorConfigsKv = 0.1;
-    public static double HopperMotorConfigsKp = 0.3;
-    public static double HopperMotorConfigsKi = 0;
-    public static double HopperMotorConfigsKd = 0;
+    public static double DEFAULT_INDEXER_VELOCITY = 100;
+    public static double DEFAULT_HOPPER_VELOCITY = 100;
 
-    public static int IndexerMotorId = 15;
-    public static double IndexerMotorConfigsKs = 0.5;
-    public static double IndexerMotorConfigsKv = 0.1;
-    public static double IndexerMotorConfigsKp = 0.3;
-    public static double IndexerMotorConfigsKi = 0;
-    public static double IndexerMotorConfigsKd = 0;
+    public static double BALL_TUNNEL_GEAR_RATIO = 5 / 3;
+    public static double HOPPER_GEAR_RATIO = 9 / 1;
 
-    public static int BeambreakSensor = 9;
-    public static double SlowerIndexerSpeed = 50;
+    public static double HOPPER_Ks = 0.5;
+    public static double HOPPER_Kv = 0.1;
+    public static double HOPPER_Kp = 0.3;
+    public static double HOPPER_Ki = 0;
+    public static double HOPPER_Kd = 0;
+
+    public static double BALL_TUNNEL_Ks = 0.5;
+    public static double BALL_TUNNEL_Kv = 0.1;
+    public static double BALL_TUNNEL_Kp = 0.3;
+    public static double BALL_TUNNEL_Ki = 0;
+    public static double BALL_TUNNEL_Kd = 0;
+
+    public static double PASSIVE_INDEXER_VELOCITY = 50;
+    public static double PASSIVE_HOPEPR_VELOCITY = 50;
   }
 
   public static class OperatorConstants {
@@ -234,10 +228,11 @@ public final class Constants {
     public static final int maxLength = 10;
   }
 
-      public static final class Leds {
-        public static final int LED_PORT = 0;
-        public static final int LED_LENGTH = 60;
-        public static final int[] startIndexes = new int[] {0, 1, 2, 3, 60}; // Front, Back, Left, Right, UnderGlow
-        public static final int[] viewAngles = new int[] {0, 90, 180, 270}; // Front, Back, Left, Right (in Degrees from facing the front of the robot)
-    }
+  public static final class Leds {
+    public static final int LED_PORT = 0;
+    public static final int LED_LENGTH = 60;
+    public static final int[] startIndexes = new int[] { 0, 1, 2, 3, 60 }; // Front, Back, Left, Right, UnderGlow
+    public static final int[] viewAngles = new int[] { 0, 90, 180, 270 }; // Front, Back, Left, Right (in Degrees from
+                                                                          // facing the front of the robot)
+  }
 }

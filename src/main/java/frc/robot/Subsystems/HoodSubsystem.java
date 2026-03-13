@@ -11,6 +11,7 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -20,10 +21,12 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.FieldLayout;
+import frc.robot.Ports;
+import frc.robot.Util.SubsystemVerbosity;
 import frc.robot.Util.TrajectoryCalculations;
 
 public class HoodSubsystem extends SubsystemBase {
-    private final TalonFX m_hoodMotor = new TalonFX(Constants.Shooting.Hood.HoodMotor);
+    private final TalonFX m_hoodMotor = new TalonFX(Ports.Shooting.Hood.kHoodId);
 
     private double targetAngle = 0;
 
@@ -36,6 +39,14 @@ public class HoodSubsystem extends SubsystemBase {
         SHOOT,
     }
 
+    private RobotState currentState = RobotState.REST;
+
+    private boolean usingState = false;
+
+    private TrajectoryCalculations trajectory;
+
+    private SubsystemVerbosity verbosity;
+
     public HoodSubsystem() {
         trajectory = null;
         var talonFXConfigs = new TalonFXConfiguration();
@@ -44,6 +55,8 @@ public class HoodSubsystem extends SubsystemBase {
 
         m_hoodMotor.getConfigurator().apply(talonFXConfigs);
         m_hoodMotor.setPosition(0);
+
+        verbosity = SubsystemVerbosity.HIGH;
     }
 
     public double getHoodAngle() {
@@ -64,8 +77,8 @@ public class HoodSubsystem extends SubsystemBase {
 
     public boolean isAtPosition() {
         // Uses a tolerance value from Constants
-        return Math.abs(getHoodAngle() - targetAngle) < Constants.Shooting.Hood.kToleranceDegrees
-                && m_hoodMotor.getVelocity().getValueAsDouble() < Constants.Shooting.Hood.kVelocityTolerance;
+        return Math.abs(getHoodAngle() - targetAngle) < Constants.Shooting.Hood.TOLERANCE_DEGREES
+                && m_hoodMotor.getVelocity().getValueAsDouble() < Constants.Shooting.Hood.TOLERANCE_VELOCITY;
     }
 
     // Move to angle (Supplier allows for dynamic targets like Limelight)
@@ -79,7 +92,7 @@ public class HoodSubsystem extends SubsystemBase {
     }
 
     public void resetHood() {
-        if (m_hoodMotor.getSupplyCurrent().getValueAsDouble() < Constants.Shooting.Hood.ampThreshold) {
+        if (m_hoodMotor.getSupplyCurrent().getValueAsDouble() < Constants.Shooting.Hood.AMP_THRESHOLD) {
             m_hoodMotor.setVoltage(-2.0);
         } else {
             m_hoodMotor.setVoltage(0);
@@ -87,18 +100,11 @@ public class HoodSubsystem extends SubsystemBase {
     }
 
     public Command resetHoodCommand() {
-
         return run(this::resetHood)
-                .until(() -> m_hoodMotor.getSupplyCurrent().getValueAsDouble() > Constants.Shooting.Hood.ampThreshold)
+                .until(() -> m_hoodMotor.getSupplyCurrent().getValueAsDouble() > Constants.Shooting.Hood.AMP_THRESHOLD)
                 .andThen(new InstantCommand(() -> setHoodAngle(Constants.Shooting.Hood.REVERSE_SOFT_LIMIT_ANGLE)))
                 .andThen(new InstantCommand(() -> m_hoodMotor.setPosition(0)));
     }
-
-    private RobotState currentState = RobotState.REST;
-
-    private boolean usingState = false;
-
-    private TrajectoryCalculations trajectory;
 
     public void setTrajectoryCalculations(TrajectoryCalculations trajectoryCalc) {
         this.trajectory = trajectoryCalc;
@@ -116,12 +122,9 @@ public class HoodSubsystem extends SubsystemBase {
         usingState = using;
     }
 
-    public boolean getUsingState() {
-        return usingState;
-    }
-
     public void stopMotors() {
         m_hoodMotor.setVoltage(0);
+        targetAngle = getHoodAngle();
     }
 
     private Alliance getAlliance() {
@@ -138,7 +141,8 @@ public class HoodSubsystem extends SubsystemBase {
     }
 
     private void passRightState() {
-        if (trajectory == null || !trajectory.suppliersAreSet()) return;
+        if (trajectory == null || !trajectory.suppliersAreSet())
+            return;
         final Translation3d passRightPose = (getAlliance() == Alliance.Red)
                 ? new Translation3d(
                         FieldLayout.kFieldLength - FieldLayout.ShooterTargets.kPASS_RIGHT_POSE.getX(),
@@ -153,7 +157,8 @@ public class HoodSubsystem extends SubsystemBase {
     }
 
     private void passLeftState() {
-        if (trajectory == null || !trajectory.suppliersAreSet()) return;
+        if (trajectory == null || !trajectory.suppliersAreSet())
+            return;
         final Translation3d passLeftPose = (getAlliance() == Alliance.Red)
                 ? new Translation3d(
                         FieldLayout.kFieldLength - FieldLayout.ShooterTargets.kPASS_LEFT_POSE.getX(),
@@ -168,7 +173,8 @@ public class HoodSubsystem extends SubsystemBase {
     }
 
     private void shootHubState() {
-        if (trajectory == null || !trajectory.suppliersAreSet()) return;
+        if (trajectory == null || !trajectory.suppliersAreSet())
+            return;
         final Translation3d hubPose = (getAlliance() == Alliance.Red)
                 ? FieldLayout.ShooterTargets.kRED_HUB_POSE
                 : FieldLayout.ShooterTargets.kBLUE_HUB_POSE;
@@ -177,6 +183,10 @@ public class HoodSubsystem extends SubsystemBase {
         });
         trajectory.updateShot();
         setHoodAngle(trajectory.getNeededPitch());
+    }
+
+    private Pose3d getMechanismPose() {
+        return null;
     }
 
     @Override
@@ -219,11 +229,29 @@ public class HoodSubsystem extends SubsystemBase {
                 Constants.Shooting.Hood.pidController.getSetpoint().velocity);
         m_hoodMotor.setVoltage(pidOutput + ffVolts);
 
-        Logger.recordOutput("Subsystems/Hood/IsAtTarget", isAtPosition());
-        Logger.recordOutput("Subsystems/Hood/CurrentAngle", currentAngle);
-        Logger.recordOutput("Subsystems/Hood/TargetAngle",
-                Constants.Shooting.Hood.pidController.getSetpoint().position);
-        Logger.recordOutput("Subsystems/Hood/PidOutput", pidOutput);
-        Logger.recordOutput("Subsystems/Hood/FfVolts", ffVolts);
+        if (verbosity == SubsystemVerbosity.LOW || verbosity == SubsystemVerbosity.HIGH) {
+            Logger.recordOutput("Subsystems/Hood/Is At Target?", isAtPosition());
+            Logger.recordOutput("Subsystems/Hood/Angle", currentAngle);
+
+            Logger.recordOutput("Subsystems/Hood/Mechanism Pose", getMechanismPose());
+        }
+
+        if (verbosity == SubsystemVerbosity.HIGH) {
+            Logger.recordOutput("Subsystems/Hood/PidVolts", pidOutput);
+            Logger.recordOutput("Subsystems/Hood/FFVolts", ffVolts);
+            Logger.recordOutput("Subsystems/Hood/Applied Voltage",
+                    m_hoodMotor.getMotorVoltage().getValueAsDouble());
+            Logger.recordOutput("Subsystems/Hood/Motor Temperature",
+                    m_hoodMotor.getDeviceTemp().getValueAsDouble());
+            Logger.recordOutput("Subsystems/Hood/Current", m_hoodMotor.getSupplyCurrent().getValueAsDouble());
+            Logger.recordOutput("Subsystems/Hood/Error",
+                    Constants.Shooting.Hood.pidController.getPositionError());
+            Logger.recordOutput("Subsystems/Hood/Velocity", m_hoodMotor.getVelocity().getValueAsDouble());
+            Logger.recordOutput("Subsystems/Hood/Setpoint Angle",
+                    Constants.Shooting.Hood.pidController.getSetpoint().position);
+            Logger.recordOutput("Subsystems/Hood/Setpoint Velocity",
+                    Constants.Shooting.Hood.pidController.getSetpoint().velocity);
+
+        }
     }
 }

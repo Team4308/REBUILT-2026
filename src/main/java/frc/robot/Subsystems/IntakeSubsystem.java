@@ -17,11 +17,12 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Ports;
 
 public class IntakeSubsystem extends SubsystemBase {
 
-  private final TalonFX roller = new TalonFX(Constants.Intake.ROLLER_ID);
-  private final TalonFX pivot = new TalonFX(Constants.Intake.PIVOT_ID);
+  private final TalonFX roller = new TalonFX(Ports.Intake.kRollerMotorId);
+  private final TalonFX pivot = new TalonFX(Ports.Intake.kPivotMotorId);
 
   private final VelocityVoltage rollerRequest = new VelocityVoltage(0);
 

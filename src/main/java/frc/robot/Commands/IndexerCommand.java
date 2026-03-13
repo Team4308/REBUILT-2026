@@ -25,7 +25,7 @@ public class IndexerCommand extends Command {
     @Override
     public void execute() {
         double control = this.control.get();
-        m_subsystem.setHopperSpeed(control);
+        m_subsystem.setHopperVelocity(control);
     }
 
     @Override
