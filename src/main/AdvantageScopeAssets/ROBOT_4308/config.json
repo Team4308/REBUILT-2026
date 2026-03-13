@@ -2,26 +2,32 @@
     "name": "Robot_4308", 
     "rotations": [{"axis": "x", "degrees": 90},
                     {"axis": "z", "degrees": 270}],
-    "position": [0, 0.0, 0],
+    "position": [0, 0, 0],
     "cameras": [],
     "components": [
         {
             "zeroedRotations": [{"axis": "x", "degrees": 90},
             {"axis": "z", "degrees": 270},
             {"axis": "y", "degrees": 0}],
-            "zeroedPosition": [-0.028, 0, -0.425]
+            "zeroedPosition": [0, 0, 0]
         },
         {
             "zeroedRotations": [{"axis": "x", "degrees": 90},
             {"axis": "z", "degrees": 270},
             {"axis": "y", "degrees": 0}],
-            "zeroedPosition": [-0.142, 0, 0]
+            "zeroedPosition": [0.292810438, 0, -0.219075]
         },
         {
             "zeroedRotations": [{"axis": "x", "degrees": 90},
             {"axis": "z", "degrees": 270},
             {"axis": "y", "degrees": 0}],
-            "zeroedPosition": [0.306, 0 , -0.22]
+            "zeroedPosition": [-0.1362075, 0 , -0.3370134992]
+        },
+        {
+            "zeroedRotations": [{"axis": "x", "degrees": 90},
+            {"axis": "z", "degrees": 270},
+            {"axis": "y", "degrees": 0}],
+            "zeroedPosition": [-0.2453324786, 0 , -0.4259072]
         }
     ]
 }

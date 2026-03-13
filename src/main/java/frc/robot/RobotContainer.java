@@ -2,10 +2,13 @@ package frc.robot;
 
 import java.io.File;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 
 import ca.team4308.absolutelib.control.RazerWrapper;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -109,6 +112,8 @@ public class RobotContainer {
                 m_IntakeSubsystem = new IntakeSubsystem();
                 m_LedSubsystem = new LedSubsystem();
 
+                m_HoodSubsystem.setTurretSupplier(() -> m_TurretSubsystem.getAngleWrapped());
+
                 // m_ShooterSubsystem.setDefaultCommand(
                 // new ShooterCommand(m_ShooterSubsystem, () -> driver.getRightTrigger()));
 
@@ -125,6 +130,7 @@ public class RobotContainer {
 
                 if (Robot.isSimulation()) {
                         initFuelSim();
+
                 }
 
                 DriverStation.silenceJoystickConnectionWarning(true);

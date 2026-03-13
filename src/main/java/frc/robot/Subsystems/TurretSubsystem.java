@@ -14,42 +14,47 @@ import ca.team4308.absolutelib.math.DoubleUtils;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Ports;
+import frc.robot.Util.SubsystemVerbosity;
 
 public class TurretSubsystem extends SubsystemBase {
 
-    private final TalonFX driveMotor;
-    private final CANcoder canCoder1;
-    private final CANcoder canCoder2;
+    private final TalonFX m_driveMotor;
+    private final CANcoder m_canCoder1;
+    private final CANcoder m_canCoder2;
 
-    private double targetDegWrapped = 0.0;
-    private double targetDegUnWrapped = 0.0;
-    private double currentDegWrapped = 0.0;
-    private double currentDegUnWrapped = 0.0;
+    private double m_targetDegWrapped = 0.0;
+    private double m_targetDegUnWrapped = 0.0;
+    private double m_currentDegWrapped = 0.0;
+    private double m_currentDegUnWrapped = 0.0;
 
-    private double encoderOffset = 0;
+    private double m_encoderOffset = 0;
 
     private final static boolean CANCODER_TEST = false;
 
-    public final static ArmFeedforward feedforward = new ArmFeedforward(0.24, 0, 0.0075, 0.01);
+    private final SubsystemVerbosity verbosity;
 
-    public final static ProfiledPIDController pidController = new ProfiledPIDController(
-            0.035, 0.0, 0.0,
-            new TrapezoidProfile.Constraints(1500, 2000));
+    public final static ArmFeedforward feedforward = Constants.Shooting.Turret.feedforward;
+
+    public final static ProfiledPIDController pidController = Constants.Shooting.Turret.pidController;
 
     public TurretSubsystem() {
-        driveMotor = new TalonFX(Constants.Shooting.Turret.DRIVE_MOTOR_ID);
-        canCoder1 = new CANcoder(Constants.Shooting.Turret.CANCODER1_ID);
-        canCoder2 = new CANcoder(Constants.Shooting.Turret.CANCODER2_ID);
+        m_driveMotor = new TalonFX(Ports.Shooting.Turret.kTurretMotorId);
+        m_canCoder1 = new CANcoder(Ports.Shooting.Turret.kCanCoder1Id);
+        m_canCoder2 = new CANcoder(Ports.Shooting.Turret.kCanCoder2Id);
 
         updateAngle();
-        encoderOffset = getAngleUnWrapped();
+        m_encoderOffset = getAngleUnWrapped();
         if (CANCODER_TEST) {
-            encoderOffset = calculateEncoderAngle();
+            m_encoderOffset = calculateEncoderAngle();
         } else {
             calculateEncoderAngle();
         }
@@ -57,20 +62,22 @@ public class TurretSubsystem extends SubsystemBase {
         TalonFXConfiguration driveConfig = new TalonFXConfiguration();
         driveConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         driveConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        driveMotor.getConfigurator().apply(driveConfig);
+        m_driveMotor.getConfigurator().apply(driveConfig);
+
+        verbosity = SubsystemVerbosity.HIGH;
     }
 
     public double getAngleWrapped() {
-        return currentDegWrapped;
+        return m_currentDegWrapped;
     }
 
     public double getAngleUnWrapped() {
-        return currentDegUnWrapped;
+        return m_currentDegUnWrapped;
     }
 
     public double calculateEncoderAngle() {
-        double enc1 = canCoder1.getAbsolutePosition().getValueAsDouble();
-        double enc2 = canCoder2.getAbsolutePosition().getValueAsDouble();
+        double enc1 = m_canCoder1.getAbsolutePosition().getValueAsDouble();
+        double enc2 = m_canCoder2.getAbsolutePosition().getValueAsDouble();
 
         Logger.recordOutput("Subsystems/Turret/ENCODER 1", enc1);
         Logger.recordOutput("Subsystems/Turret/ENCODER 2", enc2);
@@ -88,11 +95,11 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
     public void updateAngle() {
-        double rawAngle = driveMotor.getPosition().getValueAsDouble() * Constants.Shooting.Turret.GEAR_RATIO_MOTOR
+        double rawAngle = m_driveMotor.getPosition().getValueAsDouble() * Constants.Shooting.Turret.GEAR_RATIO_MOTOR
                 * 360;
-        currentDegUnWrapped = rawAngle - encoderOffset;
-    currentDegWrapped = inputModulus(currentDegUnWrapped, 0.0,
-        Constants.Shooting.Turret.FULL_REVOLUTION_DEG, Constants.Shooting.Turret.FULL_REVOLUTION_DEG);
+        m_currentDegUnWrapped = rawAngle - m_encoderOffset;
+        m_currentDegWrapped = inputModulus(m_currentDegUnWrapped, 0.0,
+                Constants.Shooting.Turret.FULL_REVOLUTION_DEG, Constants.Shooting.Turret.FULL_REVOLUTION_DEG);
     }
 
     private double inputModulus(double value, double min, double max, double modulus) {
@@ -125,23 +132,22 @@ public class TurretSubsystem extends SubsystemBase {
 
         for (int k = kMin; k <= kMax; k++) {
             double candidate = wrappedTarget + k * 360.0;
-            double distance = Math.abs(currentDegUnWrapped - candidate);
+            double distance = Math.abs(m_currentDegUnWrapped - candidate);
             if (distance < minDistance) {
                 minDistance = distance;
                 closestTarget = candidate;
             }
         }
 
-        targetDegUnWrapped = closestTarget;
-        targetDegWrapped = inputModulus(targetDegUnWrapped, 0.0,
+        m_targetDegUnWrapped = closestTarget;
+        m_targetDegWrapped = inputModulus(m_targetDegUnWrapped, 0.0,
                 Constants.Shooting.Turret.FULL_REVOLUTION_DEG, Constants.Shooting.Turret.FULL_REVOLUTION_DEG);
     }
 
     public boolean isAtTarget() {
-    double wrappedError = getWrappedError(currentDegWrapped, targetDegWrapped);
-    return Math.abs(wrappedError) <= Constants.Shooting.Turret.TURRET_TOLERANCE_DEGREES
-        && driveMotor.getVelocity().getValueAsDouble() < Constants.Shooting.Turret.STOPPED_VELOCITY;
-
+        double wrappedError = getWrappedError(m_currentDegWrapped, m_targetDegWrapped);
+        return Math.abs(wrappedError) <= Constants.Shooting.Turret.TURRET_TOLERANCE_DEGREES
+                && m_driveMotor.getVelocity().getValueAsDouble() < Constants.Shooting.Turret.STOPPED_VELOCITY;
     }
 
     public Command moveToTarget(Supplier<Double> degrees) {
@@ -208,34 +214,52 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
     public void stopMotors() {
-        driveMotor.setVoltage(0);
+        m_driveMotor.setVoltage(0);
+    }
+
+    private Pose3d getTurretPose() {
+        return new Pose3d(0.1362075, 0, 0.3370134992, new Rotation3d(0, 0, getAngleWrapped()));
+    }
+
+    private Pose3d getTurretPoseS() {
+        return new Pose3d(0.1362075, 0, 0.3370134992,
+                new Rotation3d(0, 0, Math.toRadians((Math.sin(Timer.getFPGATimestamp()) * 0.5 + 0.5) * 360)));
     }
 
     @Override
     public void periodic() {
         updateAngle();
 
-        double pidOutput = pidController.calculate(currentDegUnWrapped, targetDegUnWrapped);
+        double pidOutput = pidController.calculate(m_currentDegUnWrapped, m_targetDegUnWrapped);
 
         double ffOutput = feedforward.calculate(pidController.getSetpoint().position,
                 pidController.getSetpoint().velocity);
 
         double voltage = pidOutput + ffOutput;
 
-        driveMotor.setVoltage(voltage);
+        m_driveMotor.setVoltage(voltage);
 
-        Logger.recordOutput("Subsystems/Turret/Angle (wrapped)", currentDegWrapped);
-        Logger.recordOutput("Subsystems/Turret/Angle (unwrapped)", currentDegUnWrapped);
-        Logger.recordOutput("Subsystems/Turret/Target (unwrapped)", targetDegUnWrapped);
-        Logger.recordOutput("Subsystems/Turret/Target (wrapped)", targetDegWrapped);
-        Logger.recordOutput("Subsystems/Turret/Profile Setpoint", pidController.getSetpoint().position);
-        Logger.recordOutput("Subsystems/Turret/Profile Velocity", pidController.getSetpoint().velocity);
-        Logger.recordOutput("Subsystems/Turret/PID Output", pidOutput);
-        Logger.recordOutput("Subsystems/Turret/FF Output", ffOutput);
-        Logger.recordOutput("Subsystems/Turret/Voltage", voltage);
-        Logger.recordOutput("Subsystems/Turret/At Target", isAtTarget());
-        Logger.recordOutput("Subsystems/Turret/Current", driveMotor.getStatorCurrent().getValueAsDouble());
-    Logger.recordOutput("Subsystems/Turret/Degree Difference",
-        Math.abs(getWrappedError(currentDegWrapped, targetDegWrapped)));
+        if (verbosity == SubsystemVerbosity.LOW || verbosity == SubsystemVerbosity.HIGH) {
+            Logger.recordOutput("Subsystems/Turret/Is At Target?", isAtTarget());
+            Logger.recordOutput("Subsystems/Turret/Angle (Wrapped)", m_currentDegWrapped);
+            Logger.recordOutput("Subsystems/Turret/Angle (Unwrapped)", m_currentDegUnWrapped);
+            Logger.recordOutput("Subsystems/Turret/Target (Wrapped)", m_targetDegWrapped);
+            Logger.recordOutput("Subsystems/Turret/Degree Error",
+                    Math.abs(getWrappedError(m_currentDegWrapped, m_targetDegWrapped)));
+            Logger.recordOutput("Subsystems/Turret/Pose", getTurretPose());
+        }
+
+        if (verbosity == SubsystemVerbosity.HIGH) {
+            Logger.recordOutput("Subsystems/Turret/Target (Unwrapped)", m_targetDegUnWrapped);
+            Logger.recordOutput("Subsystems/Turret/PID Output", pidOutput);
+            Logger.recordOutput("Subsystems/Turret/FF Output", ffOutput);
+            Logger.recordOutput("Subsystems/Turret/Applied Voltage", voltage);
+            Logger.recordOutput("Subsystems/Turret/Motor Voltage", m_driveMotor.getMotorVoltage().getValueAsDouble());
+            Logger.recordOutput("Subsystems/Turret/Motor Temperature", m_driveMotor.getDeviceTemp().getValueAsDouble());
+            Logger.recordOutput("Subsystems/Turret/Current", m_driveMotor.getStatorCurrent().getValueAsDouble());
+            Logger.recordOutput("Subsystems/Turret/Velocity", m_driveMotor.getVelocity().getValueAsDouble());
+            Logger.recordOutput("Subsystems/Turret/Setpoint Angle", pidController.getSetpoint().position);
+            Logger.recordOutput("Subsystems/Turret/Setpoint Velocity", pidController.getSetpoint().velocity);
+        }
     }
 }

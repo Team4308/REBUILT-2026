@@ -75,9 +75,6 @@ public final class Constants {
       public static final int kRPMTolerance = 100;
       public static final double kPassingRPM = 3000.0;
 
-      public static final int kMotor1 = 11;
-      public static final int kMotor2 = 12;
-
       public static final double kS = 0.4;
       public static final double kV = 0.11;
       public static final double kP = 0.0;
@@ -86,10 +83,6 @@ public final class Constants {
     }
 
     public static final class Turret {
-      public static final int DRIVE_MOTOR_ID = 13;
-      public static final int CANCODER1_ID = 17;
-      public static final int CANCODER2_ID = 18;
-
       public final static double GEAR_RATIO_1 = (85. / 17.) * (40. / 31.);
       public final static double GEAR_RATIO_2 = (85. / 17.) * (40. / 33.);
       public final static double PERIOD = 1 / Math.abs(GEAR_RATIO_1 - GEAR_RATIO_2);
@@ -113,7 +106,7 @@ public final class Constants {
       public static final double TOLERANCE_VELOCITY = 0.5;
       public static final double TOTAL_GEAR_RATIO = 97.4;
       public static final double FORWARD_SOFT_LIMIT_ANGLE = 52.5;
-      public static final double REVERSE_SOFT_LIMIT_ANGLE = 0.1;
+      public static final double REVERSE_SOFT_LIMIT_ANGLE = 7.5;
       public static final double AMP_THRESHOLD = 2;
       public final static ArmFeedforward feedforward = new ArmFeedforward(0.2, 0.0, 0.025, 0.0);
       public final static ProfiledPIDController pidController = new ProfiledPIDController(
@@ -168,17 +161,10 @@ public final class Constants {
 
     // Pivot geometry
     public static final double PIVOT_GEAR_RATIO = 81;
-    public static final double PIVOT_KP = 0.0;
-    public static final double PIVOT_KI = 0.0;
-    public static final double PIVOT_KD = 0.02;
-    public static final double PIVOT_KS = 0.15;
-    public static final double PIVOT_KG = 0.15; // gravity feedforward
-    public static final double PIVOT_KV = 0.03;
-    public static final double PIVOT_KA = 0.0;
 
-    // Motion Magic
-    public static final double MAX_VEL_DEG_PER_SEC = 300.0;
-    public static final double MAX_ACCEL_DEG_PER_SEC2 = 600.0;
+    public static final ArmFeedforward feedforward = new ArmFeedforward(0.15, 0.15, 0.03, 0.0);
+    public static final ProfiledPIDController pidController = new ProfiledPIDController(0.0, 0.0, 0.02,
+        new TrapezoidProfile.Constraints(300, 600));
 
     // Angles
     public static final double RETRACTED_ANGLE_DEG = 127.0;

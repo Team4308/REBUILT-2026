@@ -12,10 +12,12 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -46,6 +48,8 @@ public class HoodSubsystem extends SubsystemBase {
     private TrajectoryCalculations trajectory;
 
     private SubsystemVerbosity verbosity;
+
+    private Supplier<Double> turretSupplier;
 
     public HoodSubsystem() {
         trajectory = null;
@@ -185,8 +189,32 @@ public class HoodSubsystem extends SubsystemBase {
         setHoodAngle(trajectory.getNeededPitch());
     }
 
-    private Pose3d getMechanismPose() {
-        return null;
+    public void setTurretSupplier(Supplier<Double> turretSupplier) {
+        this.turretSupplier = turretSupplier;
+    }
+
+    private Pose3d getHoodPoseS() {
+        double turretYawRad = Math.toRadians((Math.sin(Timer.getFPGATimestamp()) * 0.5 + 0.5) * 360);
+        double offsetX = 0.109474;
+        double offsetZ = 0.08255;
+        double rotatedX = offsetX * Math.cos(turretYawRad);
+        double rotatedY = offsetX * Math.sin(turretYawRad);
+        double pitchRad = Math.toRadians((Math.sin(Timer.getFPGATimestamp()) * 0.5 + 0.5) * (52.5 - 7.5));
+        return new Pose3d(
+                0.1362075 + rotatedX, rotatedY, 0.3370134992 + offsetZ,
+                new Rotation3d(0, pitchRad, turretYawRad));
+    }
+
+    private Pose3d getHoodPose() {
+        double turretYawRad = Math.toRadians(turretSupplier.get());
+        double offsetX = 0.109474;
+        double offsetZ = 0.08255;
+        double rotatedX = offsetX * Math.cos(turretYawRad);
+        double rotatedY = offsetX * Math.sin(turretYawRad);
+        double pitchRad = Math.toRadians(getHoodAngle());
+        return new Pose3d(
+                0.1362075 + rotatedX, rotatedY, 0.3370134992 + offsetZ,
+                new Rotation3d(0, pitchRad, turretYawRad));
     }
 
     @Override
@@ -233,7 +261,7 @@ public class HoodSubsystem extends SubsystemBase {
             Logger.recordOutput("Subsystems/Hood/Is At Target?", isAtPosition());
             Logger.recordOutput("Subsystems/Hood/Angle", currentAngle);
 
-            Logger.recordOutput("Subsystems/Hood/Mechanism Pose", getMechanismPose());
+            Logger.recordOutput("Subsystems/Hood/Pose", getHoodPose());
         }
 
         if (verbosity == SubsystemVerbosity.HIGH) {

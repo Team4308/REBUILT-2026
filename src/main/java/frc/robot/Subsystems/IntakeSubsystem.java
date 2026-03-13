@@ -3,6 +3,8 @@ package frc.robot.Subsystems;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 
+import ca.team4308.absolutelib.math.DoubleUtils;
+
 import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.Logger;
@@ -12,17 +14,21 @@ import com.ctre.phoenix6.configs.*;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Ports;
+import frc.robot.Util.SubsystemVerbosity;
 
 public class IntakeSubsystem extends SubsystemBase {
 
-  private final TalonFX roller = new TalonFX(Ports.Intake.kRollerMotorId);
-  private final TalonFX pivot = new TalonFX(Ports.Intake.kPivotMotorId);
+  private final TalonFX m_rollerMotor = new TalonFX(Ports.Intake.kRollerMotorId);
+  private final TalonFX m_pivotMotor = new TalonFX(Ports.Intake.kPivotMotorId);
 
   private final VelocityVoltage rollerRequest = new VelocityVoltage(0);
 
@@ -39,13 +45,13 @@ public class IntakeSubsystem extends SubsystemBase {
 
   private double offset = 127;
 
-  public final static ArmFeedforward feedforward = new ArmFeedforward(Constants.Intake.PIVOT_KS,
-      Constants.Intake.PIVOT_KG, Constants.Intake.PIVOT_KV, Constants.Intake.PIVOT_KA);
-  public final static ProfiledPIDController pidController = new ProfiledPIDController(
-      Constants.Intake.PIVOT_KP, Constants.Intake.PIVOT_KI, Constants.Intake.PIVOT_KD,
-      new TrapezoidProfile.Constraints(Constants.Intake.MAX_VEL_DEG_PER_SEC, Constants.Intake.MAX_ACCEL_DEG_PER_SEC2));
+  private final SubsystemVerbosity verbosity;
+
+  public final static ArmFeedforward feedforward = Constants.Intake.feedforward;
+  public final static ProfiledPIDController pidController = Constants.Intake.pidController;
 
   public IntakeSubsystem() {
+    verbosity = SubsystemVerbosity.HIGH;
     configureRoller();
   }
 
@@ -53,12 +59,12 @@ public class IntakeSubsystem extends SubsystemBase {
 
   public void setRollerSpeedA(Supplier<Double> rpm) {
     Logger.recordOutput("Subsystems/Intake/Target Roller Speed", rpm.get());
-    roller.setControl(
+    m_rollerMotor.setControl(
         rollerRequest.withVelocity(rpm.get() * 60.0));
   }
 
   public void stopRoller() {
-    roller.stopMotor();
+    m_rollerMotor.stopMotor();
   }
 
   /* ---------------- Pivot ---------------- */
@@ -68,35 +74,35 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   public double getIntakeAngle() {
-    return rotToDeg(pivot.getPosition().getValueAsDouble());
+    return rotToDeg(m_pivotMotor.getPosition().getValueAsDouble());
   }
 
   public boolean isAtAngle() {
-    double currentDeg = rotToDeg(pivot.getPosition().getValueAsDouble());
+    double currentDeg = rotToDeg(m_pivotMotor.getPosition().getValueAsDouble());
     return Math.abs(currentDeg - targetAngleDeg) < Constants.Intake.ANGLE_TOLERANCE_DEG
-        && pivot.getVelocity().getValueAsDouble() < Constants.Intake.VELOCITY_TOLERANCE;
+        && m_pivotMotor.getVelocity().getValueAsDouble() < Constants.Intake.VELOCITY_TOLERANCE;
   }
 
   public void resetIntake() {
-    if (pivot.getSupplyCurrent().getValueAsDouble() < 3) {
-      pivot.setVoltage(-2.0);
+    if (m_pivotMotor.getSupplyCurrent().getValueAsDouble() < 3) {
+      m_pivotMotor.setVoltage(-2.0);
     } else {
-      pivot.setVoltage(0);
+      m_pivotMotor.setVoltage(0);
     }
   }
 
   public Command resetIntakeCommand() {
     return run(this::resetIntake)
-        .until(() -> pivot.getSupplyCurrent().getValueAsDouble() > 3)
+        .until(() -> m_pivotMotor.getSupplyCurrent().getValueAsDouble() > 3)
         .andThen(new InstantCommand(() -> setIntakeAngle(0)))
-        .andThen(new InstantCommand(() -> pivot.setPosition(0)));
+        .andThen(new InstantCommand(() -> m_pivotMotor.setPosition(0)));
   }
 
   public void stopMotors() {
-    targetAngleDeg = rotToDeg(pivot.getPosition().getValueAsDouble());
+    targetAngleDeg = rotToDeg(m_pivotMotor.getPosition().getValueAsDouble());
     setRollerSpeedA(() -> 0.);
-    roller.stopMotor();
-    pivot.stopMotor();
+    m_rollerMotor.stopMotor();
+    m_pivotMotor.stopMotor();
   }
 
   /* --------------- Commands ---------------- */
@@ -148,11 +154,32 @@ public class IntakeSubsystem extends SubsystemBase {
     cfg.Slot0.kD = Constants.Intake.ROLLER_KD;
     cfg.Slot0.kV = Constants.Intake.ROLLER_KV;
 
-    roller.getConfigurator().apply(cfg);
+    m_rollerMotor.getConfigurator().apply(cfg);
   }
 
   private double rotToDeg(double rot) {
     return rot / Constants.Intake.PIVOT_GEAR_RATIO * 360.0 + offset;
+  }
+
+  private Pose3d getHopperPose() {
+    return new Pose3d(
+        DoubleUtils.mapRange(getIntakeAngle(), 0, 127, 0, 0.3048),
+        0, 0, new Rotation3d());
+  }
+
+  private Pose3d getPivotPose() {
+    return new Pose3d(-0.292810438, 0, 0.219075, new Rotation3d(0, getIntakeAngle(), 0));
+  }
+
+  private Pose3d getHopperPoseS() {
+    return new Pose3d(
+        DoubleUtils.mapRange(Math.pow(Math.sin(Timer.getFPGATimestamp()) * 0.5 + 0.5, 2) * 127, 0, 127, 0, 0.3048),
+        0, 0, new Rotation3d());
+  }
+
+  private Pose3d getPivotPoseS() {
+    return new Pose3d(-0.292810438, 0, 0.219075,
+        new Rotation3d(0, Math.toRadians((Math.sin(Timer.getFPGATimestamp()) * 0.5 + 0.5) * 127), 0));
   }
 
   /* ---------------- Periodic --------------- */
@@ -170,14 +197,39 @@ public class IntakeSubsystem extends SubsystemBase {
       }
     }
 
-    double currentDeg = rotToDeg(pivot.getPosition().getValueAsDouble());
+    double currentDeg = rotToDeg(m_pivotMotor.getPosition().getValueAsDouble());
     double pidOutput = pidController.calculate(currentDeg, targetAngleDeg);
     double ffOutput = feedforward.calculate(pidController.getSetpoint().position,
         pidController.getSetpoint().velocity);
     double voltage = pidOutput + ffOutput;
-    pivot.setVoltage(voltage);
-    Logger.recordOutput("Subsystems/Intake/CurrentIntakeAngle", currentDeg);
-    Logger.recordOutput("Subsystems/Intake/TargetIntakeAngle", pidController.getSetpoint().position);
-    Logger.recordOutput("Subsystems/Intake/RollerSpeed", roller.getVelocity().getValueAsDouble());
+    m_pivotMotor.setVoltage(voltage);
+
+    if (verbosity == SubsystemVerbosity.LOW || verbosity == SubsystemVerbosity.HIGH) {
+      Logger.recordOutput("Subsystems/Intake/Is At Angle?", isAtAngle());
+      Logger.recordOutput("Subsystems/Intake/Current Angle", currentDeg);
+      Logger.recordOutput("Subsystems/Intake/Roller Speed", m_rollerMotor.getVelocity().getValueAsDouble());
+      Logger.recordOutput("Subsystems/Intake/Hopper Pose", getHopperPose());
+      Logger.recordOutput("Subsystems/Intake/Pivot Pose", getPivotPose());
+    }
+
+    if (verbosity == SubsystemVerbosity.HIGH) {
+      Logger.recordOutput("Subsystems/Intake/Pivot/PID Volts", pidOutput);
+      Logger.recordOutput("Subsystems/Intake/Pivot/FF Volts", ffOutput);
+      Logger.recordOutput("Subsystems/Intake/Pivot/Applied Voltage", m_pivotMotor.getMotorVoltage().getValueAsDouble());
+      Logger.recordOutput("Subsystems/Intake/Pivot/Motor Temperature", m_pivotMotor.getDeviceTemp().getValueAsDouble());
+      Logger.recordOutput("Subsystems/Intake/Pivot/Current", m_pivotMotor.getSupplyCurrent().getValueAsDouble());
+      Logger.recordOutput("Subsystems/Intake/Pivot/Error", pidController.getPositionError());
+      Logger.recordOutput("Subsystems/Intake/Pivot/Velocity", m_pivotMotor.getVelocity().getValueAsDouble());
+      Logger.recordOutput("Subsystems/Intake/Pivot/Setpoint Angle", pidController.getSetpoint().position);
+      Logger.recordOutput("Subsystems/Intake/Pivot/Setpoint Velocity", pidController.getSetpoint().velocity);
+
+      Logger.recordOutput("Subsystems/Intake/Roller/Applied Voltage",
+          m_rollerMotor.getMotorVoltage().getValueAsDouble());
+      Logger.recordOutput("Subsystems/Intake/Roller/Motor Temperature",
+          m_rollerMotor.getDeviceTemp().getValueAsDouble());
+      Logger.recordOutput("Subsystems/Intake/Roller/Current", m_rollerMotor.getSupplyCurrent().getValueAsDouble());
+      Logger.recordOutput("Subsystems/Intake/Roller/Target Roller Speed",
+          m_rollerMotor.getClosedLoopReference().getValueAsDouble());
+    }
   }
 }
