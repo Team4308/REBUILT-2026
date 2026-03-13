@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.Subsystems;
 
 import java.util.function.Supplier;
 
@@ -13,27 +13,29 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-import ca.team4308.absolutelib.wrapper.AbsoluteSubsystem;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Ports;
+import frc.robot.Util.SubsystemVerbosity;
 
-public class ShooterSubsystem extends AbsoluteSubsystem {
-    public final TalonFX rightMotor;
-    public final TalonFX leftMotor;
+public class ShooterSubsystem extends SubsystemBase {
+    private final TalonFX m_rightMotor;
+    private final TalonFX m_leftMotor;
 
-    private final TalonFXConfiguration rightConfiguration;
-    private final TalonFXConfiguration leftConfiguration;
+    private final TalonFXConfiguration m_rightConfiguration;
+    private final TalonFXConfiguration m_leftConfiguration;
 
-    final VelocityVoltage velocityVoltage;
+    private final VelocityVoltage m_velocityVoltage;
 
     public double bottomMultiplier;
     public double topMultiplier;
 
-    public double targetRPM;
+    private double m_targetRPM = 0;
+
+    private final SubsystemVerbosity verbosity;
 
     public enum ShooterState {
         IDLE,
@@ -41,56 +43,54 @@ public class ShooterSubsystem extends AbsoluteSubsystem {
         PASSING,
     }
 
-    private ShooterState currentState = ShooterState.IDLE;
-    public boolean usingStateBased = false;
-
-    boolean underTrench = NetworkTableInstance.getDefault().getTable("AdvantageKit/RealOutputs")
-            .getEntry("Swerve/UnderTrench").getBoolean(false);
+    private ShooterState m_currentState = ShooterState.IDLE;
+    private boolean m_usingStateBased = false;
 
     public ShooterSubsystem() {
-        rightMotor = new TalonFX(Constants.Mapping.ShooterMotor.kMotor1);
-        leftMotor = new TalonFX(Constants.Mapping.ShooterMotor.kMotor2);
+        m_rightMotor = new TalonFX(Ports.Shooting.Shooter.kShooterMotor1);
+        m_leftMotor = new TalonFX(Ports.Shooting.Shooter.kShooterMotor2);
 
-        velocityVoltage = new VelocityVoltage(0);
+        m_velocityVoltage = new VelocityVoltage(0).withSlot(0);
 
-        rightConfiguration = new TalonFXConfiguration();
-        leftConfiguration = new TalonFXConfiguration();
+        m_rightConfiguration = new TalonFXConfiguration();
+        m_leftConfiguration = new TalonFXConfiguration();
 
-        rightConfiguration.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
-        rightConfiguration.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-        leftConfiguration.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
-        leftConfiguration.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+        m_rightConfiguration.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+        m_rightConfiguration.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+        m_leftConfiguration.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+        m_leftConfiguration.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
-        leftMotor.setControl(new Follower(rightMotor.getDeviceID(), MotorAlignmentValue.Opposed));
+        m_leftMotor.setControl(new Follower(m_rightMotor.getDeviceID(), MotorAlignmentValue.Opposed));
 
         var slot0Configs = new Slot0Configs();
-        slot0Configs.kS = 0.18;
-        slot0Configs.kV = 0.113;
-        slot0Configs.kP = 0.04;
-        slot0Configs.kI = 0;
-        slot0Configs.kD = 0.01;
+        slot0Configs.kS = Constants.Shooting.Shooter.kS;
+        slot0Configs.kV = Constants.Shooting.Shooter.kV;
+        slot0Configs.kP = Constants.Shooting.Shooter.kP;
+        slot0Configs.kI = Constants.Shooting.Shooter.kI;
+        slot0Configs.kD = Constants.Shooting.Shooter.kD;
 
-        rightMotor.getConfigurator().apply(rightConfiguration);
-        rightMotor.getConfigurator().apply(slot0Configs);
+        m_rightMotor.getConfigurator().apply(m_rightConfiguration);
+        m_rightMotor.getConfigurator().apply(slot0Configs);
 
-        leftMotor.getConfigurator().apply(leftConfiguration);
-        leftMotor.getConfigurator().apply(slot0Configs);
+        m_leftMotor.getConfigurator().apply(m_leftConfiguration);
+        m_leftMotor.getConfigurator().apply(slot0Configs);
 
-        targetRPM = 0;
+        verbosity = SubsystemVerbosity.HIGH;
+    }
+
+    public void setTargetVoltage(double voltage) {
+        m_rightMotor.setVoltage(voltage);
     }
 
     public void setTargetSpeed(double rpm) {
-        this.targetRPM = rpm;
-        // VelocityVoltage expects rotations per second (RPS). Convert RPM -> RPS.
-        velocityVoltage.Velocity = rpm / 60.0;
-        rightMotor.setControl(velocityVoltage);
+        m_targetRPM = rpm;
+        m_rightMotor.setControl(m_velocityVoltage.withVelocity(rpm / 60.0));
     }
 
     public boolean isAtTargetSpeed() {
-        double rightRpm = rightMotor.getVelocity().getValue().in(edu.wpi.first.units.Units.RPM);
-        // Compare measured RPM to the stored target RPM (both in RPM)
-        double error = Math.abs(rightRpm - this.targetRPM);
-        return error < Constants.Shooter.kRPMTolerance;
+        double rightRpm = m_rightMotor.getVelocity().getValue().in(edu.wpi.first.units.Units.RPM);
+        double error = Math.abs(rightRpm - m_targetRPM);
+        return error < Constants.Shooting.Shooter.kRPMTolerance;
     }
 
     public void stopMotors() {
@@ -99,67 +99,51 @@ public class ShooterSubsystem extends AbsoluteSubsystem {
 
     public Command setShooterSpeed(Supplier<Double> rpm) {
         return Commands.run(
-                () -> setTargetSpeed(rpm.get()),
-                this).until(this::isAtTargetSpeed);
-    } // sets the speed to rpm, and runs until it has reached the target
+                () -> setTargetSpeed(rpm.get()));
+    }
 
     public Command setShooterSpeed(Supplier<Double> rpm, double timeoutMs) {
         return Commands.run(
                 () -> setTargetSpeed(rpm.get()),
                 this).until(() -> isAtTargetSpeed() || (Timer.getFPGATimestamp() * 1000.0) >= timeoutMs);
-    } // same as setshooterspeed but if the timeout runs out first, it will finish
-      // anyways
+    }
 
     public void setStateBased(boolean using) {
-        this.usingStateBased = using;
-    } // turns on/off the state manager
-
-    @Override
-    public Sendable log() {
-        return builder -> {
-            builder.addDoubleProperty("Target RPM", this::getTargetRPM, null);
-            builder.addDoubleProperty("Right Motor RPM",
-                    () -> rightMotor.getVelocity().getValue().in(edu.wpi.first.units.Units.RPM), null);
-            builder.addDoubleProperty("Left Motor RPM",
-                    () -> leftMotor.getVelocity().getValue().in(edu.wpi.first.units.Units.RPM), null);
-            builder.addBooleanProperty("At Target Speed", this::isAtTargetSpeed, null);
-            builder.addStringProperty("State", () -> this.currentState.toString(), null);
-        }; // publishes live shooter data
+        m_usingStateBased = using;
     }
 
     public void selectProfileSlot(int i) {
-        velocityVoltage.Slot = i;
-    } // switches PID slot
+        m_velocityVoltage.Slot = i;
+    }
 
     public double getTargetRPM() {
-        return targetRPM;
+        return m_targetRPM;
     }
 
     public double getRPM() {
-        return rightMotor.getVelocity().getValue().in(edu.wpi.first.units.Units.RPM);
+        return m_rightMotor.getVelocity().getValue().in(edu.wpi.first.units.Units.RPM);
     }
 
     public ShooterState getState() {
-        return currentState;
+        return m_currentState;
     }
 
     public void setState(ShooterState state) {
-        this.currentState = state;
+        m_currentState = state;
     }
 
     public void setShooterSpeedPass() {
-        setTargetSpeed(Constants.Shooter.kPassingRPM);
-    } // sets the shooter’s speed to the correct speed to pass to our zone. Specific
-      // location will be in strategy
+        setTargetSpeed(Constants.Shooting.Shooter.kPassingRPM);
+    }
 
     public Command setShooterSpeedPassCommand() {
         return Commands.run(
                 () -> setShooterSpeedPass(),
                 this);
-    } // same as previous, but it runs until interrupted.
+    }
 
     public void setShooterSpeedHub() {
-        setTargetSpeed(Constants.Shooter.kMaxRPM);
+        setTargetSpeed(Constants.Shooting.Shooter.kMaxRPM);
     }
 
     public Command setShooterSpeedHubCommand() {
@@ -168,8 +152,8 @@ public class ShooterSubsystem extends AbsoluteSubsystem {
 
     @Override
     public void periodic() {
-        if (usingStateBased) {
-            switch (currentState) {
+        if (m_usingStateBased) {
+            switch (m_currentState) {
                 case IDLE:
                     stopMotors();
                     break;
@@ -182,10 +166,31 @@ public class ShooterSubsystem extends AbsoluteSubsystem {
             }
         }
 
-        Logger.recordOutput("Subsystems/Shooter/TargetRPM", targetRPM);
-        Logger.recordOutput("Subsystems/Shooter/CurRPM", getRPM());
-        Logger.recordOutput("Subsystems/Shooter/AtTargetSpeed", isAtTargetSpeed());
-        Logger.recordOutput("Subsystems/Shooter/Difference", targetRPM - getRPM());
-    }
+        if (verbosity == SubsystemVerbosity.LOW || verbosity == SubsystemVerbosity.HIGH) {
+            Logger.recordOutput("Subsystems/Shooter/Is At Target Speed?", isAtTargetSpeed());
+            Logger.recordOutput("Subsystems/Shooter/Current RPM", getRPM());
+            Logger.recordOutput("Subsystems/Shooter/Target RPM", m_targetRPM);
+        }
 
+        if (verbosity == SubsystemVerbosity.HIGH) {
+            Logger.recordOutput("Subsystems/Shooter/Right Motor/Applied Voltage",
+                    m_rightMotor.getMotorVoltage().getValueAsDouble());
+            Logger.recordOutput("Subsystems/Shooter/Right Motor/Motor Temperature",
+                    m_rightMotor.getDeviceTemp().getValueAsDouble());
+            Logger.recordOutput("Subsystems/Shooter/Right Motor/Current",
+                    m_rightMotor.getSupplyCurrent().getValueAsDouble());
+            Logger.recordOutput("Subsystems/Shooter/Right Motor/Velocity",
+                    m_rightMotor.getVelocity().getValueAsDouble());
+
+            Logger.recordOutput("Subsystems/Shooter/Left Motor/Applied Voltage",
+                    m_leftMotor.getMotorVoltage().getValueAsDouble());
+            Logger.recordOutput("Subsystems/Shooter/Left Motor/Motor Temperature",
+                    m_leftMotor.getDeviceTemp().getValueAsDouble());
+            Logger.recordOutput("Subsystems/Shooter/Left Motor/Current",
+                    m_leftMotor.getSupplyCurrent().getValueAsDouble());
+            Logger.recordOutput("Subsystems/Shooter/Left Motor/Velocity", m_leftMotor.getVelocity().getValueAsDouble());
+
+            Logger.recordOutput("Subsystems/Shooter/RPM Error", Math.abs(getRPM() - m_targetRPM));
+        }
+    }
 }

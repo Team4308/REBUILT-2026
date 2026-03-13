@@ -1,6 +1,6 @@
 // main/java/frc/robot/subsystems/vision/VisionConfig.java
 
-package frc.robot.subsystems.vision;
+package frc.robot.Subsystems.vision;
 
 import java.util.List;
 import java.util.Map;

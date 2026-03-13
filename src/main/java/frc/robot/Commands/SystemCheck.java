@@ -62,8 +62,7 @@ public class SystemCheck extends SequentialCommandGroup {
                                 new InstantCommand(() -> shooterSubsystem.setShooterSpeed(() -> 0.0)),
 
                                 new ParallelDeadlineGroup(new WaitCommand(1), 
-                                               indexerSubsystem.feedBalls())
-
+                                               new IndexerCommand(indexerSubsystem, () -> 600.0))
                                 );
         
         }

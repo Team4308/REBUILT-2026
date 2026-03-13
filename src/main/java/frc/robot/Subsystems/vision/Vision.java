@@ -1,4 +1,4 @@
-package frc.robot.subsystems.vision;
+package frc.robot.Subsystems.vision;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,7 +24,7 @@ import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.vision.VisionConfig.CameraConfig;
+import frc.robot.Subsystems.vision.VisionConfig.CameraConfig;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.simulation.VisionSystemSim;
