@@ -1,17 +1,44 @@
 package frc.robot.commands;
 
-import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.HoodSubsystem;
 import frc.robot.subsystems.HoodSubsystem.RobotState;
+import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.subsystems.IndexerSubsystem;
+import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.subsystems.TurretSubsystem;
+import frc.robot.subsystems.SwerveSubsystem;
 
-public class ShootCommand extends Command {
-    IntakeSubsystem m_IntakeSubsystem = new IntakeSubsystem();
-    IndexerSubsystem m_IndexerSubsystem = new IndexerSubsystem();
-    HoodSubsystem m_HoodSubsystem = new HoodSubsystem();
-    ShooterSubsystem m_ShooterSubsystem = new HoodSubsystem();
-    TurretSubsystem m_TurretSubsystem = new TurrentSubsystem();
-    SwerveSubsystem m_SwerveSubsystem = new SwerveSubsystem();
+public class IntakeWhileShooting extends CommandBase {
+    private final IntakeSubsystem m_IntakeSubsystem;
+    private final IndexerSubsystem m_IndexerSubsystem;
+    private final HoodSubsystem m_HoodSubsystem;
+    private final ShooterSubsystem m_ShooterSubsystem;
+    private final TurretSubsystem m_TurretSubsystem;
+    private final SwerveSubsystem m_SwerveSubsystem;
 
+    public IntakeWhileShooting(
+            IntakeSubsystem intakeSubsystem,
+            IndexerSubsystem indexerSubsystem,
+            HoodSubsystem hoodSubsystem,
+            ShooterSubsystem shooterSubsystem,
+            TurretSubsystem turretSubsystem,
+            SwerveSubsystem swerveSubsystem) {
+        this.m_IntakeSubsystem = intakeSubsystem;
+        this.m_IndexerSubsystem = indexerSubsystem;
+        this.m_HoodSubsystem = hoodSubsystem;
+        this.m_ShooterSubsystem = shooterSubsystem;
+        this.m_TurretSubsystem = turretSubsystem;
+        this.m_SwerveSubsystem = swerveSubsystem;
+
+        addRequirements(
+                m_IntakeSubsystem,
+                m_IndexerSubsystem,
+                m_HoodSubsystem,
+                m_ShooterSubsystem,
+                m_TurretSubsystem,
+                m_SwerveSubsystem);
+    }
     @Override
     public void initialize() {
         if (m_SwerveSubsystem.getFieldLocation.equals("AllianceZone")) {
