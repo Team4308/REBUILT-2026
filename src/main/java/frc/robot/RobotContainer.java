@@ -5,6 +5,7 @@ import java.io.File;
 import org.littletonrobotics.junction.Logger;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 
 import ca.team4308.absolutelib.control.RazerWrapper;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -154,14 +155,14 @@ public class RobotContainer {
                  * Right Small Button: Reset Hood
                  */
 
-                NamedCommands.registerCommand("Shoot", m_turretSubsystem.aimAtHub(), //Turret Subsystem does not have a state manager
-                    m_hoodSubsystem.setState(HoodSubsystem.RobotState.SHOOT),
-                    m_shooterSubsystem.setState(ShooterSubsystem.ShooterState.SHOOTING));
-                NamedCommands.registerCommand("Intake", m_intakeSubsystem.setState(state.INTAKING);));
-                NamedCommands.registerCommand("Intake and Shoot", m_intakeSubsystem.setState(state.INTAKING),
-                    m_turretSubsystem.aimAtHub(),
-                    m_hoodSubsystem.setState(HoodSubsystem.RobotState.SHOOT),
-                    m_shooterSubsystem.setState(ShooterSubsystem.ShooterState.SHOOTING));
+                NamedCommands.registerCommand("Shoot", new AimAtHubCommand(() -> drivebase.getPose(), m_TurretSubsystem),
+                    m_HoodSubsystem.setState(HoodSubsystem.RobotState.SHOOT),
+                    m_ShooterSubsystem.setState(ShooterSubsystem.ShooterState.SHOOTING));
+                NamedCommands.registerCommand("Intake", m_IntakeSubsystem.setState(state.INTAKING));
+                NamedCommands.registerCommand("Intake and Shoot", m_IntakeSubsystem.setState(state.INTAKING),
+                    new AimAtHubCommand(() -> drivebase.getPose(), m_TurretSubsystem),
+                    m_HoodSubsystem.setState(HoodSubsystem.RobotState.SHOOT),
+                    m_ShooterSubsystem.setState(ShooterSubsystem.ShooterState.SHOOTING));
 
 
                 Command driveFieldOrientedAnglularVelocity = drivebase.driveFieldOriented(driveAngularVelocity);
@@ -202,7 +203,7 @@ public class RobotContainer {
                 driver.RB.whileTrue(new InstantCommand(() -> m_IndexerSubsystem.setHopperVelocity(500)));
                 driver.RB.onFalse(new InstantCommand(() -> m_IndexerSubsystem.stopMotors()));
 
-                driver.LB.onTrue(new InstantCommand(() -> m_IntakeSubsystem.setRollerSpeedA(() -> -100.)));
+                driver.LB.onTrue(new InstantCommand(() -> m_IntakeSubsystem.setRollerSpeedA(-100.)));
                 driver.LB.onFalse(new InstantCommand(() -> m_IntakeSubsystem.stopMotors()));
 
                 // Reset Hood and Intake
