@@ -5,15 +5,12 @@
     "data": {
       "commands": [
         {
-<<<<<<< HEAD:src/main/deploy/pathplanner/autos/Mid L to Neu to Right Climb.auto
           "type": "path",
           "data": {
             "pathName": null
           }
         },
         {
-=======
->>>>>>> refs/remotes/origin/Autons:src/main/deploy/pathplanner/autos/Shoot - Left - Left neutral - right neutral.auto
           "type": "named",
           "data": {
             "name": "Shoot"
@@ -22,9 +19,7 @@
         {
           "type": "path",
           "data": {
-<<<<<<< HEAD:src/main/deploy/pathplanner/autos/Mid L to Neu to Right Climb.auto
             "pathName": null
-=======
             "pathName": "Blue L to LN (disrupt)"
           }
         },
@@ -32,7 +27,6 @@
           "type": "path",
           "data": {
             "pathName": "LN to RN (disrupt)"
->>>>>>> refs/remotes/origin/Autons:src/main/deploy/pathplanner/autos/Shoot - Left - Left neutral - right neutral.auto
           }
         }
       ]
