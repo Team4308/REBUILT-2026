@@ -13,13 +13,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Red L to RN(Shoot)"
+            "pathName": "Blue SHOOT to CLIMB"
           }
         }
       ]
     }
   },
-  "resetOdom": true,
-  "folder": "Disruption Autos",
+  "resetOdom": false,
+  "folder": "Starting Left",
   "choreoAuto": false
 }

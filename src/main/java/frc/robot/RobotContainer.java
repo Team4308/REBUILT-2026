@@ -154,6 +154,16 @@ public class RobotContainer {
                  * Right Small Button: Reset Hood
                  */
 
+                NamedCommands.registerCommand("Shoot", m_turretSubsystem.aimAtHub(), //Turret Subsystem does not have a state manager
+                    m_hoodSubsystem.setState(HoodSubsystem.RobotState.SHOOT),
+                    m_shooterSubsystem.setState(ShooterSubsystem.ShooterState.SHOOTING));
+                NamedCommands.registerCommand("Intake", m_intakeSubsystem.setState(state.INTAKING);));
+                NamedCommands.registerCommand("Intake and Shoot", m_intakeSubsystem.setState(state.INTAKING),
+                    m_turretSubsystem.aimAtHub(),
+                    m_hoodSubsystem.setState(HoodSubsystem.RobotState.SHOOT),
+                    m_shooterSubsystem.setState(ShooterSubsystem.ShooterState.SHOOTING));
+
+
                 Command driveFieldOrientedAnglularVelocity = drivebase.driveFieldOriented(driveAngularVelocity);
                 Command driveRobotOrientedAngularVelocity = drivebase.driveFieldOriented(driveRobotOriented);
                 Command driveFieldOrientedAnglularVelocityKeyboard = drivebase

@@ -171,7 +171,7 @@ public class TrajectoryCalculations {
 
     public double getNeededYaw() {
         var result = shooterSystem.getLastTrajectoryResult();
-        return result != null  ? result.getYawAdjustmentDegrees() : 0.0;
+        return result != null ? result.getYawAdjustmentDegrees() : 0.0;
     }
 
     public double getNeededPitch() {
