@@ -106,8 +106,8 @@ public final class Constants {
     public static final class Hood {
       public static final double TOLERANCE_DEGREES = 2.0; // Tolerance for position control
       public static final double TOLERANCE_VELOCITY = 0.5;
-      public static final double TOTAL_GEAR_RATIO = 97.4;
-      public static final double FORWARD_SOFT_LIMIT_ANGLE = 52.5;
+      public static final double TOTAL_GEAR_RATIO = 120.4;
+      public static final double FORWARD_SOFT_LIMIT_ANGLE = 42.5;
       public static final double REVERSE_SOFT_LIMIT_ANGLE = 7.5;
       public static final double AMP_THRESHOLD = 2;
       public final static ArmFeedforward feedforward = new ArmFeedforward(0.2, 0.0, 0.025, 0.0);
