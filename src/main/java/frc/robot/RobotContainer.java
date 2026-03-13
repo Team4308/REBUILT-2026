@@ -184,10 +184,10 @@ public class RobotContainer {
                 driver.B.whileTrue(m_ShooterSubsystem.setShooterSpeed(() -> 2300.));
                 driver.B.onFalse(new InstantCommand(() -> m_ShooterSubsystem.stopMotors()));
 
-                driver.X.onTrue(new InstantCommand(() -> m_HoodSubsystem.setHoodAngle(7.5)));
-                driver.Y.onTrue(new InstantCommand(() -> m_HoodSubsystem.setHoodAngle(15)));
-                driver.B.onTrue(new InstantCommand(() -> m_HoodSubsystem.setHoodAngle(32)));
-                driver.A.onTrue(new InstantCommand(() -> m_HoodSubsystem.setHoodAngle(52.5)));
+                driver.X.onTrue(new InstantCommand(() -> m_TurretSubsystem.setTarget(360)));
+                driver.Y.onTrue(new InstantCommand(() -> m_TurretSubsystem.setTarget(90)));
+                driver.B.onTrue(new InstantCommand(() -> m_TurretSubsystem.setTarget(180)));
+                driver.A.onTrue(new InstantCommand(() -> m_TurretSubsystem.setTarget(270)));
 
                 // Reset Gyro
                 driver.M1.onTrue(Commands.runOnce(() -> drivebase.resetOdometry(new Pose2d(0, 0, new Rotation2d()))));

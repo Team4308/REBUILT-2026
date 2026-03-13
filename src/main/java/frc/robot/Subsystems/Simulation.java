@@ -1,5 +1,7 @@
 package frc.robot.Subsystems;
 
+import java.util.logging.LogRecord;
+
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -53,23 +55,24 @@ public class Simulation extends SubsystemBase {
                 0.2032, // arm length (m)
                 Units.degreesToRadians(0),
                 Units.degreesToRadians(45),
-                false, // gravity — this is the one that matters most for stiction
-                7, // static friction (N·m) — light mechanism, but gravity will hold it if below
-                   // this
-                0.5, // kinetic friction (N·m)
+                false, // gravity
+                7, // static friction
+                0.5, // kinetic friction
                 Units.degreesToRadians(0));
 
         m_turretSim = new SingleJointedArmSim(
                 DCMotor.getKrakenX44(1),
-                Constants.Shooting.Turret.GEAR_RATIO_MOTOR,
-                0.537638, // J (kg·m²) — heaviest of the three
-                0.0, // arm length unused (turret rotates about center, not an arm)
+                1. / Constants.Shooting.Turret.GEAR_RATIO_MOTOR,
+                0.2, // J (kg·m²) — heaviest of the three
+                0.1, // arm length unused (turret rotates about center, not an arm)
                 Units.degreesToRadians(90),
                 Units.degreesToRadians(500),
                 false, // no gravity
-                0.6, // static friction (N·m) — large rotating mass, more bearing friction
-                0.35, // kinetic friction (N·m)
+                5, // static friction (N·m) — large rotating mass, more bearing friction
+                4, // kinetic friction (N·m)
                 Units.degreesToRadians(360));
+
+        m_turretSim.update(0);
 
         m_IntakeSubsystem.setSimSupplier(() -> Math.toDegrees(m_intakeSim.getAngleRads()));
         m_HoodSubsystem.setSimSupplier(() -> Math.toDegrees(m_hoodSim.getAngleRads()));
@@ -120,9 +123,11 @@ public class Simulation extends SubsystemBase {
 
     @Override
     public void periodic() {
-        m_intakeSim.setInputVoltage(+m_IntakeSubsystem.getVoltage()); // Static Friction or something
+        m_intakeSim.setInputVoltage(m_IntakeSubsystem.getVoltage());
         m_hoodSim.setInputVoltage(m_HoodSubsystem.getVoltage());
         m_turretSim.setInputVoltage(m_TurretSubsystem.getVoltage());
+
+        Logger.recordOutput("a", m_turretSim.getAngleRads());
 
         m_intakeSim.update(0.020);
         m_hoodSim.update(0.020);

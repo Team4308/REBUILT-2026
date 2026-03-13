@@ -16,7 +16,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -31,9 +30,9 @@ public class TurretSubsystem extends SubsystemBase {
     private final CANcoder m_canCoder2;
 
     private double m_targetDegWrapped = 0.0;
-    private double m_targetDegUnWrapped = 0.0;
+    private double m_targetDegUnWrapped = Constants.Shooting.Turret.TURRET_START_ANGLE;
     private double m_currentDegWrapped = 0.0;
-    private double m_currentDegUnWrapped = 0.0;
+    private double m_currentDegUnWrapped = Constants.Shooting.Turret.TURRET_START_ANGLE;
 
     private double m_encoderOffset = 0;
 
@@ -54,17 +53,23 @@ public class TurretSubsystem extends SubsystemBase {
         m_canCoder2 = new CANcoder(Ports.Shooting.Turret.kCanCoder2Id);
 
         updateAngle();
-        m_encoderOffset = getAngleUnWrapped();
+        m_encoderOffset = getAngleUnWrapped() - Constants.Shooting.Turret.TURRET_START_ANGLE; // Starts at 360 deg
         if (CANCODER_TEST) {
             m_encoderOffset = calculateEncoderAngle();
         } else {
             calculateEncoderAngle();
         }
 
+        if (Robot.isSimulation()) { // Brute force Sim
+            pidController.setP(0.3);
+        }
+
         TalonFXConfiguration driveConfig = new TalonFXConfiguration();
         driveConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         driveConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         m_driveMotor.getConfigurator().apply(driveConfig);
+
+        pidController.reset(m_currentDegUnWrapped);
 
         verbosity = SubsystemVerbosity.HIGH;
     }
@@ -84,7 +89,7 @@ public class TurretSubsystem extends SubsystemBase {
         Logger.recordOutput("Subsystems/Turret/ENCODER 1", enc1);
         Logger.recordOutput("Subsystems/Turret/ENCODER 2", enc2);
 
-        double diff = (enc1 % enc2) % 1.0;
+        double diff = (enc1 - enc2) % 1.0;
         double coarseRotations = diff * Constants.Shooting.Turret.PERIOD;
 
         double n1 = Math.round((coarseRotations * Constants.Shooting.Turret.GEAR_RATIO_1) - enc1);
@@ -106,10 +111,14 @@ public class TurretSubsystem extends SubsystemBase {
 
     public void updateAngle() {
         if (Robot.isSimulation()) {
+            Logger.recordOutput("Subsystems/Turret/SimMode", 1);
+            Logger.recordOutput("Subsystems/Turret/SimSupplierNull", simSupplier == null ? 1 : 0);
             if (simSupplier == null) {
-                m_currentDegUnWrapped = 0;
+                m_currentDegUnWrapped = 360;
             } else {
-                m_currentDegUnWrapped = simSupplier.get();
+                double simDeg = simSupplier.get();
+                m_currentDegUnWrapped = simDeg;
+                Logger.recordOutput("Subsystems/Turret/SimSupplierDegrees", simDeg);
             }
             m_currentDegWrapped = inputModulus(m_currentDegUnWrapped, 0.0,
                     Constants.Shooting.Turret.FULL_REVOLUTION_DEG, Constants.Shooting.Turret.FULL_REVOLUTION_DEG);
@@ -238,7 +247,7 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
     private Pose3d getTurretPose() {
-        return new Pose3d(0.1362075, 0, 0.3370134992, new Rotation3d(0, 0, getAngleWrapped()));
+        return new Pose3d(0.1362075, 0, 0.3370134992, new Rotation3d(0, 0, Math.toRadians(180 + getAngleWrapped())));
     }
 
     @Override
