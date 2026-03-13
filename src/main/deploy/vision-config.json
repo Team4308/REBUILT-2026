@@ -1,8 +1,7 @@
 {
     "_comment": "Measurements in inches/degrees. streamType: 'PHOTON' or 'PYTHON'",
     "targetWidths": {
-        "0": 5.91,
-        "1": 27.5
+        "0": 5.91
     },
     "cameras": [
         {
