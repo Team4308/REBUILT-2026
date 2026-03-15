@@ -168,8 +168,8 @@ public class RobotContainer {
                 driver.povUp.onTrue(new MoveHoodCommand(m_HoodSubsystem, () -> 5.));
                 driver.povDown.onTrue(new MoveHoodCommand(m_HoodSubsystem, () -> -5.));
 
-                driver.povRight.onTrue(new MoveTurretCommand(m_TurretSubsystem, () -> 5.));
-                driver.povLeft.onTrue(new MoveTurretCommand(m_TurretSubsystem, () -> -5.));
+                driver.povRight.onTrue(new MoveTurretCommand(m_TurretSubsystem, () -> -5.));
+                driver.povLeft.onTrue(new MoveTurretCommand(m_TurretSubsystem, () -> 5.));
 
                 // driver.X.whileTrue(new HoodCommand(m_HoodSubsystem, () ->
                 // m_TrajectoryCalculations.getNeededPitch()));
@@ -203,7 +203,7 @@ public class RobotContainer {
                 driver.M2.onTrue(m_HoodSubsystem.resetHoodCommand());
                 driver.M2.onTrue(m_IntakeSubsystem.resetIntakeCommand());
 
-                // driver.LB.whileTrue(driveRobotOrientedAngularVelocity);
+                driver.M6.whileTrue(driveRobotOrientedAngularVelocity);
 
                 if (Robot.isSimulation()) {
                         // drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocityKeyboard);

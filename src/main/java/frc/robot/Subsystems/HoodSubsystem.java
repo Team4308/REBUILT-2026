@@ -128,14 +128,14 @@ public class HoodSubsystem extends SubsystemBase {
     }
 
     private Pose3d getHoodPose() {
-        double turretYawRad = Math.toRadians(turretSupplier.get() + 180);
+        double turretYawRad = Math.toRadians(turretSupplier.get());
         double offsetX = 0.109474;
         double offsetZ = 0.08255;
         double rotatedX = offsetX * Math.cos(turretYawRad);
         double rotatedY = offsetX * Math.sin(turretYawRad);
         double pitchRad = Math.toRadians(getHoodAngle() - 7.5);
         return new Pose3d(
-                0.1362075 + rotatedX, rotatedY, 0.3370134992 + offsetZ,
+                -0.1362075 + rotatedX, rotatedY, 0.3370134992 + offsetZ,
                 new Rotation3d(0, pitchRad, turretYawRad));
     }
 
@@ -145,9 +145,12 @@ public class HoodSubsystem extends SubsystemBase {
                 .getTable("AdvantageKit/RealOutputs")
                 .getEntry("Swerve/UnderTrench")
                 .getBoolean(false);
+
+        double targetAngle = this.targetAngle;
+
         // Safety override: hood must retract under trench
         if (underTrench) {
-            setHoodAngle(Constants.Shooting.Hood.REVERSE_SOFT_LIMIT_ANGLE);
+            targetAngle = Constants.Shooting.Hood.REVERSE_SOFT_LIMIT_ANGLE; // Temporary, it goes back afterwards
         }
 
         double currentAngle = getHoodAngle();

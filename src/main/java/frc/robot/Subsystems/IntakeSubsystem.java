@@ -153,12 +153,12 @@ public class IntakeSubsystem extends SubsystemBase {
 
   private Pose3d getHopperPose() {
     return new Pose3d(
-        DoubleUtils.mapRange(getIntakeAngle(), 0, 127, 0, 0.3048),
+        DoubleUtils.mapRange(getIntakeAngle(), 0, 127, 0, -0.3048),
         0, 0, new Rotation3d());
   }
 
   private Pose3d getPivotPose() {
-    return new Pose3d(-0.292810438, 0, 0.219075, new Rotation3d(0, Math.toRadians(getIntakeAngle()), 0));
+    return new Pose3d(0.292810438, 0, 0.219075, new Rotation3d(0, Math.toRadians(-getIntakeAngle()), 0));
   }
 
   public double getVoltage() {

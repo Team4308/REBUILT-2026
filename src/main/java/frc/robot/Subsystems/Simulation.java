@@ -1,8 +1,9 @@
 package frc.robot.Subsystems;
 
+import java.util.Random;
+
 import org.littletonrobotics.junction.Logger;
 
-import ca.team4308.absolutelib.math.DoubleUtils;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -77,14 +78,30 @@ public class Simulation extends SubsystemBase {
         m_IntakeSubsystem.setSimSupplier(() -> Math.toDegrees(m_intakeSim.getAngleRads()));
         m_HoodSubsystem.setSimSupplier(() -> Math.toDegrees(m_hoodSim.getAngleRads()));
         m_TurretSubsystem.setSimSupplier(() -> Math.toDegrees(m_turretSim.getAngleRads()),
-                () -> DoubleUtils.clamp(
-                        Math.toDegrees(m_turretSim.getAngleRads()) * Constants.Shooting.Turret.GEAR_RATIO_1 / 360, 0,
-                        1),
-                () -> DoubleUtils.clamp(
-                        Math.toDegrees(m_turretSim.getAngleRads()) * Constants.Shooting.Turret.GEAR_RATIO_2 / 360, 0,
-                        1));
+                () -> convertEncoderValue(Constants.Shooting.Turret.GEAR_RATIO_1),
+                () -> convertEncoderValue(Constants.Shooting.Turret.GEAR_RATIO_2));
 
         initFuelSim();
+    }
+
+    private double m_lastOutput = 0.0;
+    private static final double BACKLASH = 0.001; // ~0.7° of play at 1:1
+    private static final double NOISE_STD = 0.0003; // sensor read noise
+    private final Random m_random = new Random();
+
+    private double convertEncoderValue(double gearRatio) {
+        double rotations = Math.toDegrees(m_turretSim.getAngleRads()) * gearRatio / 360.0;
+        double ideal = rotations - Math.floor(rotations);
+
+        // Backlash: only update output if movement exceeds the deadband
+        if (Math.abs(ideal - m_lastOutput) > BACKLASH) {
+            m_lastOutput = ideal - Math.copySign(BACKLASH / 2.0, ideal - m_lastOutput);
+        }
+
+        // Gaussian noise simulating sensor quantization/jitter
+        double noise = m_random.nextGaussian() * NOISE_STD;
+
+        return (m_lastOutput + noise + 1.0) % 1.0;
     }
 
     private void incrementFuel() {

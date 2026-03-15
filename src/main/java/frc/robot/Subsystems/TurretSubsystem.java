@@ -48,6 +48,15 @@ public class TurretSubsystem extends SubsystemBase {
     private Supplier<Double> enc2SimSupplier;
     private double voltage;
 
+    private double m_lastCoarseRotations = Double.NaN;
+    private double m_lastDiff = Double.NaN;
+    private int m_warmupCycles = 0;
+    private static final int WARMUP_CYCLES = 10;
+
+    // Max turret speed ~700 deg/s, 50Hz loop = 7.2 deg/cycle, use 20 deg as safe
+    // ceiling
+    private static final double MAX_DELTA_ROTATIONS = 20.0 / 360.0;
+
     public TurretSubsystem() {
         m_driveMotor = new TalonFX(Ports.Shooting.Turret.kTurretMotorId);
         m_canCoder1 = new CANcoder(Ports.Shooting.Turret.kCanCoder1Id);
@@ -56,9 +65,7 @@ public class TurretSubsystem extends SubsystemBase {
         updateAngle();
         m_encoderOffset = getAngleUnWrapped() - Constants.Shooting.Turret.TURRET_START_ANGLE; // Starts at 360 deg
         if (CANCODER_TEST) {
-            m_encoderOffset = calculateEncoderAngle();
-        } else {
-            calculateEncoderAngle();
+            m_encoderOffset = Constants.Shooting.Turret.TURRET_OFFSET_ANGLE;
         }
 
         if (Robot.isSimulation()) { // Brute force Sim
@@ -66,7 +73,7 @@ public class TurretSubsystem extends SubsystemBase {
         }
 
         TalonFXConfiguration driveConfig = new TalonFXConfiguration();
-        driveConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+        driveConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
         driveConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         m_driveMotor.getConfigurator().apply(driveConfig);
 
@@ -103,16 +110,34 @@ public class TurretSubsystem extends SubsystemBase {
         Logger.recordOutput("Subsystems/Turret/ENCODER 1", enc1);
         Logger.recordOutput("Subsystems/Turret/ENCODER 2", enc2);
 
-        double diff = (enc1 - enc2) % 1.0;
+        double rawDiff = enc1 - enc2;
+        double diff = rawDiff - Math.floor(rawDiff + 0.5);
+
+        if (!Double.isNaN(m_lastDiff)) {
+            double delta = diff - m_lastDiff;
+            delta = delta - Math.floor(delta + 0.5);
+            diff = m_lastDiff + delta;
+        }
+
         double coarseRotations = diff * Constants.Shooting.Turret.PERIOD;
 
+        // Skip rate limiter during warmup so it seeds from a real position, not 0,0
+        boolean warmingUp = m_warmupCycles < WARMUP_CYCLES;
+        if (!warmingUp && !Double.isNaN(m_lastCoarseRotations) &&
+                Math.abs(coarseRotations - m_lastCoarseRotations) > MAX_DELTA_ROTATIONS) {
+            coarseRotations = m_lastCoarseRotations;
+            m_lastDiff = m_lastCoarseRotations / Constants.Shooting.Turret.PERIOD;
+        } else {
+            m_lastDiff = diff;
+            m_lastCoarseRotations = coarseRotations;
+            m_warmupCycles++;
+        }
+
         double n1 = Math.round((coarseRotations * Constants.Shooting.Turret.GEAR_RATIO_1) - enc1);
-
         double preciseRotations = (n1 + enc1) / Constants.Shooting.Turret.GEAR_RATIO_1;
-
         double posDegrees = coarseRotations * 360;
         Logger.recordOutput("Subsystems/Turret/Encoder Calculated Angle (Coarse)", posDegrees);
-        Logger.recordOutput("Subsystems/Turret/Encoder Calculated Angle (Precise)", preciseRotations);
+        Logger.recordOutput("Subsystems/Turret/Encoder Calculated Angle (Precise)", preciseRotations * 360);
         return posDegrees;
     }
 
@@ -139,8 +164,14 @@ public class TurretSubsystem extends SubsystemBase {
             m_currentDegWrapped = inputModulus(m_currentDegUnWrapped, 0.0,
                     Constants.Shooting.Turret.FULL_REVOLUTION_DEG, Constants.Shooting.Turret.FULL_REVOLUTION_DEG);
         } else {
-            double rawAngle = m_driveMotor.getPosition().getValueAsDouble() * Constants.Shooting.Turret.GEAR_RATIO_MOTOR
-                    * 360;
+            double rawAngle;
+            if (CANCODER_TEST) {
+                rawAngle = calculateEncoderAngle();
+            } else {
+                rawAngle = m_driveMotor.getPosition().getValueAsDouble()
+                        * Constants.Shooting.Turret.GEAR_RATIO_MOTOR
+                        * 360;
+            }
             m_currentDegUnWrapped = rawAngle - m_encoderOffset;
             m_currentDegWrapped = inputModulus(m_currentDegUnWrapped, 0.0,
                     Constants.Shooting.Turret.FULL_REVOLUTION_DEG, Constants.Shooting.Turret.FULL_REVOLUTION_DEG);
@@ -263,12 +294,13 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
     private Pose3d getTurretPose() {
-        return new Pose3d(0.1362075, 0, 0.3370134992, new Rotation3d(0, 0, Math.toRadians(180 + getAngleWrapped())));
+        return new Pose3d(-0.1362075, 0, 0.3370134992, new Rotation3d(0, 0, Math.toRadians(getAngleWrapped())));
     }
 
     @Override
     public void periodic() {
         updateAngle();
+        calculateEncoderAngle();
 
         double pidOutput = pidController.calculate(m_currentDegUnWrapped, m_targetDegUnWrapped);
 

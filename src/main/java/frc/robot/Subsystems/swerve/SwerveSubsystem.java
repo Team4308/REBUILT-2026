@@ -86,26 +86,6 @@ public class SwerveSubsystem extends SubsystemBase {
 
   private final SendableChooser<Boolean> diagonalBumpChooser = new SendableChooser<>();
 
-  private boolean usingState = false;
-
-  // Holds the currently scheduled command for driving to a pose so we don't
-  // reschedule
-  // it every periodic loop.
-  private Command currentDriveToPoseCommand = null;
-  // Public flag that indicates whether the subsystem is currently executing
-  // a drive-to-pose command (true while the command is scheduled).
-  public boolean isDrivingToPose = false;
-
-  public enum States {
-    FIELD_ORIENTED_DRIVE,
-    ROBOT_ORIENTED_DRIVE,
-    DRIVE_TO_POSE,
-    DRIVEBASE_LOCK,
-    ALIGN_TO_FUEL
-  }
-
-  private States robotState = States.FIELD_ORIENTED_DRIVE;
-
   private RazerWrapper driver = new RazerWrapper(0);
 
   private double resetTime = Timer.getFPGATimestamp() + 2; // To clear DS field 2 seconds after boot. Why? Idk
@@ -192,65 +172,8 @@ public class SwerveSubsystem extends SubsystemBase {
     }
   }
 
-  public void setUsingState(boolean using) {
-    usingState = using;
-  }
-
-  public void setState(States curState) {
-    robotState = curState;
-  }
-
-  private void calculateStates() {
-    switch (robotState) {
-
-      case FIELD_ORIENTED_DRIVE:
-        driveFieldOriented(driveAngularVelocity);
-        break;
-
-      case ROBOT_ORIENTED_DRIVE:
-        driveFieldOriented(driveRobotOriented);
-        break;
-
-      case DRIVE_TO_POSE:
-        drivingToPose();
-        break;
-
-      case DRIVEBASE_LOCK:
-        lock();
-        break;
-
-      default:
-        driveFieldOriented(driveAngularVelocity);
-        break;
-    }
-  }
-
   public void setTargetPose(Pose2d pose) {
     targetPose = pose;
-  }
-
-  private void drivingToPose() {
-    if (targetPose == null) {
-      return;
-    }
-
-    // If we already have a scheduled command that is still running, do nothing.
-    if (currentDriveToPoseCommand != null && CommandScheduler.getInstance().isScheduled(currentDriveToPoseCommand)) {
-      return;
-    }
-
-    // Build the drive-to-pose command. We reuse the existing helper which returns a
-    // PathPlanner-following command. Wrap it so that we clear our reference when it
-    // finishes or is interrupted and return to normal control. Also update the
-    // public `isDrivingToPose` flag so callers can observe the state.
-    currentDriveToPoseCommand = driveToPose(targetPose).finallyDo(interrupted -> {
-      currentDriveToPoseCommand = null;
-      isDrivingToPose = false;
-    });
-
-    // Mark that we are driving to a pose and schedule the command.
-    isDrivingToPose = true;
-    CommandScheduler.getInstance().schedule(currentDriveToPoseCommand);
   }
 
   @Override
@@ -271,10 +194,6 @@ public class SwerveSubsystem extends SubsystemBase {
       if (Robot.isSimulation() && swerveDrive.getSimulationDriveTrainPose().isPresent()) {
         vision.updateSimVision(swerveDrive.getSimulationDriveTrainPose().get());
       }
-    }
-
-    if (usingState) {
-      calculateStates();
     }
 
     // Puts the pathing onto DS
@@ -805,7 +724,7 @@ public class SwerveSubsystem extends SubsystemBase {
     return run(() -> {
       // Get raw velocity from supplier
       ChassisSpeeds rawVelocity = velocitySupplier.get();
-      swerveDrive.driveFieldOriented(rawVelocity);
+      driveFieldOriented(rawVelocity);
     });
   }
 
