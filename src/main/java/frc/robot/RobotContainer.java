@@ -122,8 +122,10 @@ public class RobotContainer {
                 m_TrajectoryCalculations.setPoseSupplier(() -> drivebase.getPose());
                 m_TrajectoryCalculations.setTargetSupplier(() -> FieldLayout.ShooterTargets.getAllianceHub());
 
-                shootLeft = new Shoot(m_IndexerSubsystem, () -> drivebase.getFieldLocation(), FieldLayout.Zones.getAllianceLeftTranslation3d(), getTrajectoryCalculations());
-                shootRight = new Shoot(m_IndexerSubsystem, () -> drivebase.getFieldLocation(), FieldLayout.Zones.getAllianceRightTranslation3d(), getTrajectoryCalculations());
+                shootLeft = new Shoot(m_IndexerSubsystem, () -> drivebase.getFieldLocation(),
+                                FieldLayout.Zones.getAllianceLeftTranslation3d(), getTrajectoryCalculations());
+                shootRight = new Shoot(m_IndexerSubsystem, () -> drivebase.getFieldLocation(),
+                                FieldLayout.Zones.getAllianceRightTranslation3d(), getTrajectoryCalculations());
 
                 if (Robot.isSimulation())
                         m_Simulation = new Simulation(m_HoodSubsystem, m_IndexerSubsystem, m_IntakeSubsystem,
@@ -133,11 +135,15 @@ public class RobotContainer {
 
                 m_IntakeSubsystem.setDefaultCommand(
                                 new DefaultIntakePivot(m_IntakeSubsystem, () -> driver.getRightTrigger()));
-                
-                m_IntakeSubsystem.setDefaultCommand(m_IntakeSubsystem.setRollerSpeed(() -> Constants.Intake.ROLLER_INTAKE_RPM));
-                m_TurretSubsystem.setDefaultCommand(m_TurretSubsystem.moveToTarget(() -> getTrajectoryCalculations().getNeededYaw()));
-                m_HoodSubsystem.setDefaultCommand(m_HoodSubsystem.setHoodAngleCommand(() -> getTrajectoryCalculations().getNeededPitch()));
-                m_ShooterSubsystem.setDefaultCommand(m_ShooterSubsystem.setShooterSpeed(() -> getTrajectoryCalculations().getNeededRPM()));
+
+                m_IntakeSubsystem.setDefaultCommand(
+                                m_IntakeSubsystem.setRollerSpeed(() -> Constants.Intake.ROLLER_INTAKE_RPM));
+                m_TurretSubsystem.setDefaultCommand(
+                                m_TurretSubsystem.moveToTarget(() -> getTrajectoryCalculations().getNeededYaw()));
+                m_HoodSubsystem.setDefaultCommand(m_HoodSubsystem
+                                .setHoodAngleCommand(() -> getTrajectoryCalculations().getNeededPitch()));
+                m_ShooterSubsystem.setDefaultCommand(
+                                m_ShooterSubsystem.setShooterSpeed(() -> getTrajectoryCalculations().getNeededRPM()));
                 m_IndexerSubsystem.setDefaultCommand(m_IndexerSubsystem.runMotors());
 
                 configureNamedCommands();
@@ -231,7 +237,7 @@ public class RobotContainer {
                 // Full Auto Shooting
                 // driver.LB.whileTrue(shootLeft);
                 // driver.RB.whileTrue(shootRight);
-                
+
         }
 
         public void periodic() {

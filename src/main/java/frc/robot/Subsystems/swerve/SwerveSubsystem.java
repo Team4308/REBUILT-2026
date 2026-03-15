@@ -79,6 +79,7 @@ public class SwerveSubsystem extends SubsystemBase {
   private Vision vision;
 
   private Pose2d targetPose = new Pose2d();
+  private double targetFinalVelocityScalar = 0.0;
 
   private Field2d m_driverStationField = new Field2d();
 
@@ -367,11 +368,38 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   /**
-   * Checks if the bot is aligned heading-wise and translation-wise
+   * Checks if the bot is aligned heading-wise and translation-wise and velocity
+   * is stopped
    * * @return
    */
   public boolean isAligned() {
+    return isTranslationAligned() && isHeadingAligned() && isStopped();
+  }
+
+  /**
+   * checks if it has reached position, not accouting for velocity or other
+   * factors.
+   * 
+   * @return
+   */
+  public boolean reachedPosition() {
     return isTranslationAligned() && isHeadingAligned();
+  }
+
+  private boolean isStopped() {
+    return Math
+        .abs(getVelocityAsScalar() - 0.0) < Constants.Swerve.PathFinding.VELOCITY_TOLERANCE;
+  }
+
+  private boolean isVelocityAligned() {
+    return Math
+        .abs(getVelocityAsScalar() - targetFinalVelocityScalar) < Constants.Swerve.PathFinding.VELOCITY_TOLERANCE;
+  }
+
+  private double getVelocityAsScalar() {
+    double vel_x = swerveDrive.getFieldVelocity().vxMetersPerSecond;
+    double vel_y = swerveDrive.getFieldVelocity().vyMetersPerSecond;
+    return Math.sqrt(Math.pow(vel_x, 2) + Math.pow(vel_y, 2));
   }
 
   /**
@@ -442,75 +470,17 @@ public class SwerveSubsystem extends SubsystemBase {
     });
   }
 
-  public Command driveToPoseObjAvoid(Supplier<Pose2d> pose, Supplier<ChassisSpeeds> fieldRelativeSpeeds) {
-    return defer(() -> driveToPoseObjAvoid(pose.get(), fieldRelativeSpeeds.get()));
-  }
-
-  public Command driveToPoseObjAvoid(Pose2d targetPose, ChassisSpeeds finalSpeeds) {
-    if (targetPose == null)
-      return Commands.none();
-
-    double goalEndVel = Math.hypot(
-        finalSpeeds.vxMetersPerSecond,
-        finalSpeeds.vyMetersPerSecond);
-    boolean isStopping = goalEndVel < 0.05;
-
-    if (!isStopping) {
-      // Compute the approach direction (opposite of desired final velocity)
-      Rotation2d velocityAngle = new Rotation2d(
-          finalSpeeds.vxMetersPerSecond,
-          finalSpeeds.vyMetersPerSecond);
-
-      // Place a waypoint behind the goal along the approach vector
-      // e.g. 0.5m back — tune this based on speed
-      double approachDist = Math.max(0.3, goalEndVel * 0.4);
-      Translation2d approachOffset = new Translation2d(
-          -Math.cos(velocityAngle.getRadians()) * approachDist,
-          -Math.sin(velocityAngle.getRadians()) * approachDist);
-
-      Pose2d approachPose = new Pose2d(
-          targetPose.getTranslation().plus(approachOffset),
-          velocityAngle // robot faces along the velocity direction
-      );
-
-      List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(
-          approachPose,
-          new Pose2d(targetPose.getTranslation(), velocityAngle));
-
-      PathPlannerPath exitPath = new PathPlannerPath(
-          waypoints,
-          Constants.Swerve.PathFinding.constraints,
-          null, // ideal starting state — let PP figure it out
-          new GoalEndState(goalEndVel, targetPose.getRotation()));
-
-      return Commands.sequence(
-          // PP figures out how to get to the approach pose (obstacle aware)
-          AutoBuilder.pathfindThenFollowPath(exitPath, Constants.Swerve.PathFinding.constraints))
-          .finallyDo(() -> clearDriverField());
-
-    } else {
-      // Original stopping behavior
-      PathPlannerTrajectoryState goalState = new PathPlannerTrajectoryState();
-      goalState.pose = targetPose;
-      goalState.fieldSpeeds = finalSpeeds;
-
-      return Commands.sequence(
-          AutoBuilder.pathfindToPose(targetPose, Constants.Swerve.PathFinding.constraints, 0.0)
-              .until(() -> targetPose.getTranslation()
-                  .getDistance(getPose().getTranslation()) < Constants.Swerve.PathFinding.PIDTolerance),
-          run(() -> swerveDrive.drive(
-              ALIGN_CONTROLLER.calculateRobotRelativeSpeeds(getPose(), goalState)))
-              .until(() -> isAligned(Constants.Swerve.PathFinding.MIN_ALIGNED_TIME)))
-          .finallyDo(() -> clearDriverField());
-    }
+  public Command driveToPoseObjAvoid(Supplier<Pose2d> pose, Supplier<Double> finalVelocity) {
+    return defer(() -> driveToPoseObjAvoid(pose.get(), finalVelocity.get()));
   }
 
   public Command driveToPoseObjAvoid(Supplier<Pose2d> pose) {
-    return defer(() -> driveToPoseObjAvoid(pose.get()));
+    return defer(() -> driveToPoseObjAvoid(pose.get(), 0.0));
   }
 
-  public Command driveToPoseObjAvoid(Pose2d pose) {
+  public Command driveToPoseObjAvoid(Pose2d pose, double finalVelocity) {
     targetPose = pose; // Sets the global target pose
+    targetFinalVelocityScalar = finalVelocity;
 
     if (targetPose == null)
       return Commands.none();
@@ -518,7 +488,7 @@ public class SwerveSubsystem extends SubsystemBase {
     Command pathfindingCommand = AutoBuilder.pathfindToPose(
         targetPose,
         Constants.Swerve.PathFinding.constraints,
-        0.0);
+        finalVelocity);
 
     PathPlannerTrajectoryState goalState = new PathPlannerTrajectoryState();
     goalState.pose = targetPose;
@@ -536,9 +506,8 @@ public class SwerveSubsystem extends SubsystemBase {
                   getPose(), goalState));
           Logger.recordOutput(
               "Swerve/PID output", ALIGN_CONTROLLER.calculateRobotRelativeSpeeds(getPose(), goalState));
-        }).until(() -> isAligned(Constants.Swerve.PathFinding.MIN_ALIGNED_TIME)))
+        }).until(() -> isAligned()))
         .finallyDo(() -> clearDriverField());
-
   }
 
   public Command driveToPose(Supplier<Pose2d> pose) {
@@ -548,6 +517,7 @@ public class SwerveSubsystem extends SubsystemBase {
   public Command driveToPose(Pose2d pose) { // Tried and tested Auto Align we used in 2025
     // Change global target pose
     targetPose = pose;
+    targetFinalVelocityScalar = 0.0;
 
     if (targetPose == null)
       return Commands.none();
@@ -600,7 +570,7 @@ public class SwerveSubsystem extends SubsystemBase {
                 }))
         .finallyDo(interrupted -> {
           clearDriverField();
-        }).until(() -> isAligned(Constants.Swerve.PathFinding.MIN_ALIGNED_TIME));
+        }).until(() -> isAligned());
   }
 
   /**
