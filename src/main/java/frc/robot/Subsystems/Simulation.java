@@ -139,7 +139,7 @@ public class Simulation extends SubsystemBase {
                 m_ShooterSubsystem.getTargetRPM() * 3.14 * 4 * 0.0254 / 60 * 0.7, // compression slow down and rpm
                                                                                   // slow down
                 90 - m_HoodSubsystem.getHoodAngle(),
-                m_TurretSubsystem.getAngleWrapped() + 180,
+                m_TurretSubsystem.getAngleWrapped(),
                 Units.inchesToMeters(10));
 
     }

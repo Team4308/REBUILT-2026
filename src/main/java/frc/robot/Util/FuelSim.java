@@ -344,7 +344,8 @@ public class FuelSim {
         }
 
         Pose3d launchPose = new Pose3d(this.robotSupplier.get())
-                .plus(new Transform3d(0, 0, launchHeight, Rotation3d.kZero));
+                .plus(new Transform3d(0, 0, launchHeight, Rotation3d.kZero))
+                .plus(new Transform3d(-0.1362075, 0, 0.25, Rotation3d.kZero));
         ChassisSpeeds fieldSpeeds = this.robotSpeedsSupplier.get();
 
         double horizontalVel = Math.cos(Math.toRadians(hoodAngle)) * launchVelocity;
