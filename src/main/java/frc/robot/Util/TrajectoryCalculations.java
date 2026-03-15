@@ -243,7 +243,8 @@ public class TrajectoryCalculations {
         double nowMs = Timer.getFPGATimestamp() * 1000.0;
         double distanceChange = Math.abs(lastDistanceMeters - lastSolvedDistance);
         double yawChange = Math.abs(targetYawDegrees - lastSolvedYawDeg);
-        boolean enoughTimePassed = (nowMs - lastSolveTimestamp) >= Constants.Shooting.TrajectoryCalc.MIN_SOLVE_INTERVAL_MS;
+        boolean enoughTimePassed = (nowMs
+                - lastSolveTimestamp) >= Constants.Shooting.TrajectoryCalc.MIN_SOLVE_INTERVAL_MS;
         boolean inputsChanged = distanceChange > Constants.Shooting.TrajectoryCalc.DISTANCE_CHANGE_THRESHOLD_M
                 || yawChange > Constants.Shooting.TrajectoryCalc.YAW_CHANGE_THRESHOLD_DEG;
 
@@ -343,7 +344,8 @@ public class TrajectoryCalculations {
         FuelSim.getInstance().spawnFuel(pos, vel);
     }
 
-    // Do not log this every cycle - only when a new shot is calculated or when significant changes occur
+    // Do not log this every cycle - only when a new shot is calculated or when
+    // significant changes occur
     private void logShotOutput() {
         if (!loggingEnabled) {
             return;
@@ -496,7 +498,7 @@ public class TrajectoryCalculations {
         if (trackingEnabled && poseSupplier != null) {
             updateShot();
         }
-        //logShotOutput();
-        //logTrajectoryDebug();
+        // logShotOutput();
+        // logTrajectoryDebug();
     }
 }

@@ -7,6 +7,8 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 import com.pathplanner.lib.pathfinding.Pathfinding;
 
+import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.cscore.HttpCamera;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -51,6 +53,13 @@ public class Robot extends LoggedRobot {
 
     // Ensure trajectory logging runs in all modes (real + sim).
     m_robotContainer.periodic();
+
+    HttpCamera backCamera = new HttpCamera(
+        "ExternalCam",
+        "http://10.43.8.11:1181", // is this right?
+        HttpCamera.HttpCameraKind.kMJPGStreamer);
+
+    CameraServer.startAutomaticCapture(backCamera);
   }
 
   @Override

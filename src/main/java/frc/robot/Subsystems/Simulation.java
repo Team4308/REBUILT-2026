@@ -23,6 +23,7 @@ public class Simulation extends SubsystemBase {
     private final SingleJointedArmSim m_turretSim;
 
     private double fuelCount = 25; // start with 25
+    private double BALLS_PER_SECOND = 5;
 
     public Simulation(HoodSubsystem m_HoodSubsystem, IndexerSubsystem m_IndexerSubsystem,
             IntakeSubsystem m_IntakeSubsystem,
@@ -111,8 +112,8 @@ public class Simulation extends SubsystemBase {
         fuelCount--;
 
         FuelSim.getInstance().launchFuel(
-                m_ShooterSubsystem.getTargetRPM() * 3.14 * 4 * 0.0254 / 60 * 0.8 * 0.6, // compression slow down and rpm
-                                                                                        // slow down
+                m_ShooterSubsystem.getTargetRPM() * 3.14 * 4 * 0.0254 / 60 * 0.7, // compression slow down and rpm
+                                                                                  // slow down
                 90 - m_HoodSubsystem.getHoodAngle(),
                 m_TurretSubsystem.getAngleWrapped() + 180,
                 Units.inchesToMeters(10));
@@ -134,7 +135,7 @@ public class Simulation extends SubsystemBase {
         if (m_IndexerSubsystem.getTargetBallTunnelVelocity() > 10) {
             if (intervalRemaining <= 0) {
                 launchFuel();
-                intervalRemaining = 0.2; // 5bps
+                intervalRemaining = 1 / BALLS_PER_SECOND; // 5bps
             }
             intervalRemaining -= 0.02;
         }
