@@ -127,7 +127,6 @@ public class RobotContainer {
                 m_TrajectoryCalculations.setCurrentRPMsupply(() -> m_ShooterSubsystem.getRPM());
                 m_TrajectoryCalculations.setPoseSupplier(() -> drivebase.getPose());
                 m_TrajectoryCalculations.setTargetSupplier(() -> FieldLayout.ShooterTargets.getAllianceHub());
-                m_HoodSubsystem.setTrajectoryCalculations(m_TrajectoryCalculations);
         }
 
         private void configureBindings() {

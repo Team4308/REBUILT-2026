@@ -37,15 +37,6 @@ public class ShooterSubsystem extends SubsystemBase {
 
     private final SubsystemVerbosity verbosity;
 
-    public enum ShooterState {
-        IDLE,
-        SHOOTING,
-        PASSING,
-    }
-
-    private ShooterState m_currentState = ShooterState.IDLE;
-    private boolean m_usingStateBased = false;
-
     public ShooterSubsystem() {
         m_rightMotor = new TalonFX(Ports.Shooting.Shooter.kShooterMotor1);
         m_leftMotor = new TalonFX(Ports.Shooting.Shooter.kShooterMotor2);
@@ -108,10 +99,6 @@ public class ShooterSubsystem extends SubsystemBase {
                 this).until(() -> isAtTargetSpeed() || (Timer.getFPGATimestamp() * 1000.0) >= timeoutMs);
     }
 
-    public void setStateBased(boolean using) {
-        m_usingStateBased = using;
-    }
-
     public void selectProfileSlot(int i) {
         m_velocityVoltage.Slot = i;
     }
@@ -122,14 +109,6 @@ public class ShooterSubsystem extends SubsystemBase {
 
     public double getRPM() {
         return m_rightMotor.getVelocity().getValue().in(edu.wpi.first.units.Units.RPM);
-    }
-
-    public ShooterState getState() {
-        return m_currentState;
-    }
-
-    public void setState(ShooterState state) {
-        m_currentState = state;
     }
 
     public void setShooterSpeedPass() {
@@ -152,20 +131,6 @@ public class ShooterSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        if (m_usingStateBased) {
-            switch (m_currentState) {
-                case IDLE:
-                    stopMotors();
-                    break;
-                case SHOOTING:
-                    setShooterSpeedHub();
-                    break;
-                case PASSING:
-                    setShooterSpeedPass();
-                    break;
-            }
-        }
-
         if (verbosity == SubsystemVerbosity.LOW || verbosity == SubsystemVerbosity.HIGH) {
             Logger.recordOutput("Subsystems/Shooter/Is At Target Speed?", isAtTargetSpeed());
             Logger.recordOutput("Subsystems/Shooter/Current RPM", getRPM());

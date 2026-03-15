@@ -2,6 +2,7 @@ package frc.robot.Subsystems;
 
 import org.littletonrobotics.junction.Logger;
 
+import ca.team4308.absolutelib.math.DoubleUtils;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -75,7 +76,13 @@ public class Simulation extends SubsystemBase {
 
         m_IntakeSubsystem.setSimSupplier(() -> Math.toDegrees(m_intakeSim.getAngleRads()));
         m_HoodSubsystem.setSimSupplier(() -> Math.toDegrees(m_hoodSim.getAngleRads()));
-        m_TurretSubsystem.setSimSupplier(() -> Math.toDegrees(m_turretSim.getAngleRads()));
+        m_TurretSubsystem.setSimSupplier(() -> Math.toDegrees(m_turretSim.getAngleRads()),
+                () -> DoubleUtils.clamp(
+                        Math.toDegrees(m_turretSim.getAngleRads()) * Constants.Shooting.Turret.GEAR_RATIO_1 / 360, 0,
+                        1),
+                () -> DoubleUtils.clamp(
+                        Math.toDegrees(m_turretSim.getAngleRads()) * Constants.Shooting.Turret.GEAR_RATIO_2 / 360, 0,
+                        1));
 
         initFuelSim();
     }

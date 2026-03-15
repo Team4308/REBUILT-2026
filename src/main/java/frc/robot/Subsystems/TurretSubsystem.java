@@ -24,7 +24,6 @@ import frc.robot.Robot;
 import frc.robot.Util.SubsystemVerbosity;
 
 public class TurretSubsystem extends SubsystemBase {
-
     private final TalonFX m_driveMotor;
     private final CANcoder m_canCoder1;
     private final CANcoder m_canCoder2;
@@ -45,6 +44,8 @@ public class TurretSubsystem extends SubsystemBase {
     public final static ProfiledPIDController pidController = Constants.Shooting.Turret.pidController;
 
     private Supplier<Double> simSupplier;
+    private Supplier<Double> enc1SimSupplier;
+    private Supplier<Double> enc2SimSupplier;
     private double voltage;
 
     public TurretSubsystem() {
@@ -83,8 +84,15 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
     public double calculateEncoderAngle() {
-        double enc1 = m_canCoder1.getAbsolutePosition().getValueAsDouble();
-        double enc2 = m_canCoder2.getAbsolutePosition().getValueAsDouble();
+        double enc1;
+        double enc2;
+        if (Robot.isReal()) {
+            enc1 = m_canCoder1.getAbsolutePosition().getValueAsDouble();
+            enc2 = m_canCoder2.getAbsolutePosition().getValueAsDouble();
+        } else {
+            enc1 = enc1SimSupplier.get();
+            enc2 = enc2SimSupplier.get();
+        }
 
         Logger.recordOutput("Subsystems/Turret/ENCODER 1", enc1);
         Logger.recordOutput("Subsystems/Turret/ENCODER 2", enc2);
@@ -97,12 +105,16 @@ public class TurretSubsystem extends SubsystemBase {
         double preciseRotations = (n1 + enc1) / Constants.Shooting.Turret.GEAR_RATIO_1;
 
         double posDegrees = coarseRotations * 360;
-        Logger.recordOutput("Subsystems/Turret/Encoder Calculated Angle", posDegrees);
+        Logger.recordOutput("Subsystems/Turret/Encoder Calculated Angle (Coarse)", posDegrees);
+        Logger.recordOutput("Subsystems/Turret/Encoder Calculated Angle (Precise)", preciseRotations);
         return posDegrees;
     }
 
-    public void setSimSupplier(Supplier<Double> supplier) {
-        simSupplier = supplier;
+    public void setSimSupplier(Supplier<Double> angleSupplier, Supplier<Double> enc1Supplier,
+            Supplier<Double> enc2Supplier) {
+        simSupplier = angleSupplier;
+        this.enc1SimSupplier = enc1Supplier;
+        this.enc2SimSupplier = enc2Supplier;
     }
 
     public double getVoltage() {
@@ -111,8 +123,6 @@ public class TurretSubsystem extends SubsystemBase {
 
     public void updateAngle() {
         if (Robot.isSimulation()) {
-            Logger.recordOutput("Subsystems/Turret/SimMode", 1);
-            Logger.recordOutput("Subsystems/Turret/SimSupplierNull", simSupplier == null ? 1 : 0);
             if (simSupplier == null) {
                 m_currentDegUnWrapped = 360;
             } else {

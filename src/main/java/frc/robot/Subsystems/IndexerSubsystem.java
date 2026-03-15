@@ -28,15 +28,6 @@ public class IndexerSubsystem extends SubsystemBase {
     private double targetHopperVelocity = 0;
     private double targetBallTunnelVelocity = 0;
 
-    public enum State { // the diff states
-        IDLE,
-        SHOOTING
-    }
-
-    private State currentState = State.IDLE;
-
-    private boolean usingState = false;
-
     private final VelocityVoltage m_hopperRequest = new VelocityVoltage(0).withSlot(0);
     private final VelocityVoltage m_indexerRequest = new VelocityVoltage(0).withSlot(0);
 
@@ -95,14 +86,6 @@ public class IndexerSubsystem extends SubsystemBase {
         m_hopperMotor2.stopMotor();
     }
 
-    public void setState(State newState) {
-        this.currentState = newState;
-    }
-
-    public void setUsingState(boolean using) {
-        usingState = using;
-    }
-
     public double getTargetBallTunnelVelocity() {
         return targetBallTunnelVelocity;
     }
@@ -115,21 +98,9 @@ public class IndexerSubsystem extends SubsystemBase {
     public void periodic() {
         boolean ballsReady = !m_beambreak.get();
 
-        if (usingState) {
-            switch (currentState) {
-                case IDLE:
-                    if (ballsReady) {
-                        stopMotors();
-                    } else {
-                        setHopperVelocity(Constants.Indexer.PASSIVE_HOPEPR_VELOCITY);
-                        setIndexerVelocity(Constants.Indexer.PASSIVE_INDEXER_VELOCITY);
-                    }
-                    break;
-                case SHOOTING:
-                    setHopperVelocity(Constants.Indexer.DEFAULT_HOPPER_VELOCITY);
-                    setIndexerVelocity(Constants.Indexer.DEFAULT_INDEXER_VELOCITY);
-                    break;
-            }
+        if (!ballsReady && targetBallTunnelVelocity != 0 && targetHopperVelocity != 0) {
+            setHopperVelocity(Constants.Indexer.PASSIVE_HOPEPR_VELOCITY);
+            setIndexerVelocity(Constants.Indexer.PASSIVE_INDEXER_VELOCITY);
         }
 
         if (verbosity == SubsystemVerbosity.LOW || verbosity == SubsystemVerbosity.HIGH) {

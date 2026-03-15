@@ -16,7 +16,6 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -33,15 +32,6 @@ public class IntakeSubsystem extends SubsystemBase {
   private final VelocityVoltage rollerRequest = new VelocityVoltage(0);
 
   private double targetAngleDeg = Constants.Intake.RETRACTED_ANGLE_DEG;
-
-  private enum state {
-    REST,
-    SHOOTING,
-    INTAKING
-  }
-
-  private state currentState = state.REST;
-  private boolean stateBased = false;
 
   private double offset = 127;
 
@@ -144,16 +134,6 @@ public class IntakeSubsystem extends SubsystemBase {
         moveIntakeToAngle(Constants.Intake.AGITATE_LOW_DEG).until(() -> isAtAngle()))).repeatedly();
   }
 
-  /* ---------------- States ----------------- */
-
-  public void setState(state s) {
-    currentState = s;
-  }
-
-  public void setStateBased(boolean using) {
-    stateBased = using;
-  }
-
   /* ---------------- Helpers ---------------- */
 
   private void configureRoller() {
@@ -198,17 +178,6 @@ public class IntakeSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    if (stateBased) {
-      switch (currentState) {
-        case REST:
-          retract();
-        case SHOOTING:
-          agitate();
-        case INTAKING:
-          intake();
-      }
-    }
-
     double currentDeg = getIntakeAngle();
     double pidOutput = pidController.calculate(currentDeg, targetAngleDeg);
     double ffOutput = feedforward.calculate(pidController.getSetpoint().position,
