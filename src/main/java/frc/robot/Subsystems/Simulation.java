@@ -4,6 +4,7 @@ import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Subsystems.swerve.SwerveSubsystem;
@@ -22,7 +23,7 @@ public class Simulation extends SubsystemBase {
     private final SingleJointedArmSim m_hoodSim;
     private final SingleJointedArmSim m_turretSim;
 
-    private double fuelCount = 0;
+    private double fuelCount = 25; // start with 25
 
     public Simulation(HoodSubsystem m_HoodSubsystem, IndexerSubsystem m_IndexerSubsystem,
             IntakeSubsystem m_IntakeSubsystem,
@@ -80,7 +81,7 @@ public class Simulation extends SubsystemBase {
     }
 
     private void incrementFuel() {
-        fuelCount = Math.max(fuelCount + 1, Constants.Simulation.MAX_FUEL);
+        fuelCount = Math.min(fuelCount + 1, Constants.Simulation.MAX_FUEL);
     }
 
     private void initFuelSim() {
@@ -110,14 +111,16 @@ public class Simulation extends SubsystemBase {
             return;
         fuelCount--;
 
-        /*
-         * FuelSim.getInstance().launchFuel(
-         * m_ShooterSubsystem.getRPM() * 3.14 * 4,
-         * m_HoodSubsystem.getHoodAngle(),
-         * m_TurretSubsystem.getAngleWrapped(),
-         * ROBOT_TO_TURRET_TRANSFORM.getMeasureZ());
-         */
+        FuelSim.getInstance().launchFuel(
+                m_ShooterSubsystem.getTargetRPM() * 3.14 * 4 * 0.0254 / 60 * 0.8 * 0.6, // compression slow down and rpm
+                                                                                        // slow down
+                90 - m_HoodSubsystem.getHoodAngle(),
+                m_TurretSubsystem.getAngleWrapped() + 180,
+                Units.inchesToMeters(10));
+
     }
+
+    double intervalRemaining = 0;
 
     @Override
     public void periodic() {
@@ -129,6 +132,16 @@ public class Simulation extends SubsystemBase {
         m_hoodSim.update(0.020);
         m_turretSim.update(0.020);
 
+        if (m_IndexerSubsystem.getTargetBallTunnelVelocity() > 10) {
+            if (intervalRemaining <= 0) {
+                launchFuel();
+                intervalRemaining = 0.2; // 5bps
+            }
+            intervalRemaining -= 0.02;
+        }
+
         Logger.recordOutput("Simulation/Fuel Count", fuelCount);
+        Logger.recordOutput("Simulation/Red Hub Count", FuelSim.Hub.RED_HUB.getScore());
+        Logger.recordOutput("Simulation/Blue Hub Score", FuelSim.Hub.BLUE_HUB.getScore());
     }
 }

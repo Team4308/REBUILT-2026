@@ -21,10 +21,10 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import frc.robot.Commands.AimAtHubCommand;
+import frc.robot.Commands.DefaultIntakePivot;
 import frc.robot.Commands.MoveHoodCommand;
 import frc.robot.FieldLayout;
 import frc.robot.Commands.ShooterCommand;
-import frc.robot.Commands.TriggerIntakeCommand;
 import frc.robot.Commands.MoveTurretCommand;
 import frc.robot.Subsystems.HoodSubsystem;
 import frc.robot.Subsystems.IndexerSubsystem;
@@ -121,8 +121,8 @@ public class RobotContainer {
 
                 m_HoodSubsystem.setTurretSupplier(() -> m_TurretSubsystem.getAngleWrapped());
 
-                // m_IntakeSubsystem.setDefaultCommand(
-                // new TriggerIntakeCommand(m_IntakeSubsystem, () -> driver.getRightTrigger()));
+                m_IntakeSubsystem.setDefaultCommand(
+                                new DefaultIntakePivot(m_IntakeSubsystem, () -> driver.getRightTrigger()));
 
                 configureNamedCommands();
                 configureBindings();
@@ -155,16 +155,18 @@ public class RobotContainer {
                  * Right Small Button: Reset Hood
                  */
 
-                // NamedCommands.registerCommand("Shoot", new AimAtHubCommand(() -> drivebase.getPose(), m_TurretSubsystem),
-                //     m_HoodSubsystem.setState(HoodSubsystem.RobotState.SHOOT),
-                //     m_ShooterSubsystem.setState(ShooterSubsystem.ShooterState.SHOOTING));
-                // NamedCommands.registerCommand("Intake", m_IntakeSubsystem.setState(state.INTAKING));
-                // NamedCommands.registerCommand("Intake and Shoot", m_IntakeSubsystem.setState(state.INTAKING),
-                //     new AimAtHubCommand(() -> drivebase.getPose(), m_TurretSubsystem),
-                //     m_HoodSubsystem.setState(HoodSubsystem.RobotState.SHOOT),
-                //     m_ShooterSubsystem.setState(ShooterSubsystem.ShooterState.SHOOTING));
+                // NamedCommands.registerCommand("Shoot", new AimAtHubCommand(() ->
+                // drivebase.getPose(), m_TurretSubsystem),
+                // m_HoodSubsystem.setState(HoodSubsystem.RobotState.SHOOT),
+                // m_ShooterSubsystem.setState(ShooterSubsystem.ShooterState.SHOOTING));
+                // NamedCommands.registerCommand("Intake",
+                // m_IntakeSubsystem.setState(state.INTAKING));
+                // NamedCommands.registerCommand("Intake and Shoot",
+                // m_IntakeSubsystem.setState(state.INTAKING),
+                // new AimAtHubCommand(() -> drivebase.getPose(), m_TurretSubsystem),
+                // m_HoodSubsystem.setState(HoodSubsystem.RobotState.SHOOT),
+                // m_ShooterSubsystem.setState(ShooterSubsystem.ShooterState.SHOOTING));
                 // NEED TO MAKE THE ABOVE NOT USE STATE BASED
-
 
                 Command driveFieldOrientedAnglularVelocity = drivebase.driveFieldOriented(driveAngularVelocity);
                 Command driveRobotOrientedAngularVelocity = drivebase.driveFieldOriented(driveRobotOriented);
@@ -214,19 +216,13 @@ public class RobotContainer {
                 // driver.LB.whileTrue(driveRobotOrientedAngularVelocity);
 
                 if (Robot.isSimulation()) {
-                        drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocityKeyboard);
+                        // drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocityKeyboard);
                 }
 
         }
 
         public void periodic() {
-                m_TrajectoryCalculations.periodic();
-                if (drivebase.getFieldLocation().equals("AllianceZone")) {
-                        m_TurretSubsystem.setTarget(getTrajectoryCalculations().getNeededYaw());
-                        m_HoodSubsystem.setHoodAngle(getTrajectoryCalculations().getNeededPitch());
-                } else {
-                        // set trajectory calculations to correct field area
-                }
+
         }
 
         public TrajectoryCalculations getTrajectoryCalculations() {

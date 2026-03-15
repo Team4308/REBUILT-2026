@@ -104,6 +104,14 @@ public class IndexerSubsystem extends SubsystemBase {
         usingState = using;
     }
 
+    public double getTargetBallTunnelVelocity() {
+        return targetBallTunnelVelocity;
+    }
+
+    public double getTargetHopperVelocity() {
+        return targetHopperVelocity;
+    }
+
     @Override
     public void periodic() {
         boolean ballsReady = !m_beambreak.get();

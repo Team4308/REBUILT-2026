@@ -20,13 +20,12 @@ import frc.robot.Commands.IntakeCommand;
 import frc.robot.Commands.MoveHoodCommand;
 import frc.robot.Commands.MoveTurretCommand;
 import frc.robot.Commands.ShooterCommand;
-import frc.robot.Commands.TriggerIntakeCommand;
-
 
 public class SystemCheck extends SequentialCommandGroup {
-        public SystemCheck(HoodSubsystem hoodSubsystem, IndexerSubsystem indexerSubsystem, IntakeSubsystem intakeSubsystem,
-                        SwerveSubsystem swerveSubsystem, LedSubsystem ledSubsystem, ShooterSubsystem shooterSubsystem, 
-                                        TurretSubsystem turretSubsystem) {
+        public SystemCheck(HoodSubsystem hoodSubsystem, IndexerSubsystem indexerSubsystem,
+                        IntakeSubsystem intakeSubsystem,
+                        SwerveSubsystem swerveSubsystem, LedSubsystem ledSubsystem, ShooterSubsystem shooterSubsystem,
+                        TurretSubsystem turretSubsystem) {
                 addCommands(
                                 new ParallelDeadlineGroup(new WaitCommand(1),
                                                 swerveSubsystem.driveCommand(() -> 5, () -> 0, () -> 0)),
@@ -51,8 +50,8 @@ public class SystemCheck extends SequentialCommandGroup {
                                 new WaitCommand(1),
                                 new InstantCommand(() -> intakeSubsystem.resetIntake()),
                                 new InstantCommand(() -> intakeSubsystem.stopRoller()),
-                                
-                                new ParallelDeadlineGroup(new WaitCommand(1), 
+
+                                new ParallelDeadlineGroup(new WaitCommand(1),
                                                 turretSubsystem.moveToTarget(() -> 15.0)),
                                 new InstantCommand(() -> turretSubsystem.resetTurretCommand()),
 
@@ -61,17 +60,8 @@ public class SystemCheck extends SequentialCommandGroup {
                                 new WaitCommand(1),
                                 new InstantCommand(() -> shooterSubsystem.setShooterSpeed(() -> 0.0)),
 
-                                new ParallelDeadlineGroup(new WaitCommand(1), 
-                                               new IndexerCommand(indexerSubsystem, () -> 600.0))
-                                );
-        
+                                new ParallelDeadlineGroup(new WaitCommand(1),
+                                                new IndexerCommand(indexerSubsystem, () -> 600.0)));
+
         }
 }
-
-
-
-
-
-
-
-

@@ -1,10 +1,21 @@
 package frc.robot.Util;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearVelocity;
+
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Radians;
+
 import java.util.ArrayList;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
@@ -332,6 +343,30 @@ public class FuelSim {
      */
     public void spawnFuel(Translation3d pos, Translation3d vel) {
         fuels.add(new Fuel(pos, vel));
+    }
+
+    public void launchFuel(double launchVelocity, double hoodAngle, double turretYaw, double launchHeight) {
+        if (robotSupplier == null || robotSpeedsSupplier == null) {
+            throw new IllegalStateException("Robot must be registered before launching fuel.");
+        }
+
+        Pose3d launchPose = new Pose3d(this.robotSupplier.get())
+                .plus(new Transform3d(0, 0, launchHeight, Rotation3d.kZero));
+        ChassisSpeeds fieldSpeeds = this.robotSpeedsSupplier.get();
+
+        double horizontalVel = Math.cos(Math.toRadians(hoodAngle)) * launchVelocity;
+        double verticalVel = Math.sin(Math.toRadians(hoodAngle)) * launchVelocity;
+        double xVel = horizontalVel
+                * Math.cos(
+                        Math.toRadians(turretYaw) + launchPose.getRotation().getZ());
+        double yVel = horizontalVel
+                * Math.sin(
+                        Math.toRadians(turretYaw) + launchPose.getRotation().getZ());
+
+        xVel += fieldSpeeds.vxMetersPerSecond;
+        yVel += fieldSpeeds.vyMetersPerSecond;
+
+        spawnFuel(launchPose.getTranslation(), new Translation3d(xVel, yVel, verticalVel));
     }
 
     private void handleRobotCollision(Fuel fuel, Pose2d robot, Translation2d robotVel) {
