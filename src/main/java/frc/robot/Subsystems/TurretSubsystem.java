@@ -90,8 +90,14 @@ public class TurretSubsystem extends SubsystemBase {
             enc1 = m_canCoder1.getAbsolutePosition().getValueAsDouble();
             enc2 = m_canCoder2.getAbsolutePosition().getValueAsDouble();
         } else {
-            enc1 = enc1SimSupplier.get();
-            enc2 = enc2SimSupplier.get();
+            if (enc1SimSupplier == null || enc2SimSupplier == null) {
+                enc1 = 0;
+                enc2 = 0;
+            } else {
+                enc1 = enc1SimSupplier.get();
+                enc2 = enc2SimSupplier.get();
+            }
+
         }
 
         Logger.recordOutput("Subsystems/Turret/ENCODER 1", enc1);
