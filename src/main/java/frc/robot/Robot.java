@@ -39,6 +39,13 @@ public class Robot extends LoggedRobot {
                     // be added.
 
     m_robotContainer = new RobotContainer();
+
+    HttpCamera backCamera = new HttpCamera(
+        "ExternalCam",
+        "http://10.43.8.11:1181", // is this right?
+        HttpCamera.HttpCameraKind.kMJPGStreamer);
+
+    CameraServer.startAutomaticCapture(backCamera);
   }
 
   @Override
@@ -53,13 +60,6 @@ public class Robot extends LoggedRobot {
 
     // Ensure trajectory logging runs in all modes (real + sim).
     m_robotContainer.periodic();
-
-    HttpCamera backCamera = new HttpCamera(
-        "ExternalCam",
-        "http://10.43.8.11:1181", // is this right?
-        HttpCamera.HttpCameraKind.kMJPGStreamer);
-
-    CameraServer.startAutomaticCapture(backCamera);
   }
 
   @Override
