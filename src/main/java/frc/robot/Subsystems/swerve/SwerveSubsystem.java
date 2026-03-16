@@ -52,11 +52,9 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import frc.robot.Constants;
 import frc.robot.FieldLayout;
 import frc.robot.Robot;
-
 import frc.robot.Subsystems.vision.Vision;
 import frc.robot.Subsystems.vision.Vision.ObjectData;
 import frc.robot.Subsystems.vision.Vision.VisionMeasurement;
-
 import swervelib.SwerveController;
 import swervelib.SwerveDrive;
 import swervelib.SwerveDriveTest;
@@ -442,6 +440,69 @@ public class SwerveSubsystem extends SubsystemBase {
             getTargetSpeeds(0.0, 0.0, getHeading()));
       }
     });
+  }
+
+  public Command driveToPoseObjAvoid(Supplier<Pose2d> pose, Supplier<ChassisSpeeds> fieldRelativeSpeeds) {
+    return defer(() -> driveToPoseObjAvoid(pose.get(), fieldRelativeSpeeds.get()));
+  }
+
+  public Command driveToPoseObjAvoid(Pose2d targetPose, ChassisSpeeds finalSpeeds) {
+    if (targetPose == null)
+      return Commands.none();
+
+    double goalEndVel = Math.hypot(
+        finalSpeeds.vxMetersPerSecond,
+        finalSpeeds.vyMetersPerSecond);
+    boolean isStopping = goalEndVel < 0.05;
+
+    if (!isStopping) {
+      // Compute the approach direction (opposite of desired final velocity)
+      Rotation2d velocityAngle = new Rotation2d(
+          finalSpeeds.vxMetersPerSecond,
+          finalSpeeds.vyMetersPerSecond);
+
+      // Place a waypoint behind the goal along the approach vector
+      // e.g. 0.5m back — tune this based on speed
+      double approachDist = Math.max(0.3, goalEndVel * 0.4);
+      Translation2d approachOffset = new Translation2d(
+          -Math.cos(velocityAngle.getRadians()) * approachDist,
+          -Math.sin(velocityAngle.getRadians()) * approachDist);
+
+      Pose2d approachPose = new Pose2d(
+          targetPose.getTranslation().plus(approachOffset),
+          velocityAngle // robot faces along the velocity direction
+      );
+
+      List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(
+          approachPose,
+          new Pose2d(targetPose.getTranslation(), velocityAngle));
+
+      PathPlannerPath exitPath = new PathPlannerPath(
+          waypoints,
+          Constants.Swerve.PathFinding.constraints,
+          null, // ideal starting state — let PP figure it out
+          new GoalEndState(goalEndVel, targetPose.getRotation()));
+
+      return Commands.sequence(
+          // PP figures out how to get to the approach pose (obstacle aware)
+          AutoBuilder.pathfindThenFollowPath(exitPath, Constants.Swerve.PathFinding.constraints))
+          .finallyDo(() -> clearDriverField());
+
+    } else {
+      // Original stopping behavior
+      PathPlannerTrajectoryState goalState = new PathPlannerTrajectoryState();
+      goalState.pose = targetPose;
+      goalState.fieldSpeeds = finalSpeeds;
+
+      return Commands.sequence(
+          AutoBuilder.pathfindToPose(targetPose, Constants.Swerve.PathFinding.constraints, 0.0)
+              .until(() -> targetPose.getTranslation()
+                  .getDistance(getPose().getTranslation()) < Constants.Swerve.PathFinding.PIDTolerance),
+          run(() -> swerveDrive.drive(
+              ALIGN_CONTROLLER.calculateRobotRelativeSpeeds(getPose(), goalState)))
+              .until(() -> isAligned(Constants.Swerve.PathFinding.MIN_ALIGNED_TIME)))
+          .finallyDo(() -> clearDriverField());
+    }
   }
 
   public Command driveToPoseObjAvoid(Supplier<Pose2d> pose) {
