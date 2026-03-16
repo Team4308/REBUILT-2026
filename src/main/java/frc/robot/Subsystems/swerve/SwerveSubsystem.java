@@ -219,10 +219,6 @@ public class SwerveSubsystem extends SubsystemBase {
     Logger.recordOutput("Swerve/Pose", getPose());
     Logger.recordOutput("Swerve/Velocity", getRobotVelocity());
 
-    Logger.recordOutput("Target velocity", targetFinalVelocityScalar);
-    Logger.recordOutput("CUR VELOCITy", targetFinalVelocityScalar - getVelocityAsScalar());
-    Logger.recordOutput("isvelocitalinged", isVelocityAligned());
-
     Logger.recordOutput("Swerve/FieldLocation", getFieldLocation());
     Logger.recordOutput("Swerve/FieldSide", getFieldSide());
     Logger.recordOutput("Swerve/UnderTrench", getUnderTrench());
