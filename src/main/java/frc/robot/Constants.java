@@ -63,8 +63,9 @@ public final class Constants {
           3.0, 3.0,
           Units.degreesToRadians(360), Units.degreesToRadians(360));
 
-      public static final double MIN_ALIGNED_TIME = 500; // minimum time it needs to be at alignment for the pathfinding
-                                                         // to end
+      public static final double VELOCITY_TOLERANCE = 0.3; // minimum time it needs to be at alignment for the
+                                                           // pathfinding
+      // to end
     }
   }
 
@@ -93,7 +94,7 @@ public final class Constants {
       public final static double FULL_REVOLUTION_DEG = 360;
       public final static double TURRET_TOLERANCE_DEGREES = 5;
       public final static double TURRET_START_ANGLE = 360;
-      public final static double TURRET_OFFSET_ANGLE = 712; // only for CRT
+      public final static double TURRET_OFFSET_ANGLE = 725; // only for CRT
 
       public final static ArmFeedforward feedforward = new ArmFeedforward(0.24, 0, 0.0075, 0.01);
 
