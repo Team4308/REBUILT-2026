@@ -157,5 +157,13 @@ public class FieldLayout {
                                         ? neutralRightPose
                                         : neutralLeftPose;
                 }
+
+                public static Translation3d getAllianceLeftTranslation3d() {
+                        return new Translation3d(getAllianceLeftPose().getX(), getAllianceLeftPose().getY(), 0.0);
+                }
+
+                public static Translation3d getAllianceRightTranslation3d() {
+                        return new Translation3d(getAllianceRightPose().getX(), getAllianceRightPose().getY(), 0.0);
+                }
         }
 }

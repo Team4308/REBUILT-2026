@@ -67,8 +67,8 @@ public class HoodSubsystem extends SubsystemBase {
                 + (m_hoodMotor.getPosition().getValueAsDouble() / Constants.Shooting.Hood.TOTAL_GEAR_RATIO) * 360.0;
     }
 
-    public Command setHoodAngleCommand(double angle) {
-        return run(() -> setHoodAngle(angle)).until(this::isAtPosition);
+    public Command setHoodAngleCommand(Supplier<Double> angleSupplier) {
+        return run(() -> setHoodAngle(angleSupplier.get())).until(this::isAtPosition);
     }
 
     public void setHoodAngle(double angle) {

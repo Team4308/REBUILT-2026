@@ -89,14 +89,11 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     public Command setShooterSpeed(Supplier<Double> rpm) {
-        return Commands.run(
-                () -> setTargetSpeed(rpm.get()));
+        return run(() -> setTargetSpeed(rpm.get()));
     }
 
     public Command setShooterSpeed(Supplier<Double> rpm, double timeoutMs) {
-        return Commands.run(
-                () -> setTargetSpeed(rpm.get()),
-                this).until(() -> isAtTargetSpeed() || (Timer.getFPGATimestamp() * 1000.0) >= timeoutMs);
+        return run(() -> setTargetSpeed(rpm.get())).until(() -> isAtTargetSpeed() || (Timer.getFPGATimestamp() * 1000.0) >= timeoutMs);
     }
 
     public void selectProfileSlot(int i) {

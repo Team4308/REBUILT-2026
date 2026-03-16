@@ -9,6 +9,7 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.robot.Constants;
@@ -78,6 +79,13 @@ public class IndexerSubsystem extends SubsystemBase {
 
     }
 
+    public Command runMotors() {
+        return run(() -> {
+            setHopperVelocity(Constants.Indexer.PASSIVE_HOPEPR_VELOCITY);
+            setIndexerVelocity(Constants.Indexer.PASSIVE_INDEXER_VELOCITY);
+        }).until(() -> m_beambreak.get());
+    }
+
     public void stopMotors() {
         targetHopperVelocity = 0;
         targetBallTunnelVelocity = 0;
@@ -94,14 +102,18 @@ public class IndexerSubsystem extends SubsystemBase {
         return targetHopperVelocity;
     }
 
+    public boolean getBeambreak() {
+        return m_beambreak.get();
+    }
+
     @Override
     public void periodic() {
-        boolean ballsReady = !m_beambreak.get();
+        // boolean ballsReady = !m_beambreak.get();
 
-        if (!ballsReady && targetBallTunnelVelocity != 0 && targetHopperVelocity != 0) {
-            setHopperVelocity(Constants.Indexer.PASSIVE_HOPEPR_VELOCITY);
-            setIndexerVelocity(Constants.Indexer.PASSIVE_INDEXER_VELOCITY);
-        }
+        // if (!ballsReady && targetBallTunnelVelocity != 0 && targetHopperVelocity != 0) {
+        //     setHopperVelocity(Constants.Indexer.PASSIVE_HOPEPR_VELOCITY);
+        //     setIndexerVelocity(Constants.Indexer.PASSIVE_INDEXER_VELOCITY);
+        // }
 
         if (verbosity == SubsystemVerbosity.LOW || verbosity == SubsystemVerbosity.HIGH) {
             Logger.recordOutput("Subsystems/Indexer/BallTunnel/Velocity",

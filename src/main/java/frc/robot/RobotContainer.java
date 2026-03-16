@@ -7,17 +7,25 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import ca.team4308.absolutelib.control.RazerWrapper;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.Commands.AimAtHubCommand;
 import frc.robot.Commands.DefaultIntakePivot;
 import frc.robot.Commands.MoveHoodCommand;
 import frc.robot.Commands.MoveTurretCommand;
+import frc.robot.Commands.Trajectories.AutoAimHood;
+import frc.robot.Commands.Trajectories.AutoAimIndexer;
+import frc.robot.Commands.Trajectories.AutoAimShooter;
+import frc.robot.Commands.Trajectories.AutoAimTurret;
+import frc.robot.Commands.Trajectories.Shoot;
+import frc.robot.FieldLayout.ShooterTargets;
 import frc.robot.Subsystems.HoodSubsystem;
 import frc.robot.Subsystems.IndexerSubsystem;
 import frc.robot.Subsystems.IntakeSubsystem;
@@ -56,6 +64,8 @@ public class RobotContainer {
 
         // Commands
         private final SendableChooser<Command> autoChooser;
+        private final Shoot shootLeft;
+        private final Shoot shootRight;
 
         SwerveInputStream driveAngularVelocity = SwerveInputStream.of(drivebase.getSwerveDrive(),
                         () -> driver.getLeftY() * -1,
@@ -106,6 +116,15 @@ public class RobotContainer {
                 m_IntakeSubsystem = new IntakeSubsystem();
                 m_LedSubsystem = new LedSubsystem();
 
+                m_TrajectoryCalculations = new TrajectoryCalculations();
+                m_TrajectoryCalculations.setChassisSupplier(() -> drivebase.getFieldVelocity());
+                m_TrajectoryCalculations.setCurrentRPMsupply(() -> m_ShooterSubsystem.getRPM());
+                m_TrajectoryCalculations.setPoseSupplier(() -> drivebase.getPose());
+                m_TrajectoryCalculations.setTargetSupplier(() -> FieldLayout.ShooterTargets.getAllianceHub());
+
+                shootLeft = new Shoot(m_IndexerSubsystem, () -> drivebase.getFieldLocation(), FieldLayout.Zones.getAllianceLeftTranslation3d(), getTrajectoryCalculations());
+                shootRight = new Shoot(m_IndexerSubsystem, () -> drivebase.getFieldLocation(), FieldLayout.Zones.getAllianceRightTranslation3d(), getTrajectoryCalculations());
+
                 if (Robot.isSimulation())
                         m_Simulation = new Simulation(m_HoodSubsystem, m_IndexerSubsystem, m_IntakeSubsystem,
                                         m_ShooterSubsystem, m_TurretSubsystem, drivebase);
@@ -114,6 +133,12 @@ public class RobotContainer {
 
                 m_IntakeSubsystem.setDefaultCommand(
                                 new DefaultIntakePivot(m_IntakeSubsystem, () -> driver.getRightTrigger()));
+                
+                m_IntakeSubsystem.setDefaultCommand(m_IntakeSubsystem.setRollerSpeed(() -> Constants.Intake.ROLLER_INTAKE_RPM));
+                m_TurretSubsystem.setDefaultCommand(m_TurretSubsystem.moveToTarget(() -> getTrajectoryCalculations().getNeededYaw()));
+                m_HoodSubsystem.setDefaultCommand(m_HoodSubsystem.setHoodAngleCommand(() -> getTrajectoryCalculations().getNeededPitch()));
+                m_ShooterSubsystem.setDefaultCommand(m_ShooterSubsystem.setShooterSpeed(() -> getTrajectoryCalculations().getNeededRPM()));
+                m_IndexerSubsystem.setDefaultCommand(m_IndexerSubsystem.runMotors());
 
                 configureNamedCommands();
                 configureBindings();
@@ -121,12 +146,6 @@ public class RobotContainer {
                 DriverStation.silenceJoystickConnectionWarning(true);
                 autoChooser = AutoBuilder.buildAutoChooser();
                 SmartDashboard.putData("Auto Chooser", autoChooser);
-
-                m_TrajectoryCalculations = new TrajectoryCalculations();
-                m_TrajectoryCalculations.setChassisSupplier(() -> drivebase.getFieldVelocity());
-                m_TrajectoryCalculations.setCurrentRPMsupply(() -> m_ShooterSubsystem.getRPM());
-                m_TrajectoryCalculations.setPoseSupplier(() -> drivebase.getPose());
-                m_TrajectoryCalculations.setTargetSupplier(() -> FieldLayout.ShooterTargets.getAllianceHub());
         }
 
         private void configureBindings() {
@@ -209,6 +228,10 @@ public class RobotContainer {
                         // drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocityKeyboard);
                 }
 
+                // Full Auto Shooting
+                // driver.LB.whileTrue(shootLeft);
+                // driver.RB.whileTrue(shootRight);
+                
         }
 
         public void periodic() {
