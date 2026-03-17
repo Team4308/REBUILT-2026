@@ -137,10 +137,10 @@ public final class Constants {
       public static final double MAX_DISTANCE_M = 12.0;
       public static final double RPM_FEEDBACK_THRESHOLD = 50.0;
       public static final double RPM_ABORT_THRESHOLD = 500.0;
-      public static final double PITCH_CORRECTION_PER_RPM_DEFICIT = 0.005; // Match ExampleShooter (was 0.05)
+      public static final double PITCH_CORRECTION_PER_RPM_DEFICIT = 0.005; 
       public static final double MOVING_COMPENSATION_GAIN = 1.0;
       public static final int MOVING_ITERATIONS = 5;
-      public static final double SAFETY_MAX_EXIT_VELOCITY = 30.0; // Match ExampleShooter default
+      public static final double SAFETY_MAX_EXIT_VELOCITY = 30.0; 
 
       // FlywheelConfig
       public static final double FLYWHEEL_DIAMETER_IN = 4.0;

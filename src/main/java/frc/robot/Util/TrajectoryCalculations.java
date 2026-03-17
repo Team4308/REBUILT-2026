@@ -33,9 +33,28 @@ import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
 import frc.robot.FieldLayout;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import edu.wpi.first.wpilibj.Filesystem;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+
 public class TrajectoryCalculations {
-    private final ShooterSystem shooterSystem;
+    private final ShooterSystem hubShooterSystem;
+    private final ShooterSystem passLeftShooterSystem;
+    private final ShooterSystem passRightShooterSystem;
+    private ShooterSystem activeShooterSystem;
     private final TrajectorySolver trajectorySolver;
+
+    public enum ShotGoal {
+        HUB,
+        PASS_LEFT,
+        PASS_RIGHT
+    }
+    
+    private ShotGoal currentGoal = ShotGoal.HUB;
 
     private ShotParameters currentShot = ShotParameters.invalid("Not yet calculated");
     private double targetYawDegrees = 0.0;
@@ -55,7 +74,7 @@ public class TrajectoryCalculations {
             Constants.Shooting.TrajectoryCalc.SHOOTER_OFFSET_X_M,
             Constants.Shooting.TrajectoryCalc.SHOOTER_OFFSET_Y_M);
 
-    private Translation3d targetPosition = FieldLayout.ShooterTargets.kHUB_POSE;
+    private Translation3d targetPosition = FieldLayout.ShooterTargets.kHUB_POSE; 
     private Supplier<Translation3d> targetSupplier = null;
 
     private boolean trackingEnabled = true;
@@ -67,7 +86,7 @@ public class TrajectoryCalculations {
         SolverConstants.setMinTargetDistanceMeters(0.05);
         SolverConstants.setVelocityBufferMultiplier(1.2);
         SolverConstants.setRimClearanceMeters(0.05);
-        SolverConstants.setMinEntryAngleDegrees(45.0);
+        SolverConstants.setMinEntryAngleDegrees(10.0); 
         SolverConstants.setDragCompensationMultiplier(1.5);
 
         TrajectorySolver.SolverConfig solverConfig = TrajectorySolver.SolverConfig.defaults()
@@ -78,7 +97,9 @@ public class TrajectoryCalculations {
 
         GamePiece gamePiece = GamePieces.REBUILT_2026_BALL;
 
-        ShotLookupTable table = new ShotLookupTable();
+        ShotLookupTable hubTable = loadLookupTable("shot-table-hub.json");
+        ShotLookupTable passLeftTable = loadLookupTable("shot-table-pass-left.json");
+        ShotLookupTable passRightTable = loadLookupTable("shot-table-pass-right.json");
 
         ShooterConfig shooterConfig = ShooterConfig.builder()
                 .pitchLimits(Constants.Shooting.Hood.REVERSE_SOFT_LIMIT_ANGLE,
@@ -112,9 +133,71 @@ public class TrajectoryCalculations {
         trajectorySolver.setDebugEnabled(true);
         trajectorySolver.setSolveMode(TrajectorySolver.SolveMode.SWEEP);
 
-        shooterSystem = new ShooterSystem(shooterConfig, table, trajectorySolver);
-        shooterSystem.setMode(ShotMode.SOLVER_ONLY);
-        shooterSystem.setFallbackShot(60.0, 3000);
+        hubShooterSystem = new ShooterSystem(shooterConfig, hubTable, trajectorySolver);
+        hubShooterSystem.setMode(ShotMode.SOLVER_WITH_LOOKUP_FALLBACK);
+
+        passLeftShooterSystem = new ShooterSystem(shooterConfig, passLeftTable, trajectorySolver);
+        passLeftShooterSystem.setMode(ShotMode.SOLVER_WITH_LOOKUP_FALLBACK);
+
+        passRightShooterSystem = new ShooterSystem(shooterConfig, passRightTable, trajectorySolver);
+        passRightShooterSystem.setMode(ShotMode.SOLVER_WITH_LOOKUP_FALLBACK);
+
+        activeShooterSystem = hubShooterSystem;
+    }
+
+    private ShotLookupTable loadLookupTable(String filename) {
+        ShotLookupTable table = new ShotLookupTable();
+        try {
+            File deployDir = Filesystem.getDeployDirectory();
+            File file = new File(deployDir, "shooter/" + filename);
+            if (file.exists()) {
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode root = mapper.readTree(new FileReader(file));
+                
+                if (root.isArray()) {
+                    ArrayNode array = (ArrayNode) root;
+                    for (JsonNode entry : array) {
+                        double dist = entry.get("distance").asDouble();
+                        double pitch = entry.get("pitch").asDouble();
+                        double rpm = entry.get("rpm").asDouble();
+                        if (entry.has("tof")) {
+                            double tof = entry.get("tof").asDouble();
+                            table.addEntry(dist, pitch, rpm, tof);
+                        } else {
+                            table.addEntry(dist, pitch, rpm);
+                        }
+                    }
+                    System.out.println("Loaded " + array.size() + " entries from " + filename);
+                }
+            } else {
+                System.out.println("File not found: " + file.getAbsolutePath());
+            }
+        } catch (IOException e) {
+            System.err.println("Failed to load map " + filename + ": " + e.getMessage());
+        }
+        return table;
+    }
+
+    public void setGoal(ShotGoal goal) {
+        this.currentGoal = goal;
+        switch (goal) {
+            case HUB:
+                activeShooterSystem = hubShooterSystem;
+                this.targetSupplier = FieldLayout.ShooterTargets::getAllianceHub;
+                break;
+            case PASS_LEFT:
+                activeShooterSystem = passLeftShooterSystem;
+                this.targetSupplier = FieldLayout.ShooterTargets::getAlliancePassLeft;
+                break;
+            case PASS_RIGHT:
+                activeShooterSystem = passRightShooterSystem;
+                this.targetSupplier = FieldLayout.ShooterTargets::getAlliancePassRight; 
+                break;
+        }
+    }
+
+    public void setTargetSupplier(Supplier<Translation3d> supplier) {
+        this.targetSupplier = supplier;
     }
 
     public void setPoseSupplier(Supplier<Pose2d> supplier) {
@@ -127,10 +210,6 @@ public class TrajectoryCalculations {
 
     public void setCurrentRPMsupply(Supplier<Double> supplier) {
         this.currentRPMsupply = supplier;
-    }
-
-    public void setTargetSupplier(Supplier<Translation3d> supplier) {
-        this.targetSupplier = supplier;
     }
 
     public void setTarget(double x, double y, double z) {
@@ -158,30 +237,27 @@ public class TrajectoryCalculations {
     }
 
     public void setMode(ShotMode mode) {
-        shooterSystem.setMode(mode);
+        activeShooterSystem.setMode(mode);
     }
 
     public ShotMode getMode() {
-        return shooterSystem.getMode();
+        return activeShooterSystem.getMode();
     }
 
     public void setManualOverride(double pitchDegrees, double rpm) {
-        shooterSystem.setManualOverride(pitchDegrees, rpm);
+        activeShooterSystem.setManualOverride(pitchDegrees, rpm);
     }
 
     public double getNeededYaw() {
-        var result = shooterSystem.getLastTrajectoryResult();
-        return result != null ? result.getYawAdjustmentDegrees() : 0.0;
+        return currentShot.valid ? Math.toDegrees(currentShot.yawAdjustmentRadians) : 0.0;
     }
 
     public double getNeededPitch() {
-        var result = shooterSystem.getLastTrajectoryResult();
-        return result != null ? result.getPitchAngleDegrees() : 0.0;
+        return currentShot.valid ? currentShot.pitchDegrees : 0.0;
     }
 
     public double getNeededRPM() {
-        var result = shooterSystem.getLastTrajectoryResult();
-        return result != null ? result.getRecommendedRpm() : 0.0;
+        return currentShot.valid ? currentShot.rpm : 0.0;
     }
 
     public double getTargetYawDegrees() {
@@ -201,7 +277,7 @@ public class TrajectoryCalculations {
     }
 
     public ShooterSystem getShooterSystem() {
-        return shooterSystem;
+        return activeShooterSystem;
     }
 
     public double getLastComputationTimeMs() {
@@ -210,7 +286,7 @@ public class TrajectoryCalculations {
 
     public boolean isReadyToFire() {
         double rpm = currentRPMsupply != null ? currentRPMsupply.get() : 0;
-        return shooterSystem.isReadyToFire(rpm);
+        return activeShooterSystem.isReadyToFire(rpm);
     }
 
     public boolean suppliersAreSet() {
@@ -245,13 +321,6 @@ public class TrajectoryCalculations {
         double yawChange = Math.abs(targetYawDegrees - lastSolvedYawDeg);
         boolean enoughTimePassed = (nowMs
                 - lastSolveTimestamp) >= Constants.Shooting.TrajectoryCalc.MIN_SOLVE_INTERVAL_MS;
-        boolean inputsChanged = distanceChange > Constants.Shooting.TrajectoryCalc.DISTANCE_CHANGE_THRESHOLD_M
-                || yawChange > Constants.Shooting.TrajectoryCalc.YAW_CHANGE_THRESHOLD_DEG;
-
-        if (!enoughTimePassed && !inputsChanged && currentShot.valid) {
-            Logger.recordOutput("TrajectoryCalc/Skipped", true);
-            return;
-        }
 
         double vx = 0, vy = 0;
         if (chassisSupplier != null) {
@@ -260,21 +329,36 @@ public class TrajectoryCalculations {
             vy = speeds.vyMetersPerSecond;
         }
 
+        double velMag = Math.hypot(vx, vy);
+        boolean inputsChanged = distanceChange > Constants.Shooting.TrajectoryCalc.DISTANCE_CHANGE_THRESHOLD_M
+                || yawChange > Constants.Shooting.TrajectoryCalc.YAW_CHANGE_THRESHOLD_DEG
+                || velMag > 0.05;
+
+        if (!enoughTimePassed && !inputsChanged && currentShot.valid) {
+            Logger.recordOutput("TrajectoryCalc/Skipped", true);
+            return;
+        }
+
         double measuredRPM = currentRPMsupply != null ? currentRPMsupply.get() : 0;
 
-        shooterSystem.setSolverInput(
+        // --- FIX INTERPOLATION DEADZONES ---
+        // Clamp the distance bounds to ensure the interpolation table never returns invalid out-of-bounds at extreme field edges.
+        double clampedDistance = Math.max(Constants.Shooting.TrajectoryCalc.MIN_DISTANCE_M, 
+                            Math.min(lastDistanceMeters, Constants.Shooting.TrajectoryCalc.MAX_DISTANCE_M));
+
+        activeShooterSystem.setSolverInput(
                 ShotInput.builder()
                         .shooterPositionMeters(shooterX, shooterY, shooterHeightMeters)
                         .shooterYawRadians(yawRad)
-                        .targetPositionMeters(targetPosition.getX(), targetPosition.getY(),
-                                targetPosition.getZ())
+                        .targetPositionMeters(targetPosition.getX(), targetPosition.getY(), targetPosition.getZ())
                         .targetRadiusMeters(Constants.Shooting.TrajectoryCalc.TARGET_RADIUS_M)
                         .includeAirResistance(true)
-                        .robotVelocity(vx, vy)
+                        .robotVelocity(vx, vy) 
                         .build());
 
         long startTime = System.nanoTime();
-        currentShot = shooterSystem.calculate(lastDistanceMeters, measuredRPM, vx, vy, yawRad);
+        
+        currentShot = activeShooterSystem.calculate(clampedDistance, measuredRPM, vx, vy, yawRad);
         long endTime = System.nanoTime();
         lastComputationTimeMs = (endTime - startTime) / 1_000_000.0;
 
@@ -303,13 +387,13 @@ public class TrajectoryCalculations {
         double dy = targetY - shooterY;
         lastDistanceMeters = Math.hypot(dx, dy);
         targetYawDegrees = Math.toDegrees(Math.atan2(dy, dx));
-        currentShot = shooterSystem.calculate(lastDistanceMeters);
+        currentShot = activeShooterSystem.calculate(lastDistanceMeters);
     }
 
     public void cycleMode() {
         ShotMode[] modes = ShotMode.values();
-        int next = (shooterSystem.getMode().ordinal() + 1) % modes.length;
-        shooterSystem.setMode(modes[next]);
+        int next = (activeShooterSystem.getMode().ordinal() + 1) % modes.length;
+        activeShooterSystem.setMode(modes[next]);
         System.out.println("Shot mode: " + modes[next]);
     }
 
@@ -320,7 +404,7 @@ public class TrajectoryCalculations {
 
         Pose2d robotPose = poseSupplier.get();
         ChassisSpeeds speeds = chassisSupplier != null ? chassisSupplier.get() : new ChassisSpeeds();
-        TrajectoryResult trajResult = shooterSystem.getLastTrajectoryResult();
+        TrajectoryResult trajResult = activeShooterSystem.getLastTrajectoryResult();
         if (trajResult == null || !trajResult.isSuccess()) {
             System.out.println("Cannot shoot: no valid trajectory");
             return;
@@ -357,8 +441,8 @@ public class TrajectoryCalculations {
         Logger.recordOutput("TrajectoryCalc/TargetYawDeg", targetYawDegrees);
         Logger.recordOutput("TrajectoryCalc/Distance", lastDistanceMeters);
         Logger.recordOutput("TrajectoryCalc/ShotSource", currentShot.source.name());
-        Logger.recordOutput("TrajectoryCalc/Mode", shooterSystem.getMode().name());
-        Logger.recordOutput("TrajectoryCalc/SourceDetail", shooterSystem.getLastSourceDescription());
+        Logger.recordOutput("TrajectoryCalc/Mode", activeShooterSystem.getMode().name());
+        Logger.recordOutput("TrajectoryCalc/SourceDetail", activeShooterSystem.getLastSourceDescription());
         Logger.recordOutput("TrajectoryCalc/TrackingEnabled", trackingEnabled);
         Logger.recordOutput("TrajectoryCalc/ExitVelocity", currentShot.exitVelocityMps);
         Logger.recordOutput("TrajectoryCalc/ComputationTimeMs", lastComputationTimeMs);
@@ -367,7 +451,7 @@ public class TrajectoryCalculations {
             double measured = currentRPMsupply.get();
             Logger.recordOutput("TrajectoryCalc/MeasuredRPM", measured);
             Logger.recordOutput("TrajectoryCalc/RpmDeficit", currentShot.rpm - measured);
-            Logger.recordOutput("TrajectoryCalc/ReadyToFire", shooterSystem.isReadyToFire(measured));
+            Logger.recordOutput("TrajectoryCalc/ReadyToFire", activeShooterSystem.isReadyToFire(measured));
         }
 
         Pose3d goalPose = new Pose3d(targetPosition, new Rotation3d());
@@ -390,7 +474,7 @@ public class TrajectoryCalculations {
             return;
         }
 
-        TrajectoryResult trajResult = shooterSystem.getLastTrajectoryResult();
+        TrajectoryResult trajResult = activeShooterSystem.getLastTrajectoryResult();
         if (trajResult == null) {
             return;
         }
@@ -498,7 +582,7 @@ public class TrajectoryCalculations {
         if (trackingEnabled && poseSupplier != null) {
             updateShot();
         }
-        // logShotOutput();
-        // logTrajectoryDebug();
+        logShotOutput();
+     logTrajectoryDebug();
     }
 }

@@ -41,6 +41,16 @@ public class FieldLayout {
                 public static final Translation3d kPASS_LEFT_POSE = new Translation3d(4.0, kFieldWidth / 2.0 - 0.5,
                                 kHUB_HEIGHT);
 
+                public static Translation3d getAlliancePassRight() {
+                        boolean isRed = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
+                        return isRed ? new Translation3d(kFieldLength - kPASS_RIGHT_POSE.getX(), kPASS_RIGHT_POSE.getY(), kHUB_HEIGHT) : kPASS_RIGHT_POSE;
+                }
+
+                public static Translation3d getAlliancePassLeft() {
+                        boolean isRed = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
+                        return isRed ? new Translation3d(kFieldLength - kPASS_LEFT_POSE.getX(), kPASS_LEFT_POSE.getY(), kHUB_HEIGHT) : kPASS_LEFT_POSE;
+                }
+
                 public static Translation3d getAllianceHub() {
                         return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red
                                         ? kRED_HUB_POSE
