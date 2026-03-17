@@ -30,7 +30,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Left Neu to Right Neu"
+                  "pathName": null
                 }
               },
               {
@@ -45,7 +45,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Right Neu to Left Neu"
+            "pathName": null
           }
         },
         {
