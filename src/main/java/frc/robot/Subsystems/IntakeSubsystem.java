@@ -33,7 +33,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
   private double targetAngleDeg = Constants.Intake.RETRACTED_ANGLE_DEG;
 
-  private double offset = 127;
+  private double offset = Constants.Intake.RETRACTED_ANGLE_DEG;
 
   private final SubsystemVerbosity verbosity;
 
@@ -46,6 +46,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
   public IntakeSubsystem() {
     verbosity = SubsystemVerbosity.HIGH;
+    m_pivotMotor.setPosition(0);
     configureRoller();
   }
 
@@ -74,7 +75,7 @@ public class IntakeSubsystem extends SubsystemBase {
       }
       return simSupplier.get();
     }
-    return rotToDeg(m_pivotMotor.getPosition().getValueAsDouble());
+    return rotToDeg(m_pivotMotor.getPosition().getValueAsDouble()) + offset;
   }
 
   public boolean isAtAngle() {
@@ -148,7 +149,7 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   private double rotToDeg(double rot) {
-    return rot / Constants.Intake.PIVOT_GEAR_RATIO * 360.0 + offset;
+    return rot / Constants.Intake.PIVOT_GEAR_RATIO * 360.0;
   }
 
   private Pose3d getHopperPose() {

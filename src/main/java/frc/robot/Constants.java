@@ -164,8 +164,8 @@ public final class Constants {
     // Pivot geometry
     public static final double PIVOT_GEAR_RATIO = 81;
 
-    public static final ArmFeedforward feedforward = new ArmFeedforward(0.15, 0.15, 0.03, 0.0);
-    public static final ProfiledPIDController pidController = new ProfiledPIDController(1, 0.0, 0.02,
+    public static final ArmFeedforward feedforward = new ArmFeedforward(0.15, 0.15, 0.10, 0.0);
+    public static final ProfiledPIDController pidController = new ProfiledPIDController(0, 0.0, 0.02,
         new TrapezoidProfile.Constraints(300, 600));
 
     // Angles

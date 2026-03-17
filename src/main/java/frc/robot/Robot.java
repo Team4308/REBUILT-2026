@@ -59,7 +59,7 @@ public class Robot extends LoggedRobot {
     Logger.recordOutput("Time To Next Phase", GameData.timeToNextPhase());
 
     // Ensure trajectory logging runs in all modes (real + sim).
-    m_robotContainer.periodic();
+    // m_robotContainer.periodic();
   }
 
   @Override
@@ -76,7 +76,7 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void autonomousInit() {
-    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+    // m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     if (m_autonomousCommand != null) {
       CommandScheduler.getInstance().schedule(m_autonomousCommand);
@@ -124,7 +124,7 @@ public class Robot extends LoggedRobot {
   public void simulationPeriodic() {
     FuelSim.getInstance().updateSim();
     // Update Logger
-    m_robotContainer.getTrajectoryCalculations().periodic();
+    // m_robotContainer.getTrajectoryCalculations().periodic();
     Logger.recordOutput("Moving Pose",
         new Pose3d(0, 0, 0, new Rotation3d(0, 2.0 * Math.sin(2 * Math.PI * Timer.getFPGATimestamp() / 3.0), 0)));
     Logger.recordOutput("Zeroed Pose", new Pose3d());

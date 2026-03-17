@@ -2,6 +2,8 @@ package frc.robot;
 
 import java.io.File;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 
 import ca.team4308.absolutelib.control.RazerWrapper;
@@ -47,60 +49,71 @@ public class RobotContainer {
         private final SwerveSubsystem drivebase = new SwerveSubsystem(
                         new File(Filesystem.getDeployDirectory(), "swerve"));
 
-        private final HoodSubsystem m_HoodSubsystem;
+        // private final HoodSubsystem m_HoodSubsystem;
         private final IntakeSubsystem m_IntakeSubsystem;
-        private final TurretSubsystem m_TurretSubsystem;
-        private final IndexerSubsystem m_IndexerSubsystem;
-        private final ShooterSubsystem m_ShooterSubsystem;
-        private final LedSubsystem m_LedSubsystem;
-        private Simulation m_Simulation = null;
-
-        private double m_hoodAngle = 7.5;
-        private double m_turretAngle = 180;
-        private double m_shooterSpeed = 0.0;
-        private double m_indexerSpeed = 0.0;
-
-        private TrajectoryCalculations m_TrajectoryCalculations;
-
+        /*
+         * private final TurretSubsystem m_TurretSubsystem;
+         * private final IndexerSubsystem m_IndexerSubsystem;
+         * private final ShooterSubsystem m_ShooterSubsystem;
+         * private final LedSubsystem m_LedSubsystem;
+         * private Simulation m_Simulation = null;
+         * 
+         * private double m_hoodAngle = 7.5;
+         * private double m_turretAngle = 180;
+         * private double m_shooterSpeed = 0.0;
+         * private double m_indexerSpeed = 0.0;
+         * 
+         * private TrajectoryCalculations m_TrajectoryCalculations;
+         */
         // Commands
-        private final SendableChooser<Command> autoChooser;
-        private final Shoot shootLeft;
-        private final Shoot shootRight;
+        // private final SendableChooser<Command> autoChooser;
+        // private final Shoot shootLeft;
+        // private final Shoot shootRight;
 
-        SwerveInputStream driveAngularVelocity = SwerveInputStream.of(drivebase.getSwerveDrive(),
-                        () -> driver.getLeftY() * -1,
-                        () -> driver.getLeftX() * -1)
-                        .withControllerRotationAxis(() -> driver.getRightX() * -1)
-                        .deadband(Constants.OperatorConstants.DEADBAND)
-                        .scaleTranslation(1.0)
-                        .allianceRelativeControl(true);
+        /*
+         * SwerveInputStream driveAngularVelocity =
+         * SwerveInputStream.of(drivebase.getSwerveDrive(),
+         * () -> driver.getLeftY() * -1,
+         * () -> driver.getLeftX() * -1)
+         * .withControllerRotationAxis(() -> driver.getRightX() * -1)
+         * .deadband(Constants.OperatorConstants.DEADBAND)
+         * .scaleTranslation(1.0)
+         * .allianceRelativeControl(true);
+         */
 
         // Clone's the angular velocity input stream and converts it to a fieldRelative
         // input stream.
-        SwerveInputStream driveDirectAngle = driveAngularVelocity.copy()
-                        .withControllerHeadingAxis(driver::getRightX, driver::getRightY).headingWhile(true);
-
-        // Clone's the angular velocity input stream and converts it to a roboRelative
-        // input stream.
-        SwerveInputStream driveRobotOriented = driveAngularVelocity.copy().robotRelative(true)
-                        .allianceRelativeControl(false);
-
-        SwerveInputStream driveAngularVelocityKeyboard = SwerveInputStream.of(drivebase.getSwerveDrive(),
-                        () -> -driver.getLeftY(),
-                        () -> -driver.getLeftX())
-                        .withControllerRotationAxis(() -> driver.getRightX())
-                        .deadband(Constants.OperatorConstants.DEADBAND)
-                        .scaleTranslation(0.8)
-                        .allianceRelativeControl(true);
-
-        // Derive the heading axis with math!
-        SwerveInputStream driveDirectAngleKeyboard = driveAngularVelocityKeyboard.copy()
-                        .withControllerHeadingAxis(() -> Math.sin(
-                                        driver.getLeftTrigger() * Math.PI) * (Math.PI * 2),
-                                        () -> Math.cos(driver.getLeftTrigger() * Math.PI) * (Math.PI * 2))
-                        .headingWhile(true);
-
-        Pose2d targetPoseForTESTING = new Pose2d(2, 4, new Rotation2d());
+        /*
+         * SwerveInputStream driveDirectAngle = driveAngularVelocity.copy()
+         * .withControllerHeadingAxis(driver::getRightX,
+         * driver::getRightY).headingWhile(true);
+         * 
+         * // Clone's the angular velocity input stream and converts it to a
+         * roboRelative
+         * // input stream.
+         * SwerveInputStream driveRobotOriented =
+         * driveAngularVelocity.copy().robotRelative(true)
+         * .allianceRelativeControl(false);
+         * 
+         * SwerveInputStream driveAngularVelocityKeyboard =
+         * SwerveInputStream.of(drivebase.getSwerveDrive(),
+         * () -> -driver.getLeftY(),
+         * () -> -driver.getLeftX())
+         * .withControllerRotationAxis(() -> driver.getRightX())
+         * .deadband(Constants.OperatorConstants.DEADBAND)
+         * .scaleTranslation(0.8)
+         * .allianceRelativeControl(true);
+         * 
+         * // Derive the heading axis with math!
+         * SwerveInputStream driveDirectAngleKeyboard =
+         * driveAngularVelocityKeyboard.copy()
+         * .withControllerHeadingAxis(() -> Math.sin(
+         * driver.getLeftTrigger() * Math.PI) * (Math.PI * 2),
+         * () -> Math.cos(driver.getLeftTrigger() * Math.PI) * (Math.PI * 2))
+         * .headingWhile(true);
+         * 
+         * Pose2d targetPoseForTESTING = new Pose2d(2, 4, new Rotation2d());
+         */
 
         /**
          * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -109,50 +122,61 @@ public class RobotContainer {
         public RobotContainer() {
                 drivebase.setVision(vision);
 
-                m_HoodSubsystem = new HoodSubsystem();
-                m_IndexerSubsystem = new IndexerSubsystem();
-                m_TurretSubsystem = new TurretSubsystem();
-                m_ShooterSubsystem = new ShooterSubsystem();
+                // m_HoodSubsystem = new HoodSubsystem();
+                // m_IndexerSubsystem = new IndexerSubsystem();
+                // m_TurretSubsystem = new TurretSubsystem();
+                // m_ShooterSubsystem = new ShooterSubsystem();
                 m_IntakeSubsystem = new IntakeSubsystem();
-                m_LedSubsystem = new LedSubsystem();
+                // m_LedSubsystem = new LedSubsystem();
 
-                m_TrajectoryCalculations = new TrajectoryCalculations();
-                m_TrajectoryCalculations.setChassisSupplier(() -> drivebase.getFieldVelocity());
-                m_TrajectoryCalculations.setCurrentRPMsupply(() -> m_ShooterSubsystem.getRPM());
-                m_TrajectoryCalculations.setPoseSupplier(() -> drivebase.getPose());
-                m_TrajectoryCalculations.setTargetSupplier(() -> FieldLayout.ShooterTargets.getAllianceHub());
+                // m_TrajectoryCalculations = new TrajectoryCalculations();
+                // m_TrajectoryCalculations.setChassisSupplier(() ->
+                // drivebase.getFieldVelocity());
+                // m_TrajectoryCalculations.setCurrentRPMsupply(() ->
+                // m_ShooterSubsystem.getRPM());
+                // m_TrajectoryCalculations.setPoseSupplier(() -> drivebase.getPose());
+                // m_TrajectoryCalculations.setTargetSupplier(() ->
+                // FieldLayout.ShooterTargets.getAllianceHub());
 
-                shootLeft = new Shoot(m_IndexerSubsystem, () -> drivebase.getFieldLocation(),
-                                FieldLayout.Zones.getAllianceLeftTranslation3d(), getTrajectoryCalculations());
-                shootRight = new Shoot(m_IndexerSubsystem, () -> drivebase.getFieldLocation(),
-                                FieldLayout.Zones.getAllianceRightTranslation3d(), getTrajectoryCalculations());
-
-                if (Robot.isSimulation())
-                        m_Simulation = new Simulation(m_HoodSubsystem, m_IndexerSubsystem, m_IntakeSubsystem,
-                                        m_ShooterSubsystem, m_TurretSubsystem, drivebase);
-
-                m_HoodSubsystem.setTurretSupplier(() -> m_TurretSubsystem.getAngleWrapped());
+                /*
+                 * shootLeft = new Shoot(m_IndexerSubsystem, () -> drivebase.getFieldLocation(),
+                 * FieldLayout.Zones.getAllianceLeftTranslation3d(),
+                 * getTrajectoryCalculations());
+                 * shootRight = new Shoot(m_IndexerSubsystem, () ->
+                 * drivebase.getFieldLocation(),
+                 * FieldLayout.Zones.getAllianceRightTranslation3d(),
+                 * getTrajectoryCalculations());
+                 * 
+                 * if (Robot.isSimulation())
+                 * m_Simulation = new Simulation(m_HoodSubsystem, m_IndexerSubsystem,
+                 * m_IntakeSubsystem,
+                 * m_ShooterSubsystem, m_TurretSubsystem, drivebase);
+                 */
+                // m_HoodSubsystem.setTurretSupplier(() -> m_TurretSubsystem.getAngleWrapped());
 
                 m_IntakeSubsystem.setDefaultCommand(
                                 new DefaultIntakePivot(m_IntakeSubsystem, () -> driver.getRightTrigger()));
 
-                m_IntakeSubsystem.setDefaultCommand(
-                                m_IntakeSubsystem.setRollerSpeed(() -> Constants.Intake.ROLLER_INTAKE_RPM));
-                m_TurretSubsystem.setDefaultCommand(
-                                m_TurretSubsystem.moveToTarget(() -> getTrajectoryCalculations().getNeededYaw()));
-                m_HoodSubsystem.setDefaultCommand(m_HoodSubsystem
-                                .setHoodAngleCommand(() -> getTrajectoryCalculations().getNeededPitch()));
-                m_ShooterSubsystem.setDefaultCommand(
-                                m_ShooterSubsystem.setShooterSpeed(() -> getTrajectoryCalculations().getNeededRPM()));
-                m_IndexerSubsystem.setDefaultCommand(m_IndexerSubsystem.runMotors());
+                // m_IntakeSubsystem.setDefaultCommand(
+                // m_IntakeSubsystem.setRollerSpeed(() -> Constants.Intake.ROLLER_INTAKE_RPM));
+                // m_TurretSubsystem.setDefaultCommand(
+                // m_TurretSubsystem.moveToTarget(() ->
+                // getTrajectoryCalculations().getNeededYaw()));
+                // m_HoodSubsystem.setDefaultCommand(m_HoodSubsystem
+                // .setHoodAngleCommand(() -> getTrajectoryCalculations().getNeededPitch()));
+                // m_ShooterSubsystem.setDefaultCommand(
+                // m_ShooterSubsystem.setShooterSpeed(() ->
+                // getTrajectoryCalculations().getNeededRPM()));
+                // m_IndexerSubsystem.setDefaultCommand(m_IndexerSubsystem.runMotors());
 
-                configureNamedCommands();
-                configureBindings();
+                // configureNamedCommands();
+                // configureBindings();
 
-                DriverStation.silenceJoystickConnectionWarning(true);
-                autoChooser = AutoBuilder.buildAutoChooser();
-                SmartDashboard.putData("Auto Chooser", autoChooser);
-        }
+                /*
+                 * DriverStation.silenceJoystickConnectionWarning(true);
+                 * autoChooser = AutoBuilder.buildAutoChooser();
+                 * SmartDashboard.putData("Auto Chooser", autoChooser);
+                 */}
 
         private void configureBindings() {
                 /*
@@ -183,19 +207,22 @@ public class RobotContainer {
                 // m_ShooterSubsystem.setState(ShooterSubsystem.ShooterState.SHOOTING));
                 // NEED TO MAKE THE ABOVE NOT USE STATE BASED
 
-                Command driveFieldOrientedAnglularVelocity = drivebase.driveFieldOriented(driveAngularVelocity);
-                Command driveRobotOrientedAngularVelocity = drivebase.driveFieldOriented(driveRobotOriented);
-                Command driveFieldOrientedAnglularVelocityKeyboard = drivebase
-                                .driveFieldOriented(driveAngularVelocityKeyboard);
-
-                drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
-
-                driver.povUp.onTrue(new MoveHoodCommand(m_HoodSubsystem, () -> 5.));
-                driver.povDown.onTrue(new MoveHoodCommand(m_HoodSubsystem, () -> -5.));
-
-                driver.povRight.onTrue(new MoveTurretCommand(m_TurretSubsystem, () -> -5.));
-                driver.povLeft.onTrue(new MoveTurretCommand(m_TurretSubsystem, () -> 5.));
-
+                /*
+                 * Command driveFieldOrientedAnglularVelocity =
+                 * drivebase.driveFieldOriented(driveAngularVelocity);
+                 * Command driveRobotOrientedAngularVelocity =
+                 * drivebase.driveFieldOriented(driveRobotOriented);
+                 * Command driveFieldOrientedAnglularVelocityKeyboard = drivebase
+                 * .driveFieldOriented(driveAngularVelocityKeyboard);
+                 * 
+                 * drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
+                 * 
+                 * driver.povUp.onTrue(new MoveHoodCommand(m_HoodSubsystem, () -> 5.));
+                 * driver.povDown.onTrue(new MoveHoodCommand(m_HoodSubsystem, () -> -5.));
+                 * 
+                 * driver.povRight.onTrue(new MoveTurretCommand(m_TurretSubsystem, () -> -5.));
+                 * driver.povLeft.onTrue(new MoveTurretCommand(m_TurretSubsystem, () -> 5.));
+                 */
                 // driver.X.whileTrue(new HoodCommand(m_HoodSubsystem, () ->
                 // m_TrajectoryCalculations.getNeededPitch()));
                 // driver.X.whileTrue(new TurretCommand(m_TurretSubsystem, () ->
@@ -207,51 +234,58 @@ public class RobotContainer {
 
                 // Semi Auto Shooting
 
-                driver.X.whileTrue(new AimAtHubCommand(() -> drivebase.getPose(), m_TurretSubsystem));
-                driver.A.whileTrue(m_ShooterSubsystem.setShooterSpeed(() -> 3000.));
-                driver.A.onFalse(new InstantCommand(() -> m_ShooterSubsystem.stopMotors()));
-                driver.B.whileTrue(m_ShooterSubsystem.setShooterSpeed(() -> 2300.));
-                driver.B.onFalse(new InstantCommand(() -> m_ShooterSubsystem.stopMotors()));
+                /*
+                 * driver.X.whileTrue(new AimAtHubCommand(() -> drivebase.getPose(),
+                 * m_TurretSubsystem));
+                 * driver.A.whileTrue(m_ShooterSubsystem.setShooterSpeed(() -> 3000.));
+                 * driver.A.onFalse(new InstantCommand(() -> m_ShooterSubsystem.stopMotors()));
+                 * driver.B.whileTrue(m_ShooterSubsystem.setShooterSpeed(() -> 2300.));
+                 * driver.B.onFalse(new InstantCommand(() -> m_ShooterSubsystem.stopMotors()));
+                 * 
+                 * // Reset Gyro
+                 * driver.M1.onTrue(Commands.runOnce(() -> drivebase.resetOdometry(new Pose2d(0,
+                 * 0, new Rotation2d()))));
+                 * 
+                 * // Intaking
+                 * driver.RB.whileTrue(new InstantCommand(() ->
+                 * m_IndexerSubsystem.setIndexerVelocity(500)));
+                 * driver.RB.whileTrue(new InstantCommand(() ->
+                 * m_IndexerSubsystem.setHopperVelocity(500)));
+                 * driver.RB.onFalse(new InstantCommand(() -> m_IndexerSubsystem.stopMotors()));
+                 * 
+                 * driver.LB.onTrue(new InstantCommand(() ->
+                 * m_IntakeSubsystem.setRollerSpeedA(() -> -100.)));
+                 * driver.LB.onFalse(new InstantCommand(() -> m_IntakeSubsystem.stopMotors()));
+                 * 
+                 * // Reset Hood and Intake
+                 * driver.M2.onTrue(m_HoodSubsystem.resetHoodCommand());
+                 * driver.M2.onTrue(m_IntakeSubsystem.resetIntakeCommand());
+                 * 
+                 * driver.M6.whileTrue(driveRobotOrientedAngularVelocity);
+                 * 
+                 * // if (Robot.isSimulation()) {
+                 * // drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocityKeyboard);
+                 * // }
+                 * 
+                 * // Full Auto Shooting
+                 * // driver.LB.whileTrue(shootLeft);
+                 * // driver.RB.whileTrue(shootRight);
+                 * 
+                 * // }
+                 */
 
-                // Reset Gyro
-                driver.M1.onTrue(Commands.runOnce(() -> drivebase.resetOdometry(new Pose2d(0, 0, new Rotation2d()))));
+                // public void periodic() {
 
-                // Intaking
-                driver.RB.whileTrue(new InstantCommand(() -> m_IndexerSubsystem.setIndexerVelocity(500)));
-                driver.RB.whileTrue(new InstantCommand(() -> m_IndexerSubsystem.setHopperVelocity(500)));
-                driver.RB.onFalse(new InstantCommand(() -> m_IndexerSubsystem.stopMotors()));
+                // }
 
-                driver.LB.onTrue(new InstantCommand(() -> m_IntakeSubsystem.setRollerSpeedA(() -> -100.)));
-                driver.LB.onFalse(new InstantCommand(() -> m_IntakeSubsystem.stopMotors()));
+                // public TrajectoryCalculations getTrajectoryCalculations() {
+                // return m_TrajectoryCalculations;
+                // }
 
-                // Reset Hood and Intake
-                driver.M2.onTrue(m_HoodSubsystem.resetHoodCommand());
-                driver.M2.onTrue(m_IntakeSubsystem.resetIntakeCommand());
+                // public void configureNamedCommands() {
+                // }
 
-                driver.M6.whileTrue(driveRobotOrientedAngularVelocity);
-
-                if (Robot.isSimulation()) {
-                        // drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocityKeyboard);
-                }
-
-                // Full Auto Shooting
-                // driver.LB.whileTrue(shootLeft);
-                // driver.RB.whileTrue(shootRight);
-
-        }
-
-        public void periodic() {
-
-        }
-
-        public TrajectoryCalculations getTrajectoryCalculations() {
-                return m_TrajectoryCalculations;
-        }
-
-        public void configureNamedCommands() {
-        }
-
-        public Command getAutonomousCommand() {
-                return autoChooser.getSelected();
+                // public Command getAutonomousCommand() {
+                // return autoChooser.getSelected();
         }
 }
