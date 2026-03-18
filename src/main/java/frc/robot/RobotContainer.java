@@ -102,10 +102,10 @@ public class RobotContainer {
                 drivebase.setVision(vision);
 
                 m_HoodSubsystem = new HoodSubsystem(false);
-                m_IndexerSubsystem = new IndexerSubsystem(false);
+                m_IndexerSubsystem = new IndexerSubsystem(true);
                 m_TurretSubsystem = new TurretSubsystem(false);
                 m_ShooterSubsystem = new ShooterSubsystem(false);
-                m_IntakeSubsystem = new IntakeSubsystem(true);
+                m_IntakeSubsystem = new IntakeSubsystem(false);
                 m_LedSubsystem = new LedSubsystem();
 
                 m_TrajectoryCalculations = new TrajectoryCalculations();

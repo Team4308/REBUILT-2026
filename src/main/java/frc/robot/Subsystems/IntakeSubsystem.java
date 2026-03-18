@@ -33,7 +33,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
   private double targetAngleDeg = Constants.Intake.RETRACTED_ANGLE_DEG;
 
-  private double offset = Constants.Intake.RETRACTED_ANGLE_DEG;
+  private double offset = -Constants.Intake.RETRACTED_ANGLE_DEG;
 
   private final SubsystemVerbosity verbosity;
 
@@ -50,6 +50,8 @@ public class IntakeSubsystem extends SubsystemBase {
     verbosity = SubsystemVerbosity.HIGH;
     m_pivotMotor.setPosition(0);
     configureRoller();
+
+    pidController.reset(targetAngleDeg);
 
     this.enabled = enabled;
   }
