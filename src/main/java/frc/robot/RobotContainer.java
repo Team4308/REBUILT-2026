@@ -132,14 +132,15 @@ public class RobotContainer {
                                         m_ShooterSubsystem, m_TurretSubsystem, drivebase);
 
                 m_HoodSubsystem.setTurretSupplier(() -> m_TurretSubsystem.getAngleWrapped());
+                m_TurretSubsystem.setRobotPoseSupplier(() -> drivebase.getPose());
 
                 m_IntakeSubsystem.setDefaultCommand(
                                 new DefaultIntakePivot(m_IntakeSubsystem, () -> driver.getRightTrigger()));
 
                 m_IntakeSubsystem.setDefaultCommand(
                                 m_IntakeSubsystem.setRollerSpeed(() -> Constants.Intake.ROLLER_INTAKE_RPM));
-                m_TurretSubsystem.setDefaultCommand(
-                                m_TurretSubsystem.moveToTarget(() -> getTrajectoryCalculations().getNeededYaw()));
+                        m_TurretSubsystem.setDefaultCommand(
+                                        m_TurretSubsystem.aimAtPointCommand(FieldLayout.ShooterTargets.getAllianceHub()));
                 m_HoodSubsystem.setDefaultCommand(m_HoodSubsystem
                                 .setHoodAngleCommand(() -> getTrajectoryCalculations().getNeededPitch()));
                 m_ShooterSubsystem.setDefaultCommand(
@@ -205,7 +206,7 @@ public class RobotContainer {
                 // driver.X.whileTrue(m_TurretSubsystem.aimAtPointCommand(FieldLayout.ShooterTargets.kHUB_POSE));
                 // driver.X.whileTrue(new RunCommand(null, null));
 
-                // Semi Auto Shooting
+        
 
                 driver.X.whileTrue(new AimAtHubCommand(() -> drivebase.getPose(), m_TurretSubsystem));
                 driver.A.whileTrue(m_ShooterSubsystem.setShooterSpeed(() -> 3000.));
@@ -241,7 +242,7 @@ public class RobotContainer {
         }
 
         public void periodic() {
-
+                m_TrajectoryCalculations.periodic();
         }
 
         public TrajectoryCalculations getTrajectoryCalculations() {
