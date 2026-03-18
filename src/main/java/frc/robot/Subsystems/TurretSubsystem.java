@@ -57,7 +57,9 @@ public class TurretSubsystem extends SubsystemBase {
     // ceiling
     private static final double MAX_DELTA_ROTATIONS = 20.0 / 360.0;
 
-    public TurretSubsystem() {
+    private boolean enabled;
+
+    public TurretSubsystem(boolean enabled) {
         m_driveMotor = new TalonFX(Ports.Shooting.Turret.kTurretMotorId);
         m_canCoder1 = new CANcoder(Ports.Shooting.Turret.kCanCoder1Id);
         m_canCoder2 = new CANcoder(Ports.Shooting.Turret.kCanCoder2Id);
@@ -80,6 +82,8 @@ public class TurretSubsystem extends SubsystemBase {
         pidController.reset(m_currentDegUnWrapped);
 
         verbosity = SubsystemVerbosity.HIGH;
+
+        this.enabled = enabled;
     }
 
     public double getAngleWrapped() {
@@ -309,7 +313,8 @@ public class TurretSubsystem extends SubsystemBase {
 
         voltage = pidOutput + ffOutput;
 
-        m_driveMotor.setVoltage(voltage);
+        if (enabled)
+            m_driveMotor.setVoltage(voltage);
 
         if (verbosity == SubsystemVerbosity.LOW || verbosity == SubsystemVerbosity.HIGH) {
             Logger.recordOutput("Subsystems/Turret/Is At Target?", isAtTarget());

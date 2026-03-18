@@ -13,6 +13,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.networktables.EntryBase;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -37,7 +38,9 @@ public class HoodSubsystem extends SubsystemBase {
 
     private ProfiledPIDController pidController = Constants.Shooting.Hood.pidController;
 
-    public HoodSubsystem() {
+    private boolean enabled;
+
+    public HoodSubsystem(boolean enabled) {
         var talonFXConfigs = new TalonFXConfiguration();
         talonFXConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         talonFXConfigs.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
@@ -50,6 +53,8 @@ public class HoodSubsystem extends SubsystemBase {
         if (Robot.isSimulation()) { // Brute force sim
             pidController.setP(1);
         }
+
+        this.enabled = enabled;
     }
 
     public double getVoltage() {
@@ -159,7 +164,9 @@ public class HoodSubsystem extends SubsystemBase {
                 pidController.getSetpoint().position,
                 pidController.getSetpoint().velocity);
         voltage = pidOutput + ffVolts;
-        m_hoodMotor.setVoltage(voltage);
+
+        if (enabled)
+            m_hoodMotor.setVoltage(voltage);
 
         if (verbosity == SubsystemVerbosity.LOW || verbosity == SubsystemVerbosity.HIGH) {
             Logger.recordOutput("Subsystems/Hood/Is At Target?", isAtPosition());

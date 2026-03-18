@@ -34,7 +34,9 @@ public class IndexerSubsystem extends SubsystemBase {
 
     private SubsystemVerbosity verbosity;
 
-    public IndexerSubsystem() {
+    private boolean enabled;
+
+    public IndexerSubsystem(boolean enabled) {
         // in init function, set slot 0 gains
         var slot0Configs = new Slot0Configs();
         slot0Configs.kS = Constants.Indexer.HOPPER_Ks; // Add 0.1 V output to overcome static friction
@@ -63,10 +65,14 @@ public class IndexerSubsystem extends SubsystemBase {
         m_ballTunnelMotor.getConfigurator().apply(motorConfigs2);
 
         verbosity = SubsystemVerbosity.HIGH;
+
+        this.enabled = enabled;
     }
 
     public void setHopperVelocity(double rpm) {
         targetHopperVelocity = rpm;
+        if (!enabled)
+            return;
         double motorRPS = (rpm * Constants.Indexer.HOPPER_GEAR_RATIO) / 60.0;
         m_hopperMotor1.setControl(m_hopperRequest.withVelocity(motorRPS));
 
@@ -74,16 +80,22 @@ public class IndexerSubsystem extends SubsystemBase {
 
     public void setIndexerVelocity(double rpm) {
         targetBallTunnelVelocity = rpm;
+        if (!enabled)
+            return;
         double motorRPS = (rpm * Constants.Indexer.BALL_TUNNEL_GEAR_RATIO) / 60.0;
         m_ballTunnelMotor.setControl(m_indexerRequest.withVelocity(motorRPS));
 
     }
 
-    public Command runMotors() {
+    public Command preLoadBalls() {
         return run(() -> {
-            setHopperVelocity(Constants.Indexer.PASSIVE_HOPEPR_VELOCITY);
-            setIndexerVelocity(Constants.Indexer.PASSIVE_INDEXER_VELOCITY);
-        }).until(() -> m_beambreak.get());
+            if (m_beambreak.get()) {
+                stopMotors();
+            } else {
+                setHopperVelocity(Constants.Indexer.PASSIVE_HOPEPR_VELOCITY);
+                setIndexerVelocity(Constants.Indexer.PASSIVE_INDEXER_VELOCITY);
+            }
+        });
     }
 
     public void stopMotors() {
@@ -108,13 +120,6 @@ public class IndexerSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // boolean ballsReady = !m_beambreak.get();
-
-        // if (!ballsReady && targetBallTunnelVelocity != 0 && targetHopperVelocity != 0) {
-        //     setHopperVelocity(Constants.Indexer.PASSIVE_HOPEPR_VELOCITY);
-        //     setIndexerVelocity(Constants.Indexer.PASSIVE_INDEXER_VELOCITY);
-        // }
-
         if (verbosity == SubsystemVerbosity.LOW || verbosity == SubsystemVerbosity.HIGH) {
             Logger.recordOutput("Subsystems/Indexer/BallTunnel/Velocity",
                     m_ballTunnelMotor.getVelocity().getValueAsDouble()

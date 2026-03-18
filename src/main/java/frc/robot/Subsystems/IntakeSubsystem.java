@@ -44,16 +44,22 @@ public class IntakeSubsystem extends SubsystemBase {
 
   private double voltage;
 
-  public IntakeSubsystem() {
+  private boolean enabled;
+
+  public IntakeSubsystem(boolean enabled) {
     verbosity = SubsystemVerbosity.HIGH;
     m_pivotMotor.setPosition(0);
     configureRoller();
+
+    this.enabled = enabled;
   }
 
   /* ---------------- Roller ---------------- */
 
-  public void setRollerSpeedA(Supplier<Double> rpm) {
+  public void setRollerSpeed(Supplier<Double> rpm) {
     Logger.recordOutput("Subsystems/Intake/Target Roller Speed", rpm.get());
+    if (!enabled)
+      return;
     m_rollerMotor.setControl(
         rollerRequest.withVelocity(rpm.get() * 60.0));
   }
@@ -101,24 +107,13 @@ public class IntakeSubsystem extends SubsystemBase {
 
   public void stopMotors() {
     targetAngleDeg = rotToDeg(m_pivotMotor.getPosition().getValueAsDouble());
-    setRollerSpeedA(() -> 0.);
+    setRollerSpeed(() -> 0.);
     m_rollerMotor.stopMotor();
     m_pivotMotor.stopMotor();
   }
 
-  /* --------------- Commands ---------------- */
-
-  public Command setRollerSpeed(Supplier<Double> rpmSupplier) {
-    return run(() -> setRollerSpeedA(rpmSupplier));
-  }
-
   public Command moveIntakeToAngle(double targetAngle) {
     return run(() -> setIntakeAngle(targetAngle)).until(() -> isAtAngle());
-  }
-
-  public Command intake() {
-    return moveIntakeToAngle(Constants.Intake.INTAKE_ANGLE_DEG)
-        .alongWith(setRollerSpeed(() -> Constants.Intake.ROLLER_INTAKE_RPM));
   }
 
   public Command retract() {
@@ -184,7 +179,8 @@ public class IntakeSubsystem extends SubsystemBase {
     double ffOutput = feedforward.calculate(pidController.getSetpoint().position,
         pidController.getSetpoint().velocity);
     voltage = pidOutput + ffOutput;
-    m_pivotMotor.setVoltage(voltage);
+    if (enabled)
+      m_pivotMotor.setVoltage(voltage);
 
     if (verbosity == SubsystemVerbosity.LOW || verbosity == SubsystemVerbosity.HIGH) {
       Logger.recordOutput("Subsystems/Intake/Pivot/Is At Angle?", isAtAngle());

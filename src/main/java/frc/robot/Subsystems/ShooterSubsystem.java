@@ -37,7 +37,9 @@ public class ShooterSubsystem extends SubsystemBase {
 
     private final SubsystemVerbosity verbosity;
 
-    public ShooterSubsystem() {
+    private boolean enabled;
+
+    public ShooterSubsystem(boolean enabled) {
         m_rightMotor = new TalonFX(Ports.Shooting.Shooter.kShooterMotor1);
         m_leftMotor = new TalonFX(Ports.Shooting.Shooter.kShooterMotor2);
 
@@ -67,6 +69,8 @@ public class ShooterSubsystem extends SubsystemBase {
         m_leftMotor.getConfigurator().apply(slot0Configs);
 
         verbosity = SubsystemVerbosity.HIGH;
+
+        this.enabled = enabled;
     }
 
     public void setTargetVoltage(double voltage) {
@@ -74,6 +78,8 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     public void setTargetSpeed(double rpm) {
+        if (!enabled)
+            return;
         m_targetRPM = rpm;
         m_rightMotor.setControl(m_velocityVoltage.withVelocity(rpm / 60.0));
     }
@@ -93,7 +99,8 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     public Command setShooterSpeed(Supplier<Double> rpm, double timeoutMs) {
-        return run(() -> setTargetSpeed(rpm.get())).until(() -> isAtTargetSpeed() || (Timer.getFPGATimestamp() * 1000.0) >= timeoutMs);
+        return run(() -> setTargetSpeed(rpm.get()))
+                .until(() -> isAtTargetSpeed() || (Timer.getFPGATimestamp() * 1000.0) >= timeoutMs);
     }
 
     public void selectProfileSlot(int i) {
