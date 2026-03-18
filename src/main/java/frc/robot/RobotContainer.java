@@ -193,6 +193,7 @@ public class RobotContainer {
                 // --- FINAL BINDINGS ---
 
                 driver.M6.whileTrue(driveRobotOrientedAngularVelocity); // TODO: Could be switched
+                driver.M4.onTrue(new InstantCommand(() -> drivebase.lock())); // TODO: Could be switched
 
                 // Reset Gyro
                 driver.M1.onTrue(Commands.runOnce(() -> drivebase.resetOdometry(new Pose2d(0,
