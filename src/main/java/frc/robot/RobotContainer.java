@@ -230,4 +230,13 @@ public class RobotContainer {
         public Command getAutonomousCommand() {
                 return autoChooser.getSelected();
         }
+
+        /**
+         * Called each robot loop to update any periodic non-command logic.
+         */
+        public void periodic() {
+                if (m_TrajectoryCalculations != null) {
+                        m_TrajectoryCalculations.periodic();
+                }
+        }
 }
