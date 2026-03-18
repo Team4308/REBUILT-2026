@@ -2,6 +2,8 @@ package frc.robot;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
@@ -14,6 +16,8 @@ import com.pathplanner.lib.path.PathConstraints;
 public final class Constants {
   public static final double ROBOT_MASS = Units.lbsToKilograms(140); // TODO: update this to match the wieght in
                                                                      // physicalproperties.json
+  public static final boolean disableHAL = false; //
+  public static final double deltaTime = 0.02;
   public static final Matter CHASSIS = new Matter(
       new Translation3d(Units.inchesToMeters(0.4), Units.inchesToMeters(0.4), Units.inchesToMeters(7.2)),
       ROBOT_MASS);
@@ -95,7 +99,7 @@ public final class Constants {
       public final static double TURRET_TOLERANCE_DEGREES = 5;
       public final static double TURRET_START_ANGLE = 360;
       public final static double TURRET_OFFSET_ANGLE = -523.2; // only for CRT
-
+      public static Transform3d robotToTurret = new Transform3d(0.1, 0, 0.3, Rotation3d.kZero);
       public final static ArmFeedforward feedforward = new ArmFeedforward(0.24, 0, 0.0075, 0.01);
 
       public final static ProfiledPIDController pidController = new ProfiledPIDController(

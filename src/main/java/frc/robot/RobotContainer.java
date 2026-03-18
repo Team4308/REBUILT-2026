@@ -30,7 +30,7 @@ import frc.robot.Subsystems.Simulation;
 import frc.robot.Subsystems.TurretSubsystem;
 import frc.robot.Subsystems.swerve.SwerveSubsystem;
 import frc.robot.Subsystems.vision.Vision;
-import frc.robot.Util.TrajectoryCalculations;
+import frc.robot.Util.LaunchCalculator;
 import swervelib.SwerveInputStream;
 
 public class RobotContainer {
@@ -48,13 +48,15 @@ public class RobotContainer {
         private final IndexerSubsystem m_IndexerSubsystem;
         private final ShooterSubsystem m_ShooterSubsystem;
         private final LedSubsystem m_LedSubsystem;
+        @SuppressWarnings("unused")
         private Simulation m_Simulation = null;
 
-        private TrajectoryCalculations m_TrajectoryCalculations;
 
         // Commands
         private final SendableChooser<Command> autoChooser;
+        @SuppressWarnings("unused")
         private final Shoot shootLeft;
+        @SuppressWarnings("unused")
         private final Shoot shootRight;
 
         SwerveInputStream driveAngularVelocity = SwerveInputStream.of(drivebase.getSwerveDrive(),
@@ -73,8 +75,7 @@ public class RobotContainer {
                                         driver::getRightY)
                         .headingWhile(true);
 
-        // Clone's the angular velocity input stream and converts it to a roboRelative
-        // input stream.
+ 
         SwerveInputStream driveRobotOriented = driveAngularVelocity.copy().robotRelative(true)
                         .allianceRelativeControl(false);
 
@@ -109,18 +110,20 @@ public class RobotContainer {
                 m_IntakeSubsystem = new IntakeSubsystem(false);
                 m_LedSubsystem = new LedSubsystem();
 
-                m_TrajectoryCalculations = new TrajectoryCalculations();
-                m_TrajectoryCalculations.setChassisSupplier(() -> drivebase.getFieldVelocity());
-                m_TrajectoryCalculations.setCurrentRPMsupply(() -> m_ShooterSubsystem.getRPM());
-                m_TrajectoryCalculations.setPoseSupplier(() -> drivebase.getPose());
-                m_TrajectoryCalculations.setTargetSupplier(() -> FieldLayout.ShooterTargets.getAllianceHub());
 
-                shootLeft = new Shoot(m_IndexerSubsystem, () -> drivebase.getFieldLocation(),
-                                FieldLayout.Zones.getAllianceLeftTranslation3d(),
-                                getTrajectoryCalculations());
-                shootRight = new Shoot(m_IndexerSubsystem, () -> drivebase.getFieldLocation(),
-                                FieldLayout.Zones.getAllianceRightTranslation3d(),
-                                getTrajectoryCalculations());
+
+                shootLeft = new Shoot(
+                                m_IndexerSubsystem,
+                                () -> drivebase.getFieldLocation(),
+                                () -> LaunchCalculator.getInstance().getParameters(
+                                                drivebase.getSwerveDrive(),
+                                                Math.toRadians(m_TurretSubsystem.getAngleWrapped())));
+                shootRight = new Shoot(
+                                m_IndexerSubsystem,
+                                () -> drivebase.getFieldLocation(),
+                                () -> LaunchCalculator.getInstance().getParameters(
+                                                drivebase.getSwerveDrive(),
+                                                Math.toRadians(m_TurretSubsystem.getAngleWrapped())));
 
                 if (Robot.isSimulation())
                         m_Simulation = new Simulation(m_HoodSubsystem, m_IndexerSubsystem, m_IntakeSubsystem,
@@ -212,10 +215,6 @@ public class RobotContainer {
                 if (Robot.isSimulation()) {
                         drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocityKeyboard);
                 }
-        }
-
-        public TrajectoryCalculations getTrajectoryCalculations() {
-                return m_TrajectoryCalculations;
         }
 
         public void configureNamedCommands() {
