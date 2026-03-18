@@ -22,6 +22,7 @@ import frc.robot.Subsystems.swerve.LocalADStarAK;
 
 public class Robot extends LoggedRobot {
   private Command m_autonomousCommand;
+  private Command m_testCommand;
 
   private final RobotContainer m_robotContainer;
 
@@ -57,9 +58,6 @@ public class Robot extends LoggedRobot {
     Logger.recordOutput("Ally Hub Active", GameData.isHubActive(false));
     Logger.recordOutput("Opposing Hub Active", GameData.isHubActive(true));
     Logger.recordOutput("Time To Next Phase", GameData.timeToNextPhase());
-
-    // Ensure trajectory logging runs in all modes (real + sim).
-    // m_robotContainer.periodic();
   }
 
   @Override
@@ -76,7 +74,7 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void autonomousInit() {
-    // m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     if (m_autonomousCommand != null) {
       CommandScheduler.getInstance().schedule(m_autonomousCommand);
@@ -96,6 +94,7 @@ public class Robot extends LoggedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
+
   }
 
   public void teleopPeriodic() {
@@ -109,6 +108,11 @@ public class Robot extends LoggedRobot {
   @Override
   public void testInit() {
     CommandScheduler.getInstance().cancelAll();
+    m_testCommand = m_robotContainer.getTestCommand();
+
+    if (m_testCommand != null) {
+      CommandScheduler.getInstance().schedule(m_testCommand);
+    }
   }
 
   @Override
