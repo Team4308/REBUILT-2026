@@ -60,7 +60,7 @@ public final class Constants {
 
       public static final PIDConstants PID = new PIDConstants(5, 0, 0);
     }
-    
+
     public static final class PathFinding {
       public static final double PIDTolerance = Units.inchesToMeters(12); // How close the bot is when it switches to
                                                                           // PID or align
@@ -73,6 +73,7 @@ public final class Constants {
       // to end
     }
   }
+
   public static final class Shooting {
     public static class Shooter {
       public static final double kMaxRPM = 6000.0;
@@ -98,13 +99,13 @@ public final class Constants {
       public final static double FULL_REVOLUTION_DEG = 360;
       public final static double TURRET_TOLERANCE_DEGREES = 5;
       public final static double TURRET_START_ANGLE = 360;
-      public final static double TURRET_OFFSET_ANGLE = 725; // only for CRT
-  public final static double TURRET_AIM_SIGN = -1.0; // +1 if turret rotates CCW for positive angles, -1 if opposite
+      public final static double TURRET_OFFSET_ANGLE = 556; // only for CRT
+      public final static double TURRET_AIM_SIGN = -1.0; // +1 if turret rotates CCW for positive angles, -1 if opposite
 
       public final static ArmFeedforward feedforward = new ArmFeedforward(0.24, 0, 0.0075, 0.01);
 
       public final static ProfiledPIDController pidController = new ProfiledPIDController(
-          0.035, 0.0, 0.0,
+          0.0, 0.0, 0.0, // 0.035
           new TrapezoidProfile.Constraints(1500, 2000));
     }
 
@@ -122,24 +123,33 @@ public final class Constants {
     }
 
     public static final class TrajectoryCalc {
-  public static final SubsystemVerbosity TRAJECTORY_VERBOSITY = SubsystemVerbosity.LOW;  // Change for debugging 
-  public static final TrajectorySolver.SolveMode REALTIME_SOLVER_MODE = TrajectorySolver.SolveMode.BISECTION; // Do not change
-  public static final TrajectorySolver.SolveMode SHOT_TABLE_GENERATION_MODE = TrajectorySolver.SolveMode.BISECTION; // Do not change
-  public static final ShotMode DEFAULT_SHOOTER_MODE = ShotMode.LOOKUP_WITH_SOLVER_FALLBACK; // pls leave this as lookup with fallback, it is much better than the alternatives
-  public static final double MIN_TARGET_DISTANCE_METERS = 0.05;
-  public static final double VELOCITY_BUFFER_MULTIPLIER = 1.2;
-  public static final double RIM_CLEARANCE_METERS = 0.05;
-  public static final double MIN_ENTRY_ANGLE_DEGREES = 10.0;
-  public static final double DRAG_COMPENSATION_MULTIPLIER = 1.5;
+      public static final SubsystemVerbosity TRAJECTORY_VERBOSITY = SubsystemVerbosity.LOW; // Change for debugging
+      public static final TrajectorySolver.SolveMode REALTIME_SOLVER_MODE = TrajectorySolver.SolveMode.BISECTION; // Do
+                                                                                                                  // not
+                                                                                                                  // change
+      public static final TrajectorySolver.SolveMode SHOT_TABLE_GENERATION_MODE = TrajectorySolver.SolveMode.BISECTION; // Do
+                                                                                                                        // not
+                                                                                                                        // change
+      public static final ShotMode DEFAULT_SHOOTER_MODE = ShotMode.LOOKUP_WITH_SOLVER_FALLBACK; // pls leave this as
+                                                                                                // lookup with fallback,
+                                                                                                // it is much better
+                                                                                                // than the alternatives
+      public static final double MIN_TARGET_DISTANCE_METERS = 0.05;
+      public static final double VELOCITY_BUFFER_MULTIPLIER = 1.2;
+      public static final double RIM_CLEARANCE_METERS = 0.05;
+      public static final double MIN_ENTRY_ANGLE_DEGREES = 10.0;
+      public static final double DRAG_COMPENSATION_MULTIPLIER = 1.5;
       public static final double MIN_SOLVE_INTERVAL_MS = 1.0;
       public static final double DISTANCE_CHANGE_THRESHOLD_M = 0.0;
       public static final double YAW_CHANGE_THRESHOLD_DEG = 0.1;
 
-      public static final double MIN_PITCH_DEG = 47.5; // To Find this its 90 - Max (90 is the relative angle from the horizontal plane) to Convert to the turret angles you need to do 90 - Pitch
-      public static final double MAX_PITCH_DEG = 82.5; // To find this its 90 - Min 
+      public static final double MIN_PITCH_DEG = 47.5; // To Find this its 90 - Max (90 is the relative angle from the
+                                                       // horizontal plane) to Convert to the turret angles you need to
+                                                       // do 90 - Pitch
+      public static final double MAX_PITCH_DEG = 82.5; // To find this its 90 - Min
 
       // Shooter geometry Change this to match CAD model
-      public static final double SHOOTER_HEIGHT_M = 0.5; 
+      public static final double SHOOTER_HEIGHT_M = 0.5;
       public static final double SHOOTER_OFFSET_X_M = 0.1;
       public static final double SHOOTER_OFFSET_Y_M = 0.1;
 
@@ -154,10 +164,10 @@ public final class Constants {
       public static final double MAX_DISTANCE_M = 999;
       public static final double RPM_FEEDBACK_THRESHOLD = 50.0;
       public static final double RPM_ABORT_THRESHOLD = 500.0;
-      public static final double PITCH_CORRECTION_PER_RPM_DEFICIT = 0.005; 
+      public static final double PITCH_CORRECTION_PER_RPM_DEFICIT = 0.005;
       public static final double MOVING_COMPENSATION_GAIN = 1.0;
       public static final int MOVING_ITERATIONS = 5;
-      public static final double SAFETY_MAX_EXIT_VELOCITY = 100.0; 
+      public static final double SAFETY_MAX_EXIT_VELOCITY = 100.0;
 
       // FlywheelConfig
       public static final double FLYWHEEL_DIAMETER_IN = 4.0;
