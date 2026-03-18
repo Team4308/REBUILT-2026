@@ -346,7 +346,7 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
     public Command moveToTarget(Supplier<Double> degrees) {
-        return run(() -> setTarget(degrees.get())).until(this::isAtTarget);
+        return run(() -> setTarget(degrees.get()));
     }
 
     public Command moveToTarget(Supplier<Double> degrees, double timeoutMs) {

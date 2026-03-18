@@ -72,7 +72,7 @@ public class HoodSubsystem extends SubsystemBase {
     }
 
     public Command setHoodAngleCommand(Supplier<Double> angleSupplier) {
-        return run(() -> setHoodAngle(angleSupplier.get())).until(this::isAtPosition);
+        return run(() -> setHoodAngle(angleSupplier.get()));
     }
 
     public void setHoodAngle(double angle) {
