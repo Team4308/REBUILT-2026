@@ -182,26 +182,26 @@ public final class Constants {
   }
 
   public static class Indexer {
-    public static double DEFAULT_INDEXER_VELOCITY = 100;
-    public static double DEFAULT_HOPPER_VELOCITY = 100;
+    public static double DEFAULT_INDEXER_VELOCITY = 3000;
+    public static double DEFAULT_HOPPER_VELOCITY = 3000;
 
-    public static double BALL_TUNNEL_GEAR_RATIO = 5 / 3;
-    public static double HOPPER_GEAR_RATIO = 9 / 1;
+    public static double BALL_TUNNEL_GEAR_RATIO = 3 / 5;
+    public static double HOPPER_GEAR_RATIO = 1;
 
     public static double HOPPER_Ks = 0.5;
-    public static double HOPPER_Kv = 0.1;
+    public static double HOPPER_Kv = 0.3;
     public static double HOPPER_Kp = 0.3;
     public static double HOPPER_Ki = 0;
     public static double HOPPER_Kd = 0;
 
     public static double BALL_TUNNEL_Ks = 0.5;
-    public static double BALL_TUNNEL_Kv = 0.1;
+    public static double BALL_TUNNEL_Kv = 0.3;
     public static double BALL_TUNNEL_Kp = 0.3;
     public static double BALL_TUNNEL_Ki = 0;
     public static double BALL_TUNNEL_Kd = 0;
 
-    public static double PASSIVE_INDEXER_VELOCITY = 50;
-    public static double PASSIVE_HOPEPR_VELOCITY = 50;
+    public static double PASSIVE_INDEXER_VELOCITY = 3000;
+    public static double PASSIVE_HOPEPR_VELOCITY = 3000;
   }
 
   public static class OperatorConstants {

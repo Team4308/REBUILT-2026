@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.Commands.AimAtHubCommand;
 import frc.robot.Commands.DefaultIntakeCommand;
+import frc.robot.Commands.IndexerCommand;
 import frc.robot.Commands.MoveHoodCommand;
 import frc.robot.Commands.MoveTurretCommand;
 import frc.robot.Commands.SystemCheck;
@@ -104,7 +105,7 @@ public class RobotContainer {
                 m_HoodSubsystem = new HoodSubsystem(false);
                 m_IndexerSubsystem = new IndexerSubsystem(true);
                 m_TurretSubsystem = new TurretSubsystem(false);
-                m_ShooterSubsystem = new ShooterSubsystem(false);
+                m_ShooterSubsystem = new ShooterSubsystem(true);
                 m_IntakeSubsystem = new IntakeSubsystem(false);
                 m_LedSubsystem = new LedSubsystem();
 
@@ -165,6 +166,9 @@ public class RobotContainer {
 
                 // --- TESTING BINDINGS ---
 
+                driver.RB.whileTrue(m_ShooterSubsystem.setShooterSpeed(() -> 3000.));
+                driver.RB.onFalse(new InstantCommand(() -> m_ShooterSubsystem.stopMotors()));
+
                 driver.povUp.onTrue(new MoveHoodCommand(m_HoodSubsystem, () -> 5.));
                 driver.povDown.onTrue(new MoveHoodCommand(m_HoodSubsystem, () -> -5.));
 
@@ -183,9 +187,7 @@ public class RobotContainer {
                 driver.B.onFalse(new InstantCommand(() -> m_ShooterSubsystem.stopMotors()));
 
                 // Intaking
-                driver.RB.whileTrue(new InstantCommand(() -> m_IndexerSubsystem.setIndexerVelocity(500)));
-                driver.RB.whileTrue(new InstantCommand(() -> m_IndexerSubsystem.setHopperVelocity(500)));
-                driver.RB.onFalse(new InstantCommand(() -> m_IndexerSubsystem.stopMotors()));
+                driver.RB.whileTrue(new IndexerCommand(m_IndexerSubsystem, () -> 600.));
 
                 driver.LB.onTrue(new InstantCommand(() -> m_IntakeSubsystem.setRollerSpeed(() -> -100.)));
                 driver.LB.onFalse(new InstantCommand(() -> m_IntakeSubsystem.stopMotors()));
@@ -204,8 +206,8 @@ public class RobotContainer {
                 driver.M2.onTrue(m_IntakeSubsystem.resetIntakeCommand());
 
                 // Full Auto Shooting
-                driver.LB.whileTrue(shootLeft);
-                driver.RB.whileTrue(shootRight);
+                // driver.LB.whileTrue(shootLeft);
+                // driver.RB.whileTrue(shootRight);
 
                 if (Robot.isSimulation()) {
                         drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocityKeyboard);
