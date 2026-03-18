@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.Commands.AimAtHubCommand;
 import frc.robot.Commands.DefaultIntakeCommand;
+import frc.robot.Commands.IndexerCommand;
 import frc.robot.Commands.MoveHoodCommand;
 import frc.robot.Commands.MoveTurretCommand;
 import frc.robot.Commands.SystemCheck;
@@ -104,7 +105,7 @@ public class RobotContainer {
                 m_HoodSubsystem = new HoodSubsystem(false);
                 m_IndexerSubsystem = new IndexerSubsystem(true);
                 m_TurretSubsystem = new TurretSubsystem(false);
-                m_ShooterSubsystem = new ShooterSubsystem(false);
+                m_ShooterSubsystem = new ShooterSubsystem(true);
                 m_IntakeSubsystem = new IntakeSubsystem(false);
                 m_LedSubsystem = new LedSubsystem();
 
@@ -135,17 +136,16 @@ public class RobotContainer {
                 // m_IntakeSubsystem.setRollerSpeed(() -> Constants.Intake.ROLLER_INTAKE_RPM));
 
                 // --- TRAJECTORY DEFAULT COMMANDS ---
-                /*
-                 * m_TurretSubsystem.setDefaultCommand(
-                 * m_TurretSubsystem.moveToTarget(() ->
-                 * getTrajectoryCalculations().getNeededYaw()));
-                 * m_HoodSubsystem.setDefaultCommand(m_HoodSubsystem
-                 * .setHoodAngleCommand(() -> getTrajectoryCalculations().getNeededPitch()));
-                 * m_ShooterSubsystem.setDefaultCommand(
-                 * m_ShooterSubsystem.setShooterSpeed(() ->
-                 * getTrajectoryCalculations().getNeededRPM()));
-                 */
-                m_IndexerSubsystem.setDefaultCommand(m_IndexerSubsystem.preLoadBalls());
+
+                // m_TurretSubsystem.setDefaultCommand(
+                // m_TurretSubsystem.moveToTarget(() ->
+                // getTrajectoryCalculations().getNeededYaw()));
+                // m_HoodSubsystem.setDefaultCommand(m_HoodSubsystem
+                // .setHoodAngleCommand(() -> getTrajectoryCalculations().getNeededPitch()));
+                m_ShooterSubsystem.setDefaultCommand(
+                                m_ShooterSubsystem.setShooterSpeed(() -> getTrajectoryCalculations().getNeededRPM()));
+
+                // m_IndexerSubsystem.setDefaultCommand(m_IndexerSubsystem.preLoadBalls());
 
                 configureNamedCommands();
                 configureBindings();
@@ -165,6 +165,9 @@ public class RobotContainer {
 
                 // --- TESTING BINDINGS ---
 
+                // driver.RB.onTrue(m_ShooterSubsystem.setShooterSpeed(() -> 2400.));
+                // driver.RB.onFalse(m_ShooterSubsystem.setShooterSpeed(() -> 0.));
+
                 driver.povUp.onTrue(new MoveHoodCommand(m_HoodSubsystem, () -> 5.));
                 driver.povDown.onTrue(new MoveHoodCommand(m_HoodSubsystem, () -> -5.));
 
@@ -183,9 +186,7 @@ public class RobotContainer {
                 driver.B.onFalse(new InstantCommand(() -> m_ShooterSubsystem.stopMotors()));
 
                 // Intaking
-                driver.RB.whileTrue(new InstantCommand(() -> m_IndexerSubsystem.setIndexerVelocity(500)));
-                driver.RB.whileTrue(new InstantCommand(() -> m_IndexerSubsystem.setHopperVelocity(500)));
-                driver.RB.onFalse(new InstantCommand(() -> m_IndexerSubsystem.stopMotors()));
+                // driver.RB.whileTrue(new IndexerCommand(m_IndexerSubsystem, () -> 600.));
 
                 driver.LB.onTrue(new InstantCommand(() -> m_IntakeSubsystem.setRollerSpeed(() -> -100.)));
                 driver.LB.onFalse(new InstantCommand(() -> m_IntakeSubsystem.stopMotors()));
@@ -204,8 +205,10 @@ public class RobotContainer {
                 driver.M2.onTrue(m_IntakeSubsystem.resetIntakeCommand());
 
                 // Full Auto Shooting
-                driver.LB.whileTrue(shootLeft);
+                // driver.LB.whileTrue(shootLeft);
                 driver.RB.whileTrue(shootRight);
+                // driver.LB.onTrue(new InstantCommand(() ->
+                // m_IndexerSubsystem.setHopperVelocity(-60.)));
 
                 if (Robot.isSimulation()) {
                         drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocityKeyboard);

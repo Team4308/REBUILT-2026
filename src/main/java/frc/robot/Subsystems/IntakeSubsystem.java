@@ -50,7 +50,7 @@ public class IntakeSubsystem extends SubsystemBase {
     verbosity = SubsystemVerbosity.HIGH;
     m_pivotMotor.setPosition(0);
     configureRoller();
-
+    offset = 0;
     pidController.reset(targetAngleDeg);
 
     this.enabled = enabled;
