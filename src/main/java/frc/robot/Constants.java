@@ -60,7 +60,7 @@ public final class Constants {
 
       public static final PIDConstants PID = new PIDConstants(5, 0, 0);
     }
-
+    
     public static final class PathFinding {
       public static final double PIDTolerance = Units.inchesToMeters(12); // How close the bot is when it switches to
                                                                           // PID or align
@@ -68,11 +68,11 @@ public final class Constants {
           3.0, 3.0,
           Units.degreesToRadians(360), Units.degreesToRadians(360));
 
-      public static final double MIN_ALIGNED_TIME = 500; // minimum time it needs to be at alignment for the pathfinding
-                                                         // to end
+      public static final double VELOCITY_TOLERANCE = 0.3; // minimum time it needs to be at alignment for the
+                                                           // pathfinding
+      // to end
     }
   }
-
   public static final class Shooting {
     public static class Shooter {
       public static final double kMaxRPM = 6000.0;

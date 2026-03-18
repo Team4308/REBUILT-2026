@@ -13,7 +13,6 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -369,50 +368,18 @@ public class TurretSubsystem extends SubsystemBase {
         Pose2d robotPose = robotPoseSupplier.get();
         double dx = fieldTarget.getX() - robotPose.getX();
         double dy = fieldTarget.getY() - robotPose.getY();
-<<<<<<< HEAD
-    // Compute the required turret rotation relative to the robot heading.
-    double fieldAngleDeg = Math.toDegrees(Math.atan2(dy, dx));
-    double robotHeadingDeg = robotPose.getRotation().getDegrees();
-
-    // Convert the field-relative angle to a robot-relative angle.
-    // Rotation2d.minus() gives the angle that must be added to the robot heading to point at the field angle.
-    double relativeAngleDeg = Rotation2d.fromDegrees(fieldAngleDeg).minus(robotPose.getRotation()).getDegrees();
-
-    // Apply sign/flip if turret encoders rotate in the opposite direction of the field frame.
-    double turretAngleDeg = Constants.Shooting.Turret.TURRET_AIM_SIGN * relativeAngleDeg;
-    turretAngleDeg += (Constants.Shooting.Turret.TURRET_OFFSET_ANGLE % 360.0);
-
-    // Keep angle within [0, 360) before handing it to setTarget.
-    turretAngleDeg = ((turretAngleDeg % 360.0) + 360.0) % 360.0;
-        setTarget(turretAngleDeg);
-
-        if (verbosity == SubsystemVerbosity.HIGH) {
-            Logger.recordOutput("Turret/AimAtPoint/TargetTurretDeg", turretAngleDeg);
-        }
-=======
         double fieldAngleDeg = Math.toDegrees(Math.atan2(dy, dx));
         double robotHeadingDeg = robotPose.getRotation().getDegrees();
         setTarget(fieldAngleDeg - robotHeadingDeg);
->>>>>>> f471488262c98f5373065973b7135d0a7517b531
     }
 
     public double getHubAngle(Translation3d fieldTarget) {
         Pose2d robotPose = robotPoseSupplier.get();
         double dx = fieldTarget.getX() - robotPose.getX();
         double dy = fieldTarget.getY() - robotPose.getY();
-<<<<<<< HEAD
-    double fieldAngleDeg = Math.toDegrees(Math.atan2(dy, dx));
-    double robotHeadingDeg = robotPose.getRotation().getDegrees();
-    double turretAngleDeg = fieldAngleDeg - Constants.Shooting.Turret.TURRET_AIM_SIGN * robotHeadingDeg;
-    turretAngleDeg += (Constants.Shooting.Turret.TURRET_OFFSET_ANGLE % 360.0);
-
-    turretAngleDeg = ((turretAngleDeg % 360.0) + 360.0) % 360.0;
-        return turretAngleDeg;
-=======
         double fieldAngleDeg = Math.toDegrees(Math.atan2(dy, dx));
         double robotHeadingDeg = robotPose.getRotation().getDegrees();
         return fieldAngleDeg - robotHeadingDeg;
->>>>>>> f471488262c98f5373065973b7135d0a7517b531
     }
 
     public Command aimAtPointCommand(Translation3d fieldTarget) {
