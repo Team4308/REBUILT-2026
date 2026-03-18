@@ -75,7 +75,7 @@ public class IntakeSubsystem extends SubsystemBase {
       }
       return simSupplier.get();
     }
-    return rotToDeg(m_pivotMotor.getPosition().getValueAsDouble()) + offset;
+    return rotToDeg(m_pivotMotor.getPosition().getValueAsDouble()) - offset;
   }
 
   public boolean isAtAngle() {

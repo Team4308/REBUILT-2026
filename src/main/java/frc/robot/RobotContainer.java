@@ -49,15 +49,15 @@ public class RobotContainer {
         private final SwerveSubsystem drivebase = new SwerveSubsystem(
                         new File(Filesystem.getDeployDirectory(), "swerve"));
 
-        // private final HoodSubsystem m_HoodSubsystem;
+        private final HoodSubsystem m_HoodSubsystem;
         private final IntakeSubsystem m_IntakeSubsystem;
+        private final TurretSubsystem m_TurretSubsystem;
+        private final IndexerSubsystem m_IndexerSubsystem;
+        private final ShooterSubsystem m_ShooterSubsystem;
+
+        // private final LedSubsystem m_LedSubsystem;
+        private Simulation m_Simulation = null;
         /*
-         * private final TurretSubsystem m_TurretSubsystem;
-         * private final IndexerSubsystem m_IndexerSubsystem;
-         * private final ShooterSubsystem m_ShooterSubsystem;
-         * private final LedSubsystem m_LedSubsystem;
-         * private Simulation m_Simulation = null;
-         * 
          * private double m_hoodAngle = 7.5;
          * private double m_turretAngle = 180;
          * private double m_shooterSpeed = 0.0;
@@ -122,10 +122,10 @@ public class RobotContainer {
         public RobotContainer() {
                 drivebase.setVision(vision);
 
-                // m_HoodSubsystem = new HoodSubsystem();
-                // m_IndexerSubsystem = new IndexerSubsystem();
-                // m_TurretSubsystem = new TurretSubsystem();
-                // m_ShooterSubsystem = new ShooterSubsystem();
+                m_HoodSubsystem = new HoodSubsystem();
+                m_IndexerSubsystem = new IndexerSubsystem();
+                m_TurretSubsystem = new TurretSubsystem();
+                m_ShooterSubsystem = new ShooterSubsystem();
                 m_IntakeSubsystem = new IntakeSubsystem();
                 // m_LedSubsystem = new LedSubsystem();
 
@@ -146,13 +146,12 @@ public class RobotContainer {
                  * drivebase.getFieldLocation(),
                  * FieldLayout.Zones.getAllianceRightTranslation3d(),
                  * getTrajectoryCalculations());
-                 * 
-                 * if (Robot.isSimulation())
-                 * m_Simulation = new Simulation(m_HoodSubsystem, m_IndexerSubsystem,
-                 * m_IntakeSubsystem,
-                 * m_ShooterSubsystem, m_TurretSubsystem, drivebase);
                  */
-                // m_HoodSubsystem.setTurretSupplier(() -> m_TurretSubsystem.getAngleWrapped());
+                if (Robot.isSimulation())
+                        m_Simulation = new Simulation(m_HoodSubsystem, m_IndexerSubsystem, m_IntakeSubsystem,
+                                        m_ShooterSubsystem, m_TurretSubsystem, drivebase);
+
+                m_HoodSubsystem.setTurretSupplier(() -> m_TurretSubsystem.getAngleWrapped());
 
                 m_IntakeSubsystem.setDefaultCommand(
                                 new DefaultIntakePivot(m_IntakeSubsystem, () -> driver.getRightTrigger()));

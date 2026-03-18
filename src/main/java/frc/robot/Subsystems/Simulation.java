@@ -74,6 +74,7 @@ public class Simulation extends SubsystemBase {
                 Units.degreesToRadians(360));
 
         m_turretSim.update(0);
+        m_intakeSim.update(0);
 
         m_IntakeSubsystem.setSimSupplier(() -> Math.toDegrees(m_intakeSim.getAngleRads()));
         m_HoodSubsystem.setSimSupplier(() -> Math.toDegrees(m_hoodSim.getAngleRads()));
