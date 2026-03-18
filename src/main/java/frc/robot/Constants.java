@@ -99,7 +99,7 @@ public final class Constants {
       public final static double TURRET_TOLERANCE_DEGREES = 5;
       public final static double TURRET_START_ANGLE = 360;
       public final static double TURRET_OFFSET_ANGLE = 725; // only for CRT
-  public final static double TURRET_AIM_SIGN = -1.0; // +1 if turret rotates CCW for positive angles, -1 if opposite
+  public final static double TURRET_AIM_SIGN = -1.0; // +1 Iif turret rotates CCW for positive angles, -1 if opposite
 
       public final static ArmFeedforward feedforward = new ArmFeedforward(0.24, 0, 0.0075, 0.01);
 
@@ -152,6 +152,13 @@ public final class Constants {
       public static final double RPM_TO_VELOCITY_FACTOR = 0.00532;
       public static final double MIN_DISTANCE_M = 0.5;
       public static final double MAX_DISTANCE_M = 999;
+  /**
+   * When close to the target, we cap the requested RPM so the shot doesn't
+   * overfly the goal. This is a safety override to keep the model producing
+   * realistic near-range values.
+   */
+  public static final double MAX_CLOSE_RANGE_DISTANCE_M = 2.0;
+  public static final double MAX_CLOSE_RANGE_RPM = 3400.0;
       public static final double RPM_FEEDBACK_THRESHOLD = 50.0;
       public static final double RPM_ABORT_THRESHOLD = 500.0;
       public static final double PITCH_CORRECTION_PER_RPM_DEFICIT = 0.005; 
