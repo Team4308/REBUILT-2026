@@ -1,4 +1,5 @@
 package frc.robot.Commands;
+
 import java.util.function.Supplier;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -14,39 +15,41 @@ public class TestTrajectoryShootingCommand extends Command {
     TrajectoryCalculations trajCalc;
     HoodSubsystem hoodSubsystem;
 
-    public TestTrajectoryShootingCommand(ShooterSubsystem shooterSubsystem, TurretSubsystem turretSubsystem, Supplier<Pose2d> botPose, TrajectoryCalculations trajCalc, HoodSubsystem hoodSubsystem) {
+    public TestTrajectoryShootingCommand(ShooterSubsystem shooterSubsystem, TurretSubsystem turretSubsystem,
+            Supplier<Pose2d> botPose, TrajectoryCalculations trajCalc, HoodSubsystem hoodSubsystem) {
         addRequirements(shooterSubsystem, turretSubsystem);
         this.shooterSubsystem = shooterSubsystem;
         this.turretSubsystem = turretSubsystem;
         this.trajCalc = trajCalc;
         this.hoodSubsystem = hoodSubsystem;
-    }
 
+        addRequirements(shooterSubsystem, turretSubsystem, hoodSubsystem);
+    }
 
     @Override
     public void initialize() {
-        
+
     }
 
     @Override
     public void execute() {
-            double targetRPM = trajCalc.getNeededRPM();
-            double targetTurretAngle = trajCalc.getNeededYaw();
-            double targetHoodAngle = trajCalc.getNeededPitch();
-            turretSubsystem.setTarget(targetTurretAngle);
-            //shooterSubsystem.setTargetSpeed(targetRPM);
-            //hoodSubsystem.setHoodAngle(targetHoodAngle);
+        double targetRPM = trajCalc.getNeededRPM();
+        double targetTurretAngle = trajCalc.getNeededYaw();
+        double targetHoodAngle = trajCalc.getNeededPitch();
+        turretSubsystem.setTarget(targetTurretAngle);
+        // shooterSubsystem.setTargetSpeed(targetRPM);
+        // hoodSubsystem.setHoodAngle(targetHoodAngle);
 
     }
 
     @Override
     public void end(boolean interrupted) {
-        
+
     }
 
     @Override
     public boolean isFinished() {
         return false;
     }
-    
+
 }
