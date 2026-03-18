@@ -2,6 +2,8 @@ package frc.robot;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
@@ -66,9 +68,8 @@ public final class Constants {
           3.0, 3.0,
           Units.degreesToRadians(360), Units.degreesToRadians(360));
 
-      public static final double VELOCITY_TOLERANCE = 0.3; // minimum time it needs to be at alignment for the
-                                                           // pathfinding
-      // to end
+      public static final double MIN_ALIGNED_TIME = 500; // minimum time it needs to be at alignment for the pathfinding
+                                                         // to end
     }
   }
 

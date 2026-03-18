@@ -19,7 +19,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Neutral to Left Neutral"
+            "pathName": null
           }
         },
         {
@@ -43,7 +43,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Neutral to Left Neutral"
+            "pathName": null
           }
         },
         {

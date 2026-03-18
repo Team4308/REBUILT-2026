@@ -7,13 +7,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Blue LEFT to DEPOT"
+            "pathName": "Blue LEFT SWIPE"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Blue Depot to Neutral"
+            "pathName": null
           }
         },
         {
