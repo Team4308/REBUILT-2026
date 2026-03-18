@@ -58,6 +58,8 @@ public class Robot extends LoggedRobot {
     Logger.recordOutput("Ally Hub Active", GameData.isHubActive(false));
     Logger.recordOutput("Opposing Hub Active", GameData.isHubActive(true));
     Logger.recordOutput("Time To Next Phase", GameData.timeToNextPhase());
+
+    Logger.recordOutput("TrajectoryStuff", m_robotContainer.getTrajectoryCalculations().getNeededRPM());
   }
 
   @Override

@@ -136,17 +136,16 @@ public class RobotContainer {
                 // m_IntakeSubsystem.setRollerSpeed(() -> Constants.Intake.ROLLER_INTAKE_RPM));
 
                 // --- TRAJECTORY DEFAULT COMMANDS ---
-                /*
-                 * m_TurretSubsystem.setDefaultCommand(
-                 * m_TurretSubsystem.moveToTarget(() ->
-                 * getTrajectoryCalculations().getNeededYaw()));
-                 * m_HoodSubsystem.setDefaultCommand(m_HoodSubsystem
-                 * .setHoodAngleCommand(() -> getTrajectoryCalculations().getNeededPitch()));
-                 * m_ShooterSubsystem.setDefaultCommand(
-                 * m_ShooterSubsystem.setShooterSpeed(() ->
-                 * getTrajectoryCalculations().getNeededRPM()));
-                 */
-                m_IndexerSubsystem.setDefaultCommand(m_IndexerSubsystem.preLoadBalls());
+
+                // m_TurretSubsystem.setDefaultCommand(
+                // m_TurretSubsystem.moveToTarget(() ->
+                // getTrajectoryCalculations().getNeededYaw()));
+                // m_HoodSubsystem.setDefaultCommand(m_HoodSubsystem
+                // .setHoodAngleCommand(() -> getTrajectoryCalculations().getNeededPitch()));
+                m_ShooterSubsystem.setDefaultCommand(
+                                m_ShooterSubsystem.setShooterSpeed(() -> getTrajectoryCalculations().getNeededRPM()));
+
+                // m_IndexerSubsystem.setDefaultCommand(m_IndexerSubsystem.preLoadBalls());
 
                 configureNamedCommands();
                 configureBindings();
@@ -166,8 +165,8 @@ public class RobotContainer {
 
                 // --- TESTING BINDINGS ---
 
-                driver.RB.whileTrue(m_ShooterSubsystem.setShooterSpeed(() -> 3000.));
-                driver.RB.onFalse(new InstantCommand(() -> m_ShooterSubsystem.stopMotors()));
+                // driver.RB.onTrue(m_ShooterSubsystem.setShooterSpeed(() -> 2400.));
+                // driver.RB.onFalse(m_ShooterSubsystem.setShooterSpeed(() -> 0.));
 
                 driver.povUp.onTrue(new MoveHoodCommand(m_HoodSubsystem, () -> 5.));
                 driver.povDown.onTrue(new MoveHoodCommand(m_HoodSubsystem, () -> -5.));
@@ -187,7 +186,7 @@ public class RobotContainer {
                 driver.B.onFalse(new InstantCommand(() -> m_ShooterSubsystem.stopMotors()));
 
                 // Intaking
-                driver.RB.whileTrue(new IndexerCommand(m_IndexerSubsystem, () -> 600.));
+                // driver.RB.whileTrue(new IndexerCommand(m_IndexerSubsystem, () -> 600.));
 
                 driver.LB.onTrue(new InstantCommand(() -> m_IntakeSubsystem.setRollerSpeed(() -> -100.)));
                 driver.LB.onFalse(new InstantCommand(() -> m_IntakeSubsystem.stopMotors()));
@@ -207,7 +206,9 @@ public class RobotContainer {
 
                 // Full Auto Shooting
                 // driver.LB.whileTrue(shootLeft);
-                // driver.RB.whileTrue(shootRight);
+                driver.RB.whileTrue(shootRight);
+                // driver.LB.onTrue(new InstantCommand(() ->
+                // m_IndexerSubsystem.setHopperVelocity(-60.)));
 
                 if (Robot.isSimulation()) {
                         drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocityKeyboard);

@@ -91,7 +91,8 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     public void stopMotors() {
-        setTargetSpeed(0);
+        m_rightMotor.stopMotor();
+        m_leftMotor.stopMotor();
     }
 
     public Command setShooterSpeed(Supplier<Double> rpm) {

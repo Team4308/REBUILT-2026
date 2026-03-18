@@ -182,8 +182,8 @@ public final class Constants {
   }
 
   public static class Indexer {
-    public static double DEFAULT_INDEXER_VELOCITY = 3000;
-    public static double DEFAULT_HOPPER_VELOCITY = 3000;
+    public static double DEFAULT_INDEXER_VELOCITY = 300;
+    public static double DEFAULT_HOPPER_VELOCITY = 300;
 
     public static double BALL_TUNNEL_GEAR_RATIO = 3 / 5;
     public static double HOPPER_GEAR_RATIO = 1;
