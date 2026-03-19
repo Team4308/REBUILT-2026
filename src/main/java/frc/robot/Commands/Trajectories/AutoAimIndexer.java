@@ -20,7 +20,6 @@ public class AutoAimIndexer extends Command{
     public void execute() {
         boolean ballsReady = !m_IndexerSubsystem.getBeambreak();
         if (!ballsReady && m_IndexerSubsystem.getTargetBallTunnelVelocity() != 0 && m_IndexerSubsystem.getTargetHopperVelocity() != 0) {
-            m_IndexerSubsystem.setHopperVelocity(Constants.Indexer.PASSIVE_HOPEPR_VELOCITY);
             m_IndexerSubsystem.setIndexerVelocity(Constants.Indexer.PASSIVE_INDEXER_VELOCITY);
         }
     }

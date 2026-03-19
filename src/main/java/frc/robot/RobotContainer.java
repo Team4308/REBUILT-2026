@@ -103,9 +103,9 @@ public class RobotContainer {
                 drivebase.setVision(vision);
 
                 m_HoodSubsystem = new HoodSubsystem(true);
-                m_IndexerSubsystem = new IndexerSubsystem(true);
+                m_IndexerSubsystem = new IndexerSubsystem(false);
                 m_TurretSubsystem = new TurretSubsystem(true);
-                m_ShooterSubsystem = new ShooterSubsystem(true);
+                m_ShooterSubsystem = new ShooterSubsystem(false);
                 m_IntakeSubsystem = new IntakeSubsystem(false);
                 m_LedSubsystem = new LedSubsystem();
 
@@ -137,12 +137,15 @@ public class RobotContainer {
 
                 // --- TRAJECTORY DEFAULT COMMANDS ---
 
-                m_TurretSubsystem.setDefaultCommand(
-                                m_TurretSubsystem.moveToTarget(() -> getTrajectoryCalculations().getNeededYaw()));
-                m_HoodSubsystem.setDefaultCommand(m_HoodSubsystem
-                                .setHoodAngleCommand(() -> 90.0 - getTrajectoryCalculations().getNeededPitch()));
-                m_ShooterSubsystem.setDefaultCommand(
-                                m_ShooterSubsystem.setShooterSpeed(() -> getTrajectoryCalculations().getNeededRPM()));
+                // m_TurretSubsystem.setDefaultCommand(
+                // m_TurretSubsystem.moveToTarget(() ->
+                // getTrajectoryCalculations().getNeededYaw()));
+                // m_HoodSubsystem.setDefaultCommand(m_HoodSubsystem
+                // .setHoodAngleCommand(() -> 90.0 -
+                // getTrajectoryCalculations().getNeededPitch()));
+                // m_ShooterSubsystem.setDefaultCommand(
+                // m_ShooterSubsystem.setShooterSpeed(() ->
+                // getTrajectoryCalculations().getNeededRPM()));
 
                 // m_IndexerSubsystem.setDefaultCommand(m_IndexerSubsystem.preLoadBalls());
 
@@ -167,13 +170,11 @@ public class RobotContainer {
                 // driver.RB.onTrue(m_ShooterSubsystem.setShooterSpeed(() -> 2400.));
                 // driver.RB.onFalse(m_ShooterSubsystem.setShooterSpeed(() -> 0.));
 
-                // driver.povUp.onTrue(new MoveHoodCommand(m_HoodSubsystem, () -> 5.));
-                // driver.povDown.onTrue(new MoveHoodCommand(m_HoodSubsystem, () -> -5.));
+                driver.povUp.onTrue(new MoveHoodCommand(m_HoodSubsystem, () -> 5.));
+                driver.povDown.onTrue(new MoveHoodCommand(m_HoodSubsystem, () -> -5.));
 
-                // driver.povRight.onTrue(new MoveTurretCommand(m_TurretSubsystem, () -> -5.));
-                // driver.povLeft.onTrue(new MoveTurretCommand(m_TurretSubsystem, () -> 5.));
-
-                driver.X.whileTrue(m_TurretSubsystem.aimAtPointCommand(FieldLayout.ShooterTargets.kHUB_POSE));
+                driver.povRight.onTrue(new MoveTurretCommand(m_TurretSubsystem, () -> 5.));
+                driver.povLeft.onTrue(new MoveTurretCommand(m_TurretSubsystem, () -> -5.));
 
                 // Semi Auto Shooting
 

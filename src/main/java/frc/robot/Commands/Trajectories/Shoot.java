@@ -33,7 +33,6 @@ public class Shoot extends Command{
 
     @Override
     public void execute() {
-        m_IndexerSubsystem.setHopperVelocity(Constants.Indexer.DEFAULT_HOPPER_VELOCITY);
         m_IndexerSubsystem.setIndexerVelocity(Constants.Indexer.DEFAULT_INDEXER_VELOCITY);
     }
 

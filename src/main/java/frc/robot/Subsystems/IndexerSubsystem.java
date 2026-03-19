@@ -80,9 +80,10 @@ public class IndexerSubsystem extends SubsystemBase {
         this.enabled = enabled;
     }
 
-    public void setHopperVelocity(double rpm) {
+    public void setIndexerVelocity(double rpm) {
         targetHopperVelocity = rpm;
         targetBallTunnelVelocity = rpm;
+        if (!enabled) {return;}
         double motorRPS = (rpm * Constants.Indexer.HOPPER_GEAR_RATIO) / 60.0;
         double motorRPS2 = (rpm * Constants.Indexer.BALL_TUNNEL_GEAR_RATIO) / 60.0;
         if (m_hopperMotor1.getTorqueCurrent().getValueAsDouble() > 120.0) {
@@ -101,25 +102,11 @@ public class IndexerSubsystem extends SubsystemBase {
         // m_hopperMotor2.setVoltage(12);
     }
 
-    public void setIndexerVelocity(double rpm) {
-        // targetBallTunnelVelocity = rpm;
-        // double motorRPS = (rpm * Constants.Indexer.BALL_TUNNEL_GEAR_RATIO) / 60.0;
-        // m_ballTunnelMotor.setControl(m_hopperRequest.withVelocity(10));
-        /*
-         * t;
-         * if (!enabled)
-         * return;
-         * double motorRPS = (rpm * Constants.Indexer.BALL_TUNNEL_GEAR_RATIO) / 60.0;
-         * m_ballTunnelMotor.setControl(m_indexerRequest.withVelocity(motorRPS));
-         */
-    }
-
     public Command preLoadBalls() {
         return run(() -> {
             if (m_beambreak.get() && false) {
                 stopMotors();
             } else {
-                setHopperVelocity(Constants.Indexer.PASSIVE_HOPEPR_VELOCITY);
                 setIndexerVelocity(Constants.Indexer.PASSIVE_INDEXER_VELOCITY);
             }
         });

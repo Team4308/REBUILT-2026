@@ -94,32 +94,33 @@ public final class Constants {
 
       public final static double GEAR_RATIO_MOTOR = (12.0 / 50.0) * (10.0 / 85.0);
       public final static double STOPPED_VELOCITY = 0.1;
-      public final static double MIN_DEGREES = 90;
-      public final static double MAX_DEGREES = 500;
+      public final static double MIN_DEGREES = 230;
+      public final static double MAX_DEGREES = 585;
       public final static double FULL_REVOLUTION_DEG = 360;
-      public final static double TURRET_TOLERANCE_DEGREES = 5;
+      public final static double TURRET_TOLERANCE_DEGREES = 1;
       public final static double TURRET_START_ANGLE = 360;
-      public final static double TURRET_OFFSET_ANGLE = 556; // only for CRT
       public final static double TURRET_AIM_SIGN = -1.0; // +1 if turret rotates CCW for positive angles, -1 if opposite
 
-      public final static ArmFeedforward feedforward = new ArmFeedforward(0.24, 0, 0.0075, 0.01);
+      public final static ArmFeedforward feedforward = new ArmFeedforward(0.26, 0, 0.055, 0.01);
 
       public final static ProfiledPIDController pidController = new ProfiledPIDController(
-          0.0, 0.0, 0.0, // 0.035
+          0.001, 0.0, 0.0, // 0.035
           new TrapezoidProfile.Constraints(1500, 2000));
     }
 
     public static final class Hood {
-      public static final double TOLERANCE_DEGREES = 2.0; // Tolerance for position control
+      public static final double TOLERANCE_DEGREES = 1.0; // Tolerance for position control
       public static final double TOLERANCE_VELOCITY = 0.5;
       public static final double TOTAL_GEAR_RATIO = 120.4;
       public static final double FORWARD_SOFT_LIMIT_ANGLE = 42.5;
       public static final double REVERSE_SOFT_LIMIT_ANGLE = 7.5;
-      public static final double AMP_THRESHOLD = 2;
-      public final static ArmFeedforward feedforward = new ArmFeedforward(0.2, 0.0, 0.025, 0.0);
+
+      public static final double AMP_THRESHOLD = 1;
+      public final static ArmFeedforward feedforward = new ArmFeedforward(0.36, 0, 0.023, 0.0);
       public final static ProfiledPIDController pidController = new ProfiledPIDController(
-          0.005, 0.0, 0.0,
-          new TrapezoidProfile.Constraints(2000, 2000));
+          0.06, 0.0, 0.0,
+          new TrapezoidProfile.Constraints(500, 1500));
+
     }
 
     public static final class TrajectoryCalc {
@@ -191,7 +192,7 @@ public final class Constants {
     public static final double PIVOT_GEAR_RATIO = 81;
 
     public static final ArmFeedforward feedforward = new ArmFeedforward(0.15, 0.15, 0.03, 0.0);
-    public static final ProfiledPIDController pidController = new ProfiledPIDController(1, 0.0, 0.02,
+    public static final ProfiledPIDController pidController = new ProfiledPIDController(0.3, 0.0, 0.0,
         new TrapezoidProfile.Constraints(300, 600));
 
     // Angles

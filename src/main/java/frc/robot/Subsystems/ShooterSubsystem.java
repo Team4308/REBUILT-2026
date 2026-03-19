@@ -79,6 +79,9 @@ public class ShooterSubsystem extends SubsystemBase {
 
     public void setTargetSpeed(double rpm) {
         m_targetRPM = rpm;
+        if (!enabled) {
+            return;
+        }
         m_rightMotor.setControl(m_velocityVoltage.withVelocity(rpm / 60.0));
         m_leftMotor.setControl(m_velocityVoltage.withVelocity(-rpm / 60));
 

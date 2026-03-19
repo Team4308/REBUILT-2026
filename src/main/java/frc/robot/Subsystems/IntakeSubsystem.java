@@ -47,10 +47,9 @@ public class IntakeSubsystem extends SubsystemBase {
   private boolean enabled;
 
   public IntakeSubsystem(boolean enabled) {
-    verbosity = SubsystemVerbosity.HIGH;
+    verbosity = SubsystemVerbosity.LOW;
     m_pivotMotor.setPosition(0);
     configureRoller();
-    offset = 0;
     pidController.reset(targetAngleDeg);
 
     this.enabled = enabled;
@@ -63,7 +62,7 @@ public class IntakeSubsystem extends SubsystemBase {
     if (!enabled)
       return;
     m_rollerMotor.setControl(
-        rollerRequest.withVelocity(rpm.get() * 60.0));
+        rollerRequest.withVelocity(-rpm.get() * 60.0));
   }
 
   public void stopRoller() {
@@ -93,6 +92,9 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   public void resetIntake() {
+    if (!enabled) {
+      return;
+    }
     if (m_pivotMotor.getSupplyCurrent().getValueAsDouble() < 3) {
       m_pivotMotor.setVoltage(-2.0);
     } else {
@@ -176,6 +178,8 @@ public class IntakeSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
+    targetAngleDeg = MathUtil.clamp(targetAngleDeg, 0, 127);
+
     double currentDeg = getIntakeAngle();
     double pidOutput = pidController.calculate(currentDeg, targetAngleDeg);
     double ffOutput = feedforward.calculate(pidController.getSetpoint().position,
@@ -202,6 +206,7 @@ public class IntakeSubsystem extends SubsystemBase {
       Logger.recordOutput("Subsystems/Intake/Pivot/Velocity", m_pivotMotor.getVelocity().getValueAsDouble());
       Logger.recordOutput("Subsystems/Intake/Pivot/Setpoint Angle", pidController.getSetpoint().position);
       Logger.recordOutput("Subsystems/Intake/Pivot/Setpoint Velocity", pidController.getSetpoint().velocity);
+      Logger.recordOutput("Subsystems/Intake/Pivot/Target Angle", targetAngleDeg);
 
       Logger.recordOutput("Subsystems/Intake/Roller/Applied Voltage",
           m_rollerMotor.getMotorVoltage().getValueAsDouble());
