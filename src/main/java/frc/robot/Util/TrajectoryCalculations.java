@@ -408,7 +408,7 @@ public class TrajectoryCalculations {
                 || velMag > 0.05;
 
         if (!enoughTimePassed && !inputsChanged && currentShot.valid) {
-            Logger.recordOutput("TrajectoryCalc/Skipped", true);
+            Logger.recordOutput("TrajectoryCalculations/Skipped", true);
             return;
         }
 
@@ -430,7 +430,7 @@ public class TrajectoryCalculations {
 
         activeShooterSystem.setSolverInput(input);
 
-    Logger.recordOutput("TrajectoryCalc/TargetDistance", lastDistanceMeters);
+    Logger.recordOutput("TrajectoryCalculations/TargetDistance", lastDistanceMeters);
 
         long startTime = System.nanoTime();
         

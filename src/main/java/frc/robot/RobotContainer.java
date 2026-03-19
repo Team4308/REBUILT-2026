@@ -235,14 +235,7 @@ public class RobotContainer {
          * Called each robot loop to update any periodic non-command logic.
          */
         public void periodic() {
-                if (m_TrajectoryCalculations != null) {
-                        m_TrajectoryCalculations.periodic();
-                }
-
-                if (m_TrajectoryCalculations != null) {
-                        m_TrajectoryCalculations.periodic();
-                }
-
+                m_TrajectoryCalculations.periodic();
                 // TODO: You might wanna changet this logic so its not in periodic? this does work traj calc accounts for mirroring the field  
                 if (drivebase.getPose() != null && drivebase.getFieldLocation() != null) {
                         if (drivebase.getFieldLocation().equals("NeutralZone")) {

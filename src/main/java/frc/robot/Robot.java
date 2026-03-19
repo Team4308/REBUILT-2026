@@ -54,7 +54,7 @@ public class Robot extends LoggedRobot {
     CommandScheduler.getInstance().run();
 
     // keep trajectory calculations updating every loop
-    // m_robotContainer.periodic();
+    m_robotContainer.periodic();
 
     SmartDashboard.putData("Command Scheduler", CommandScheduler.getInstance());
     Logger.recordOutput("Match Timer", DriverStation.getMatchTime());
