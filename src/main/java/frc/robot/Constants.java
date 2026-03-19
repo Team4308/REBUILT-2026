@@ -95,16 +95,16 @@ public final class Constants {
       public final static double GEAR_RATIO_MOTOR = (12.0 / 50.0) * (10.0 / 85.0);
       public final static double STOPPED_VELOCITY = 0.1;
       public final static double MIN_DEGREES = 230;
-      public final static double MAX_DEGREES = 585;
+      public final static double MAX_DEGREES = 230 + 360;
       public final static double FULL_REVOLUTION_DEG = 360;
       public final static double TURRET_TOLERANCE_DEGREES = 1;
       public final static double TURRET_START_ANGLE = 360;
       public final static double TURRET_AIM_SIGN = -1.0; // +1 if turret rotates CCW for positive angles, -1 if opposite
 
-      public final static ArmFeedforward feedforward = new ArmFeedforward(0.26, 0, 0.05, 0.0);
+      public final static ArmFeedforward feedforward = new ArmFeedforward(0.26, 0, 0.012, 0.0);
 
       public final static ProfiledPIDController pidController = new ProfiledPIDController(
-          0.005, 0.0, 0.0, // 0.035
+          0.05, 0.0, 0.0, // 0.035
           new TrapezoidProfile.Constraints(1500, 2000));
     }
 

@@ -165,9 +165,6 @@ public class TurretSubsystem extends SubsystemBase {
             }
         }
 
-        System.out.print(degrees);
-        System.out.print(" ");
-        System.out.println(closestTarget);
         m_targetDegUnWrapped = closestTarget;
         m_targetDegWrapped = inputModulus(m_targetDegUnWrapped, 0.0,
                 Constants.Shooting.Turret.FULL_REVOLUTION_DEG,
@@ -229,12 +226,16 @@ public class TurretSubsystem extends SubsystemBase {
         if (m_currentDegUnWrapped < 350) {
             spring = -0.23;
         } else if (m_currentDegUnWrapped > 500) {
-            spring = 0.53;
+            spring = 0.23;
         }
 
-        voltage = pidOutput + ffOutput + spring;
+        voltage = pidOutput + ffOutput;
 
-        voltage = MathUtil.clamp(voltage, -1, 1);
+        if (m_currentDegUnWrapped < Constants.Shooting.Turret.MIN_DEGREES) {
+            voltage = Math.max(0, voltage);
+        } else if (m_currentDegWrapped > Constants.Shooting.Turret.MAX_DEGREES) {
+            voltage = Math.min(0, voltage);
+        }
 
         if (enabled)
             m_driveMotor.setVoltage(voltage);

@@ -27,6 +27,7 @@ public class IndexerCommand extends Command {
 
     @Override
     public void end(boolean interrupted) {
+        m_subsystem.setIndexerVelocity(0);
         m_subsystem.stopMotors();
     }
 

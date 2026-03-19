@@ -128,12 +128,9 @@ public class RobotContainer {
 
                 m_HoodSubsystem.setTurretSupplier(() -> m_TurretSubsystem.getAngleWrapped());
 
-                m_IntakeSubsystem.setDefaultCommand(
-                                new DefaultIntakeCommand(m_IntakeSubsystem, () -> driver.getRightTrigger(),
-                                                () -> Constants.Intake.ROLLER_INTAKE_RPM));
-
-                // m_IntakeSubsystem.setDefaultCommand(
-                // m_IntakeSubsystem.setRollerSpeed(() -> Constants.Intake.ROLLER_INTAKE_RPM));
+                //m_IntakeSubsystem.setDefaultCommand(
+                //                new DefaultIntakeCommand(m_IntakeSubsystem, () -> driver.getRightTrigger(),
+                //                               () -> Constants.Intake.ROLLER_INTAKE_RPM));
 
                 // --- TRAJECTORY DEFAULT COMMANDS ---
 
@@ -167,8 +164,8 @@ public class RobotContainer {
 
                 // --- TESTING BINDINGS ---
 
-                // driver.RB.onTrue(m_ShooterSubsystem.setShooterSpeed(() -> 2400.));
-                // driver.RB.onFalse(m_ShooterSubsystem.setShooterSpeed(() -> 0.));
+                driver.RB.onTrue(m_ShooterSubsystem.setShooterSpeed(() -> 2400.));
+                driver.RB.onFalse(m_ShooterSubsystem.setShooterSpeed(() -> 0.));
 
                 driver.povUp.onTrue(new MoveHoodCommand(m_HoodSubsystem, () -> 5.));
                 driver.povDown.onTrue(new MoveHoodCommand(m_HoodSubsystem, () -> -5.));
@@ -186,7 +183,7 @@ public class RobotContainer {
                 driver.B.onFalse(new InstantCommand(() -> m_ShooterSubsystem.stopMotors()));
 
                 // Intaking
-                // driver.RB.whileTrue(new IndexerCommand(m_IndexerSubsystem, () -> 600.));
+                driver.RB.whileTrue(new IndexerCommand(m_IndexerSubsystem, () -> 600.));
 
                 driver.LB.onTrue(new InstantCommand(() -> m_IntakeSubsystem.setRollerSpeed(() -> -100.)));
                 driver.LB.onFalse(new InstantCommand(() -> m_IntakeSubsystem.stopMotors()));
@@ -206,7 +203,7 @@ public class RobotContainer {
 
                 // Full Auto Shooting
                 // driver.LB.whileTrue(shootLeft);
-                driver.RB.whileTrue(shootRight);
+                //driver.RB.whileTrue(shootRight);
                 // driver.LB.onTrue(new InstantCommand(() ->
                 // m_IndexerSubsystem.setHopperVelocity(-60.)));
 
