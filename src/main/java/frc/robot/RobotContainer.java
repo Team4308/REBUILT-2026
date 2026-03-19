@@ -238,5 +238,22 @@ public class RobotContainer {
                 if (m_TrajectoryCalculations != null) {
                         m_TrajectoryCalculations.periodic();
                 }
+
+                if (m_TrajectoryCalculations != null) {
+                        m_TrajectoryCalculations.periodic();
+                }
+
+                // TODO: You might wanna changet this logic so its not in periodic? this does work traj calc accounts for mirroring the field  
+                if (drivebase.getPose() != null && drivebase.getFieldLocation() != null) {
+                        if (drivebase.getFieldLocation().equals("NeutralZone")) {
+                                if (drivebase.getPose().getY() > FieldLayout.kFieldWidth / 2) {
+                                        m_TrajectoryCalculations.setGoal(TrajectoryCalculations.ShotGoal.PASS_RIGHT);
+                                } else {
+                                        m_TrajectoryCalculations.setGoal(TrajectoryCalculations.ShotGoal.PASS_LEFT);
+                                }
+                        } else {
+                                m_TrajectoryCalculations.setGoal(TrajectoryCalculations.ShotGoal.HUB);
+                        }
+                }
         }
 }

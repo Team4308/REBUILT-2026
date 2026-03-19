@@ -37,6 +37,8 @@ import frc.robot.FieldLayout;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -79,7 +81,6 @@ public class TrajectoryCalculations {
 
     private boolean trackingEnabled = true;
     private boolean loggingEnabled = true;
-    private boolean DebugMode = Constants.Shooting.TrajectoryCalc.TRAJECTORY_VERBOSITY == SubsystemVerbosity.HIGH;    
 
 
     private TrajectoryResult simTrajectoryFallback = null;
@@ -93,7 +94,6 @@ public class TrajectoryCalculations {
         SolverConstants.setMinEntryAngleDegrees(10.0); 
         SolverConstants.setDragCompensationMultiplier(1.5);
 
-    // Use a tighter pitch search window and the realtime solver mode to reduce CPU usage and lag
     TrajectorySolver.SolverConfig solverConfig = TrajectorySolver.SolverConfig.defaults()
         .toBuilder()
         .minPitchDegrees(Constants.Shooting.TrajectoryCalc.MIN_PITCH_DEG)
@@ -279,7 +279,22 @@ public class TrajectoryCalculations {
     }
 
     public double getNeededYaw() {
-        return currentShot.valid ? Math.toDegrees(currentShot.yawAdjustmentRadians) : 0.0;
+        if (!currentShot.valid) {
+            return 0.0;
+        }
+
+        if (poseSupplier == null) {
+            return 0.0;
+        }
+        double robotHeadingDeg = poseSupplier.get().getRotation().getDegrees();
+        double targetRelativeDeg = targetYawDegrees - robotHeadingDeg;
+        double resultDeg = ((targetRelativeDeg % 360.0) + 360.0) % 360.0;
+
+        if (Math.abs(currentShot.yawAdjustmentRadians) > 1e-6) {
+            resultDeg += Math.toDegrees(currentShot.yawAdjustmentRadians);
+        }
+
+        return ((resultDeg % 360.0) + 360.0) % 360.0;
     }
 
     public double getNeededPitch() {
@@ -353,18 +368,18 @@ public class TrajectoryCalculations {
         if (targetPosition.equals(FieldLayout.ShooterTargets.kBLUE_HUB_POSE)
                 || targetPosition.equals(FieldLayout.ShooterTargets.kRED_HUB_POSE)
                 || targetPosition.equals(FieldLayout.ShooterTargets.kHUB_POSE)) {
-            if (pose.getX() > FieldLayout.kCenterLineX) {
-                targetPosition = FieldLayout.ShooterTargets.kRED_HUB_POSE;
-            } else {
-                targetPosition = FieldLayout.ShooterTargets.kBLUE_HUB_POSE;
-            }
+                if (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == DriverStation.Alliance.Blue) {
+                    targetPosition = FieldLayout.ShooterTargets.kBLUE_HUB_POSE;
+                } else {
+                    targetPosition = FieldLayout.ShooterTargets.kRED_HUB_POSE;
+                }
         }
 
     double dx = targetPosition.getX() - shooterX;
     double dy = targetPosition.getY() - shooterY;
-    double yawRad = Math.atan2(dx, dy);
+    double yawRad = Math.atan2(dy, dx);
     lastDistanceMeters = Math.hypot(dx, dy);
-    targetYawDegrees = Math.toDegrees(yawRad);
+    targetYawDegrees = ((Math.toDegrees(yawRad) % 360.0) + 360.0) % 360.0;
 
     Logger.recordOutput("Debug/ShooterX", shooterX);
     Logger.recordOutput("Debug/ShooterY", shooterY);
@@ -372,6 +387,7 @@ public class TrajectoryCalculations {
     Logger.recordOutput("Debug/TargetY", targetPosition.getY());
     Logger.recordOutput("Debug/YawRad", yawRad);
     Logger.recordOutput("Debug/TargetYawDegrees", targetYawDegrees);
+    Logger.recordOutput("Debug/NeededYawDegrees", getNeededYaw());
 
         double nowMs = Timer.getFPGATimestamp() * 1000.0;
         double distanceChange = Math.abs(lastDistanceMeters - lastSolvedDistance);
@@ -404,7 +420,8 @@ public class TrajectoryCalculations {
 
         ShotInput input = ShotInput.builder()
                         .shooterPositionMeters(shooterX, shooterY, shooterHeightMeters)
-                        .shooterYawRadians(yawRad)
+                        // Use the robot's heading, not the direction to the target.
+                        .shooterYawRadians(rot.getRadians())
                         .targetPositionMeters(targetPosition.getX(), targetPosition.getY(), targetPosition.getZ())
                         .targetRadiusMeters(Constants.Shooting.TrajectoryCalc.TARGET_RADIUS_M)
                         .includeAirResistance(true)
@@ -419,8 +436,7 @@ public class TrajectoryCalculations {
         
         currentShot = activeShooterSystem.calculate(clampedDistance, measuredRPM, vx, vy, yawRad);
 
-    if (RobotBase.isSimulation() && currentShot.valid && activeShooterSystem.getMode() == ShotMode.LOOKUP_ONLY
-        && Constants.Shooting.TrajectoryCalc.TRAJECTORY_VERBOSITY == SubsystemVerbosity.HIGH) {
+        if (RobotBase.isSimulation() && currentShot.valid) {
             try {
                 simTrajectoryFallback = trajectorySolver.solve(input);
             } catch (Exception e) {
@@ -437,9 +453,6 @@ public class TrajectoryCalculations {
         lastSolveTimestamp = nowMs;
         lastSolvedDistance = lastDistanceMeters;
         lastSolvedYawDeg = targetYawDegrees;
-
-    // Cap the RPM for close range shots so the solver doesn't overcompensate and send
-    // the ball flying over the goal when very close.
     if (lastDistanceMeters < Constants.Shooting.TrajectoryCalc.MAX_CLOSE_RANGE_DISTANCE_M
         && currentShot.rpm > Constants.Shooting.TrajectoryCalc.MAX_CLOSE_RANGE_RPM) {
         currentShot = currentShot.withRpm(Constants.Shooting.TrajectoryCalc.MAX_CLOSE_RANGE_RPM);
@@ -459,7 +472,8 @@ public class TrajectoryCalculations {
         double dx = targetX - shooterX;
         double dy = targetY - shooterY;
         lastDistanceMeters = Math.hypot(dx, dy);
-        targetYawDegrees = Math.toDegrees(Math.atan2(dy, dx));
+        double rawYaw = Math.toDegrees(Math.atan2(dy, dx));
+        targetYawDegrees = ((rawYaw % 360.0) + 360.0) % 360.0;
         currentShot = activeShooterSystem.calculate(lastDistanceMeters);
     }
 
@@ -482,20 +496,23 @@ public class TrajectoryCalculations {
             return;
         }
 
-        double launchSpeed = currentShot.exitVelocityMps;
-        double pitchRad = Math.toRadians(currentShot.pitchDegrees);
-        double yawRad = Math.toRadians(targetYawDegrees) + currentShot.yawAdjustmentRadians;
-
-        Rotation2d rot = robotPose.getRotation();
+    double launchSpeed = currentShot.exitVelocityMps;
+    double pitchRad = Math.toRadians(currentShot.pitchDegrees);
+    Rotation2d rot = robotPose.getRotation();
+    double yawRad = Math.toRadians(targetYawDegrees) + currentShot.yawAdjustmentRadians;
         double wx = shooterOffset.getX() * rot.getCos() - shooterOffset.getY() * rot.getSin();
         double wy = shooterOffset.getX() * rot.getSin() + shooterOffset.getY() * rot.getCos();
         Translation3d pos = new Translation3d(robotPose.getX() + wx, robotPose.getY() + wy, shooterHeightMeters);
 
-        double hSpeed = launchSpeed * Math.cos(pitchRad);
+    // Horizontal speed should follow launch velocity and pitch, not scaled down by 10000.
+    double hSpeed = launchSpeed * Math.cos(pitchRad);
         Translation3d vel = new Translation3d(
                 hSpeed * Math.cos(yawRad) + speeds.vxMetersPerSecond,
                 hSpeed * Math.sin(yawRad) + speeds.vyMetersPerSecond,
                 launchSpeed * Math.sin(pitchRad));
+
+    Logger.recordOutput("TrajectoryCalculations/Sim/LaunchYawRad", yawRad);
+    Logger.recordOutput("TrajectoryCalculations/Sim/LaunchVel", new double[] { vel.getX(), vel.getY(), vel.getZ() });
 
         FuelSim.getInstance().spawnFuel(pos, vel);
     }
@@ -544,9 +561,15 @@ public class TrajectoryCalculations {
         if (trajResult == null && simTrajectoryFallback != null) {
             trajResult = simTrajectoryFallback;
         }
+
+        // Log debug state so we can tell whether we ever got a valid trajectory result
+        Logger.recordOutput("TrajectoryCalculations/Debug/HasTrajectoryResult", trajResult != null);
+        if (trajResult != null) {
+            Logger.recordOutput("TrajectoryCalculations/Debug/TrajectoryStatus", trajResult.getStatus().name());
+        }
         
         if (trajResult == null) {
-            Logger.recordOutput("Trajectory/Status", "NONE");
+            Logger.recordOutput("TrajectoryCalculations/Status", "NONE");
             return;
         }
 
@@ -582,6 +605,7 @@ public class TrajectoryCalculations {
 
             // Reduced Flight path to fix frame rate issues in advantage scope
             List<Pose3d> flightPath = trajResult.getFlightPath();
+            Logger.recordOutput("TrajectoryCalculations/Debug/FlightPathSize", flightPath.size());
             if (!flightPath.isEmpty()) {
                 java.util.ArrayList<Pose3d> fullPath = new java.util.ArrayList<>();
                 int skipRate = 5; 
@@ -669,8 +693,9 @@ public class TrajectoryCalculations {
             updateShot();
         }
 
-
-        if (DebugMode) {
+        boolean debugMode = Constants.Shooting.TrajectoryCalc.TRAJECTORY_VERBOSITY == SubsystemVerbosity.HIGH
+                || RobotBase.isSimulation();
+        if (debugMode) {
             logShotOutput();
             logTrajectoryDebug();
         }
