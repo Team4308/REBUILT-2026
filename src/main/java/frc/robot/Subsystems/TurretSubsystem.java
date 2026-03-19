@@ -174,7 +174,7 @@ public class TurretSubsystem extends SubsystemBase {
     public boolean isAtTarget() {
         double wrappedError = getWrappedError(m_currentDegWrapped, m_targetDegWrapped);
         return Math.abs(wrappedError) <= Constants.Shooting.Turret.TURRET_TOLERANCE_DEGREES
-                && m_driveMotor.getVelocity().getValueAsDouble() < Constants.Shooting.Turret.STOPPED_VELOCITY;
+                && Math.abs(m_driveMotor.getVelocity().getValueAsDouble()) < Constants.Shooting.Turret.STOPPED_VELOCITY;
     }
 
     public Command moveToTarget(Supplier<Double> degrees) {
@@ -214,28 +214,28 @@ public class TurretSubsystem extends SubsystemBase {
                 pidController.getSetpoint().position,
                 pidController.getSetpoint().velocity);
 
-        if (ffOutput == 0) {
+        if (ffOutput == 0 && !isAtTarget()) {
             if (pidOutput < 0) {
-                pidOutput -= 0.24;
+                pidOutput -= 0.25;
             } else if (pidOutput > 0) {
-                pidOutput += 0.24;
+                pidOutput += 0.25;
             }
         }
 
-        double spring = 0;
-        if (m_currentDegUnWrapped < 350) {
-            spring = -0.23;
-        } else if (m_currentDegUnWrapped > 500) {
-            spring = 0.23;
-        }
+        // double spring = 0;
+        // if (m_currentDegUnWrapped < 350) {
+        //     spring = -0.23;
+        // } else if (m_currentDegUnWrapped > 500) {
+        //     spring = 0.23;
+        // }
 
         voltage = pidOutput + ffOutput;
 
-        if (m_currentDegUnWrapped < Constants.Shooting.Turret.MIN_DEGREES) {
-            voltage = Math.max(0, voltage);
-        } else if (m_currentDegWrapped > Constants.Shooting.Turret.MAX_DEGREES) {
-            voltage = Math.min(0, voltage);
-        }
+        // if (m_currentDegUnWrapped < Constants.Shooting.Turret.MIN_DEGREES) {
+        //     voltage = Math.max(0, voltage);
+        // } else if (m_currentDegWrapped > Constants.Shooting.Turret.MAX_DEGREES) {
+        //     voltage = Math.min(0, voltage);
+        // }
 
         if (enabled)
             m_driveMotor.setVoltage(voltage);

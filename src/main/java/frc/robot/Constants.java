@@ -93,18 +93,19 @@ public final class Constants {
       public final static double PERIOD = 1 / Math.abs(GEAR_RATIO_1 - GEAR_RATIO_2);
 
       public final static double GEAR_RATIO_MOTOR = (12.0 / 50.0) * (10.0 / 85.0);
-      public final static double STOPPED_VELOCITY = 0.1;
+      public final static double STOPPED_VELOCITY = 1.0;
       public final static double MIN_DEGREES = 230;
       public final static double MAX_DEGREES = 230 + 360;
       public final static double FULL_REVOLUTION_DEG = 360;
-      public final static double TURRET_TOLERANCE_DEGREES = 1;
+      public final static double TURRET_TOLERANCE_DEGREES = 0.5;
       public final static double TURRET_START_ANGLE = 360;
       public final static double TURRET_AIM_SIGN = -1.0; // +1 if turret rotates CCW for positive angles, -1 if opposite
 
-      public final static ArmFeedforward feedforward = new ArmFeedforward(0.26, 0, 0.012, 0.0);
+      public final static ArmFeedforward feedforward = new ArmFeedforward(0.25, 0, 0.008, 0.0);
 
       public final static ProfiledPIDController pidController = new ProfiledPIDController(
-          0.05, 0.0, 0.0, // 0.035
+          0.02, 0.0, 0.0,
+          
           new TrapezoidProfile.Constraints(1500, 2000));
     }
 
@@ -116,9 +117,9 @@ public final class Constants {
       public static final double REVERSE_SOFT_LIMIT_ANGLE = 7.5;
 
       public static final double AMP_THRESHOLD = 1;
-      public final static ArmFeedforward feedforward = new ArmFeedforward(0.36, 0, 0.023, 0.0);
+      public final static ArmFeedforward feedforward = new ArmFeedforward(0.36, 0.0, 0.023, 0.0);
       public final static ProfiledPIDController pidController = new ProfiledPIDController(
-          0.07, 0.0, 0.0,
+          0.075, 0.0, 0.0,
           new TrapezoidProfile.Constraints(500, 1500));
 
     }
@@ -187,13 +188,14 @@ public final class Constants {
 
   public static final class Intake {
     // Roller tuning
-    public static final double ROLLER_GEAR_RATIO = 1.0;
-    public static final double ROLLER_KP = 0.12;
+    public static final double ROLLER_GEAR_RATIO = 15.0 / 21.0;
+    public static final double ROLLER_KP = 0.115;
     public static final double ROLLER_KI = 0.0;
     public static final double ROLLER_KD = 0.0;
-    public static final double ROLLER_KV = 0.12;
+    public static final double ROLLER_KS = 0.23;
+    public static final double ROLLER_KV = 0.115;
 
-    public static final double ROLLER_INTAKE_RPM = 4500.0;
+    public static final double ROLLER_INTAKE_RPM = 4200.0;
 
     // Pivot geometry
     public static final double PIVOT_GEAR_RATIO = 81;
@@ -216,21 +218,22 @@ public final class Constants {
   }
 
   public static class Indexer {
-    public static double DEFAULT_INDEXER_VELOCITY = 300;
-    public static double DEFAULT_HOPPER_VELOCITY = 300;
+    public static double DEFAULT_INDEXER_VELOCITY = 10000;
+    public static double DEFAULT_HOPPER_VELOCITY = 6000;
 
-    public static double BALL_TUNNEL_GEAR_RATIO = 3 / 5;
-    public static double HOPPER_GEAR_RATIO = 1;
+    public static double 
+    BALL_TUNNEL_GEAR_RATIO = 3.0 / 5.0;
+    public static double HOPPER_GEAR_RATIO = 1.0;
 
-    public static double HOPPER_Ks = 0.5;
-    public static double HOPPER_Kv = 0.3;
-    public static double HOPPER_Kp = 0.3;
+    public static double HOPPER_Ks = 0.36;
+    public static double HOPPER_Kv = 0.12;
+    public static double HOPPER_Kp = 0.12;
     public static double HOPPER_Ki = 0;
     public static double HOPPER_Kd = 0;
 
-    public static double BALL_TUNNEL_Ks = 0.5;
-    public static double BALL_TUNNEL_Kv = 0.3;
-    public static double BALL_TUNNEL_Kp = 0.3;
+    public static double BALL_TUNNEL_Ks = 0.24;
+    public static double BALL_TUNNEL_Kv = 0.12;
+    public static double BALL_TUNNEL_Kp = 0.12;
     public static double BALL_TUNNEL_Ki = 0;
     public static double BALL_TUNNEL_Kd = 0;
 

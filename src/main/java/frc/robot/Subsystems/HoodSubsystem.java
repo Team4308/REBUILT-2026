@@ -47,7 +47,7 @@ public class HoodSubsystem extends SubsystemBase {
         m_hoodMotor.getConfigurator().apply(talonFXConfigs);
         m_hoodMotor.setPosition(0);
 
-        verbosity = SubsystemVerbosity.LOW;
+        verbosity = SubsystemVerbosity.HIGH;
 
         if (Robot.isSimulation()) { // Brute force sim
             pidController.setP(1);

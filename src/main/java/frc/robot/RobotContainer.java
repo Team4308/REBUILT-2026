@@ -103,7 +103,7 @@ public class RobotContainer {
                 drivebase.setVision(vision);
 
                 m_HoodSubsystem = new HoodSubsystem(true);
-                m_IndexerSubsystem = new IndexerSubsystem(false);
+                m_IndexerSubsystem = new IndexerSubsystem(true);
                 m_TurretSubsystem = new TurretSubsystem(true);
                 m_ShooterSubsystem = new ShooterSubsystem(true);
                 m_IntakeSubsystem = new IntakeSubsystem(true);
@@ -133,7 +133,7 @@ public class RobotContainer {
                 // () -> Constants.Intake.ROLLER_INTAKE_RPM));
 
                 m_IntakeSubsystem.setDefaultCommand(
-                                new DefaultIntakeCommand(m_IntakeSubsystem, () -> driver.getRightTrigger(), () -> 0.));
+                                new DefaultIntakeCommand(m_IntakeSubsystem, () -> driver.getRightTrigger(), () -> Constants.Intake.ROLLER_INTAKE_RPM));
 
                 // --- TRAJECTORY DEFAULT COMMANDS ---
 
@@ -143,9 +143,7 @@ public class RobotContainer {
                 // m_HoodSubsystem.setDefaultCommand(m_HoodSubsystem
                 // .setHoodAngleCommand(() -> 90.0 -
                 // getTrajectoryCalculations().getNeededPitch()));
-                // m_ShooterSubsystem.setDefaultCommand(
-                // m_ShooterSubsystem.setShooterSpeed(() ->
-                // getTrajectoryCalculations().getNeededRPM()));
+                m_ShooterSubsystem.setDefaultCommand(m_ShooterSubsystem.setShooterSpeed(() -> getTrajectoryCalculations().getNeededRPM()));
 
                 // m_IndexerSubsystem.setDefaultCommand(m_IndexerSubsystem.preLoadBalls());
 
@@ -167,14 +165,14 @@ public class RobotContainer {
 
                 // --- TESTING BINDINGS ---
 
-                driver.RB.onTrue(m_ShooterSubsystem.setShooterSpeed(() -> 2400.));
+                driver.RB.onTrue(m_ShooterSubsystem.setShooterSpeed(() -> 1000.));
                 driver.RB.onFalse(m_ShooterSubsystem.setShooterSpeed(() -> 0.));
 
                 driver.povUp.onTrue(new MoveHoodCommand(m_HoodSubsystem, () -> 5.));
                 driver.povDown.onTrue(new MoveHoodCommand(m_HoodSubsystem, () -> -5.));
 
-                driver.povRight.onTrue(new MoveTurretCommand(m_TurretSubsystem, () -> 5.));
-                driver.povLeft.onTrue(new MoveTurretCommand(m_TurretSubsystem, () -> -5.));
+                driver.povRight.onTrue(new MoveTurretCommand(m_TurretSubsystem, () -> 20.));
+                driver.povLeft.onTrue(new MoveTurretCommand(m_TurretSubsystem, () -> -20.));
 
                 // Semi Auto Shooting
 
@@ -206,9 +204,7 @@ public class RobotContainer {
 
                 // Full Auto Shooting
                 // driver.LB.whileTrue(shootLeft);
-                // driver.RB.whileTrue(shootRight);
-                // driver.LB.onTrue(new InstantCommand(() ->
-                // m_IndexerSubsystem.setHopperVelocity(-60.)));
+                driver.RB.whileTrue(shootRight);
 
                 if (Robot.isSimulation()) {
                         drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocityKeyboard);

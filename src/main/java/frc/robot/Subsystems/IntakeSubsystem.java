@@ -47,7 +47,7 @@ public class IntakeSubsystem extends SubsystemBase {
   private boolean enabled;
 
   public IntakeSubsystem(boolean enabled) {
-    verbosity = SubsystemVerbosity.LOW;
+    verbosity = SubsystemVerbosity.HIGH;
     m_pivotMotor.setPosition(0);
     configureRoller();
     pidController.reset(targetAngleDeg);
@@ -58,11 +58,11 @@ public class IntakeSubsystem extends SubsystemBase {
   /* ---------------- Roller ---------------- */
 
   public void setRollerSpeed(Supplier<Double> rpm) {
-    Logger.recordOutput("Subsystems/Intake/Target Roller Speed", rpm.get());
+    Logger.recordOutput("Subsystems/Intake/Target Roller Speed", (rpm.get() / -60.0) * Constants.Intake.ROLLER_GEAR_RATIO);
     if (!enabled)
       return;
     m_rollerMotor.setControl(
-        rollerRequest.withVelocity(-rpm.get() * 60.0));
+        rollerRequest.withVelocity((rpm.get() / -60.0) * Constants.Intake.ROLLER_GEAR_RATIO));
   }
 
   public void stopRoller() {
@@ -142,6 +142,7 @@ public class IntakeSubsystem extends SubsystemBase {
     cfg.Slot0.kP = Constants.Intake.ROLLER_KP;
     cfg.Slot0.kI = Constants.Intake.ROLLER_KI;
     cfg.Slot0.kD = Constants.Intake.ROLLER_KD;
+    cfg.Slot0.kS = Constants.Intake.ROLLER_KS;
     cfg.Slot0.kV = Constants.Intake.ROLLER_KV;
 
     m_rollerMotor.getConfigurator().apply(cfg);
