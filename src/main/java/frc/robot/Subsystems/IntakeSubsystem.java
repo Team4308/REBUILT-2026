@@ -16,6 +16,7 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -46,6 +47,8 @@ public class IntakeSubsystem extends SubsystemBase {
 
   private boolean enabled;
 
+  private boolean hopperExtended;
+
   public IntakeSubsystem(boolean enabled) {
     verbosity = SubsystemVerbosity.HIGH;
     m_pivotMotor.setPosition(0);
@@ -53,6 +56,8 @@ public class IntakeSubsystem extends SubsystemBase {
     pidController.reset(targetAngleDeg);
 
     this.enabled = enabled;
+
+    hopperExtended = false;
   }
 
   /* ---------------- Roller ---------------- */
@@ -61,8 +66,12 @@ public class IntakeSubsystem extends SubsystemBase {
     Logger.recordOutput("Subsystems/Intake/Target Roller Speed", (rpm.get() / -60.0) * Constants.Intake.ROLLER_GEAR_RATIO);
     if (!enabled)
       return;
-    m_rollerMotor.setControl(
+    if (hopperExtended) {
+      m_rollerMotor.setControl(
         rollerRequest.withVelocity((rpm.get() / -60.0) * Constants.Intake.ROLLER_GEAR_RATIO));
+    } else {
+      m_rollerMotor.setControl(rollerRequest.withVelocity(1));
+    }
   }
 
   public void stopRoller() {
@@ -182,6 +191,11 @@ public class IntakeSubsystem extends SubsystemBase {
     targetAngleDeg = MathUtil.clamp(targetAngleDeg, 0, 127);
 
     double currentDeg = getIntakeAngle();
+
+    if (currentDeg < 3.0 && !hopperExtended) {
+      hopperExtended = true;
+    }
+
     double pidOutput = pidController.calculate(currentDeg, targetAngleDeg);
     double ffOutput = feedforward.calculate(pidController.getSetpoint().position,
         pidController.getSetpoint().velocity);

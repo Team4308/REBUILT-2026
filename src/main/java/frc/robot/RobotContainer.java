@@ -137,12 +137,8 @@ public class RobotContainer {
 
                 // --- TRAJECTORY DEFAULT COMMANDS ---
 
-                // m_TurretSubsystem.setDefaultCommand(
-                // m_TurretSubsystem.moveToTarget(() ->
-                // getTrajectoryCalculations().getNeededYaw()));
-                // m_HoodSubsystem.setDefaultCommand(m_HoodSubsystem
-                // .setHoodAngleCommand(() -> 90.0 -
-                // getTrajectoryCalculations().getNeededPitch()));
+                m_TurretSubsystem.setDefaultCommand(m_TurretSubsystem.moveToTarget(() ->getTrajectoryCalculations().getNeededYaw()));
+                m_HoodSubsystem.setDefaultCommand(m_HoodSubsystem.setHoodAngleCommand(() -> 90.0 -getTrajectoryCalculations().getNeededPitch()));
                 m_ShooterSubsystem.setDefaultCommand(m_ShooterSubsystem.setShooterSpeed(() -> getTrajectoryCalculations().getNeededRPM()));
 
                 // m_IndexerSubsystem.setDefaultCommand(m_IndexerSubsystem.preLoadBalls());
@@ -165,29 +161,29 @@ public class RobotContainer {
 
                 // --- TESTING BINDINGS ---
 
-                driver.RB.onTrue(m_ShooterSubsystem.setShooterSpeed(() -> 1000.));
-                driver.RB.onFalse(m_ShooterSubsystem.setShooterSpeed(() -> 0.));
+                // driver.RB.onTrue(m_ShooterSubsystem.setShooterSpeed(() -> 1000.));
+                // driver.RB.onFalse(m_ShooterSubsystem.setShooterSpeed(() -> 0.));
 
-                driver.povUp.onTrue(new MoveHoodCommand(m_HoodSubsystem, () -> 5.));
-                driver.povDown.onTrue(new MoveHoodCommand(m_HoodSubsystem, () -> -5.));
+                // driver.povUp.onTrue(new MoveHoodCommand(m_HoodSubsystem, () -> 5.));
+                // driver.povDown.onTrue(new MoveHoodCommand(m_HoodSubsystem, () -> -5.));
 
-                driver.povRight.onTrue(new MoveTurretCommand(m_TurretSubsystem, () -> 20.));
-                driver.povLeft.onTrue(new MoveTurretCommand(m_TurretSubsystem, () -> -20.));
+                // driver.povRight.onTrue(new MoveTurretCommand(m_TurretSubsystem, () -> 20.));
+                // driver.povLeft.onTrue(new MoveTurretCommand(m_TurretSubsystem, () -> -20.));
 
                 // Semi Auto Shooting
 
-                driver.X.whileTrue(new AimAtHubCommand(() -> drivebase.getPose(),
-                                m_TurretSubsystem));
-                driver.A.whileTrue(m_ShooterSubsystem.setShooterSpeed(() -> 3000.));
-                driver.A.onFalse(new InstantCommand(() -> m_ShooterSubsystem.stopMotors()));
-                driver.B.whileTrue(m_ShooterSubsystem.setShooterSpeed(() -> 2300.));
-                driver.B.onFalse(new InstantCommand(() -> m_ShooterSubsystem.stopMotors()));
+                // driver.X.whileTrue(new AimAtHubCommand(() -> drivebase.getPose(),
+                //                 m_TurretSubsystem));
+                // driver.A.whileTrue(m_ShooterSubsystem.setShooterSpeed(() -> 3000.));
+                // driver.A.onFalse(new InstantCommand(() -> m_ShooterSubsystem.stopMotors()));
+                // driver.B.whileTrue(m_ShooterSubsystem.setShooterSpeed(() -> 2300.));
+                // driver.B.onFalse(new InstantCommand(() -> m_ShooterSubsystem.stopMotors()));
 
-                // Intaking
-                driver.RB.whileTrue(new IndexerCommand(m_IndexerSubsystem, () -> 600.));
+                // // Intaking
+                // driver.RB.whileTrue(new IndexerCommand(m_IndexerSubsystem, () -> 600.));
 
-                driver.LB.onTrue(new InstantCommand(() -> m_IntakeSubsystem.setRollerSpeed(() -> -100.)));
-                driver.LB.onFalse(new InstantCommand(() -> m_IntakeSubsystem.stopMotors()));
+                // driver.LB.onTrue(new InstantCommand(() -> m_IntakeSubsystem.setRollerSpeed(() -> -100.)));
+                // driver.LB.onFalse(new InstantCommand(() -> m_IntakeSubsystem.stopMotors()));
 
                 // --- FINAL BINDINGS ---
 
@@ -203,7 +199,7 @@ public class RobotContainer {
                 driver.M2.onTrue(m_IntakeSubsystem.resetIntakeCommand());
 
                 // Full Auto Shooting
-                // driver.LB.whileTrue(shootLeft);
+                driver.LB.whileTrue(shootLeft);
                 driver.RB.whileTrue(shootRight);
 
                 if (Robot.isSimulation()) {

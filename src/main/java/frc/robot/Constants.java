@@ -202,7 +202,7 @@ public final class Constants {
 
     public static final ArmFeedforward feedforward = new ArmFeedforward(0.15, 0.15, 0.03, 0.0);
     public static final ProfiledPIDController pidController = new ProfiledPIDController(0.3, 0.0, 0.0,
-        new TrapezoidProfile.Constraints(300, 600));
+        new TrapezoidProfile.Constraints(180, 360));
 
     // Angles
     public static final double RETRACTED_ANGLE_DEG = 127.0;
