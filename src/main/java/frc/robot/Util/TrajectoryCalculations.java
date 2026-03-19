@@ -438,6 +438,13 @@ public class TrajectoryCalculations {
         lastSolvedDistance = lastDistanceMeters;
         lastSolvedYawDeg = targetYawDegrees;
 
+    // Cap the RPM for close range shots so the solver doesn't overcompensate and send
+    // the ball flying over the goal when very close.
+    if (lastDistanceMeters < Constants.Shooting.TrajectoryCalc.MAX_CLOSE_RANGE_DISTANCE_M
+        && currentShot.rpm > Constants.Shooting.TrajectoryCalc.MAX_CLOSE_RANGE_RPM) {
+        currentShot = currentShot.withRpm(Constants.Shooting.TrajectoryCalc.MAX_CLOSE_RANGE_RPM);
+    }
+
         if (loggingEnabled) {
             Logger.recordOutput("TrajectoryCalculations/RPM Required", currentShot.rpm);
             Logger.recordOutput("TrajectoryCalculations/Pitch Required", currentShot.pitchDegrees);
