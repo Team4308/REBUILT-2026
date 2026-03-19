@@ -145,11 +145,6 @@ public class TurretSubsystem extends SubsystemBase {
         return diff;
     }
 
-    public void setTarget2(double degrees) {
-        m_targetDegUnWrapped = degrees;
-        m_targetDegWrapped = degrees;
-    }
-
     public void setTarget(double degrees) {
         double wrappedTarget = inputModulus(degrees, 0.0,
                 Constants.Shooting.Turret.FULL_REVOLUTION_DEG,
@@ -170,6 +165,9 @@ public class TurretSubsystem extends SubsystemBase {
             }
         }
 
+        System.out.print(degrees);
+        System.out.print(" ");
+        System.out.println(closestTarget);
         m_targetDegUnWrapped = closestTarget;
         m_targetDegWrapped = inputModulus(m_targetDegUnWrapped, 0.0,
                 Constants.Shooting.Turret.FULL_REVOLUTION_DEG,
@@ -219,7 +217,22 @@ public class TurretSubsystem extends SubsystemBase {
                 pidController.getSetpoint().position,
                 pidController.getSetpoint().velocity);
 
-        voltage = pidOutput + ffOutput;
+        if (ffOutput == 0) {
+            if (pidOutput < 0) {
+                pidOutput -= 0.24;
+            } else if (pidOutput > 0) {
+                pidOutput += 0.24;
+            }
+        }
+
+        double spring = 0;
+        if (m_currentDegUnWrapped < 350) {
+            spring = -0.23;
+        } else if (m_currentDegUnWrapped > 500) {
+            spring = 0.53;
+        }
+
+        voltage = pidOutput + ffOutput + spring;
 
         voltage = MathUtil.clamp(voltage, -1, 1);
 

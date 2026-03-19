@@ -134,6 +134,9 @@ public class HoodSubsystem extends SubsystemBase {
     }
 
     private Pose3d getHoodPose() {
+        if (turretSupplier == null) {
+            return new Pose3d();
+        }
         double turretYawRad = -Math.toRadians(turretSupplier.get());
         double offsetX = 0.109474;
         double offsetZ = 0.08255;

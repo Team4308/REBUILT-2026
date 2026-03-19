@@ -20,13 +20,8 @@ public class MoveTurretCommand extends Command {
 
     @Override
     public void initialize() {
-        double targetAngle = m_subsystem.getAngleUnWrapped() + angleDifference.get();
-        System.out.print(m_subsystem.getAngleWrapped());
-        System.out.print(" ");
-        System.out.print(angleDifference.get());
-        System.out.print(" ");
-        System.out.println(targetAngle);
-        m_subsystem.setTarget2(targetAngle);
+        double targetAngle = m_subsystem.getAngleWrapped() + angleDifference.get();
+        m_subsystem.setTarget(targetAngle);
     }
 
     @Override

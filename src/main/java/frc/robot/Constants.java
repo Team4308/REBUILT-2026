@@ -101,10 +101,10 @@ public final class Constants {
       public final static double TURRET_START_ANGLE = 360;
       public final static double TURRET_AIM_SIGN = -1.0; // +1 if turret rotates CCW for positive angles, -1 if opposite
 
-      public final static ArmFeedforward feedforward = new ArmFeedforward(0.26, 0, 0.055, 0.01);
+      public final static ArmFeedforward feedforward = new ArmFeedforward(0.26, 0, 0.05, 0.0);
 
       public final static ProfiledPIDController pidController = new ProfiledPIDController(
-          0.001, 0.0, 0.0, // 0.035
+          0.005, 0.0, 0.0, // 0.035
           new TrapezoidProfile.Constraints(1500, 2000));
     }
 
@@ -118,7 +118,7 @@ public final class Constants {
       public static final double AMP_THRESHOLD = 1;
       public final static ArmFeedforward feedforward = new ArmFeedforward(0.36, 0, 0.023, 0.0);
       public final static ProfiledPIDController pidController = new ProfiledPIDController(
-          0.06, 0.0, 0.0,
+          0.07, 0.0, 0.0,
           new TrapezoidProfile.Constraints(500, 1500));
 
     }
@@ -163,13 +163,13 @@ public final class Constants {
       public static final double RPM_TO_VELOCITY_FACTOR = 0.00532;
       public static final double MIN_DISTANCE_M = 0.5;
       public static final double MAX_DISTANCE_M = 999;
-  /**
-   * When close to the target, we cap the requested RPM so the shot doesn't
-   * overfly the goal. This is a safety override to keep the model producing
-   * realistic near-range values.
-   */
-  public static final double MAX_CLOSE_RANGE_DISTANCE_M = 2.0;
-  public static final double MAX_CLOSE_RANGE_RPM = 3400.0;
+      /**
+       * When close to the target, we cap the requested RPM so the shot doesn't
+       * overfly the goal. This is a safety override to keep the model producing
+       * realistic near-range values.
+       */
+      public static final double MAX_CLOSE_RANGE_DISTANCE_M = 2.0;
+      public static final double MAX_CLOSE_RANGE_RPM = 3400.0;
       public static final double RPM_FEEDBACK_THRESHOLD = 50.0;
       public static final double RPM_ABORT_THRESHOLD = 500.0;
       public static final double PITCH_CORRECTION_PER_RPM_DEFICIT = 0.005;
