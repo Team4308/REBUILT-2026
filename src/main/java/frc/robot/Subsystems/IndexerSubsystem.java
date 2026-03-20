@@ -83,10 +83,12 @@ public class IndexerSubsystem extends SubsystemBase {
     public void setIndexerVelocity(double rpmHopper, double rpmTunnel) {
         targetHopperVelocity = rpmHopper;
         targetBallTunnelVelocity = rpmTunnel;
-        if (!enabled) {return;}
+        if (!enabled) {
+            return;
+        }
         double motorRPS = (rpmHopper * Constants.Indexer.HOPPER_GEAR_RATIO) / 60.0;
         double motorRPS2 = (rpmTunnel * Constants.Indexer.BALL_TUNNEL_GEAR_RATIO) / 60.0;
-        if (m_hopperMotor1.getTorqueCurrent().getValueAsDouble() > 120.0) {
+        if (m_hopperMotor1.getTorqueCurrent().getValueAsDouble() > 67) {
             timeout = Timer.getFPGATimestamp();
         }
         if (Timer.getFPGATimestamp() - timeout > 0.1) {
@@ -104,7 +106,8 @@ public class IndexerSubsystem extends SubsystemBase {
             if (m_beambreak.get() && false) {
                 stopMotors();
             } else {
-                setIndexerVelocity(Constants.Indexer.PASSIVE_HOPEPR_VELOCITY, Constants.Indexer.PASSIVE_INDEXER_VELOCITY);
+                setIndexerVelocity(Constants.Indexer.PASSIVE_HOPEPR_VELOCITY,
+                        Constants.Indexer.PASSIVE_INDEXER_VELOCITY);
             }
         });
     }

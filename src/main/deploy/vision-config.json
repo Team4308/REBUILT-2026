@@ -33,7 +33,7 @@
             "type": "APRILTAG",
             "streamType": "PHOTON",
             "enabled": true,
-            "transform": { "x": -10.0, "y": -10.0, "z": 9.325, "roll": 0.0, "pitch": -65, "yaw": 45.0 },
+            "transform": { "x": -12.375306, "y": -5.841, "z": 9.564, "roll": 0.0, "pitch": -65, "yaw": 45.0 },
             "resolution": { "width": 320, "height": 240, "fov": 70.0 }
         },
         {

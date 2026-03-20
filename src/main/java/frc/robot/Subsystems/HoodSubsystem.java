@@ -41,7 +41,7 @@ public class HoodSubsystem extends SubsystemBase {
 
     public HoodSubsystem(boolean enabled) {
         var talonFXConfigs = new TalonFXConfiguration();
-        talonFXConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        talonFXConfigs.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         talonFXConfigs.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
         m_hoodMotor.getConfigurator().apply(talonFXConfigs);

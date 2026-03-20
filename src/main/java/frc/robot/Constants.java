@@ -110,7 +110,7 @@ public final class Constants {
 
       public final static ProfiledPIDController pidController = new ProfiledPIDController(
           0.02, 0.0, 0.0,
-          
+
           new TrapezoidProfile.Constraints(1500, 2000));
     }
 
@@ -200,7 +200,7 @@ public final class Constants {
     public static final double ROLLER_KS = 0.23;
     public static final double ROLLER_KV = 0.115;
 
-    public static final double ROLLER_INTAKE_RPM = 4200.0;
+    public static final double ROLLER_INTAKE_RPM = 4800.0;
 
     // Pivot geometry
     public static final double PIVOT_GEAR_RATIO = 81;
@@ -223,7 +223,7 @@ public final class Constants {
   }
 
   public static class Indexer {
-    public static double DEFAULT_INDEXER_VELOCITY = 1200;
+    public static double DEFAULT_INDEXER_VELOCITY = 2400;
     public static double DEFAULT_HOPPER_VELOCITY = 6000;
 
     public static double BALL_TUNNEL_GEAR_RATIO = 3.0 / 5.0;
@@ -241,8 +241,10 @@ public final class Constants {
     public static double BALL_TUNNEL_Ki = 0;
     public static double BALL_TUNNEL_Kd = 0;
 
+    public static double EJECT_CURRENT = 67.;
+
     public static double PASSIVE_INDEXER_VELOCITY = 3000;
-    public static double PASSIVE_HOPEPR_VELOCITY = 3000;
+    public static double PASSIVE_HOPEPR_VELOCITY = 6000;
   }
 
   public static class OperatorConstants {

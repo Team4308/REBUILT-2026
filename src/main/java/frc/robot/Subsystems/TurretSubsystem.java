@@ -67,7 +67,7 @@ public class TurretSubsystem extends SubsystemBase {
 
         TalonFXConfiguration driveConfig = new TalonFXConfiguration();
         driveConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
-        driveConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        driveConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         m_driveMotor.getConfigurator().apply(driveConfig);
 
         if (Robot.isSimulation()) {
@@ -224,17 +224,17 @@ public class TurretSubsystem extends SubsystemBase {
 
         // double spring = 0;
         // if (m_currentDegUnWrapped < 350) {
-        //     spring = -0.23;
+        // spring = -0.23;
         // } else if (m_currentDegUnWrapped > 500) {
-        //     spring = 0.23;
+        // spring = 0.23;
         // }
 
         voltage = pidOutput + ffOutput;
 
         // if (m_currentDegUnWrapped < Constants.Shooting.Turret.MIN_DEGREES) {
-        //     voltage = Math.max(0, voltage);
+        // voltage = Math.max(0, voltage);
         // } else if (m_currentDegWrapped > Constants.Shooting.Turret.MAX_DEGREES) {
-        //     voltage = Math.min(0, voltage);
+        // voltage = Math.min(0, voltage);
         // }
 
         if (enabled)

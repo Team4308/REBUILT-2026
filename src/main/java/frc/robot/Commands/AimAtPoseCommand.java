@@ -11,22 +11,25 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.FieldLayout;
 import frc.robot.Subsystems.TurretSubsystem;
+import frc.robot.Util.AllianceFlipUtil;
 
-public class AimAtHubCommand extends Command {
+public class AimAtPoseCommand extends Command {
     private Supplier<Pose2d> botPose;
     private Translation2d shooterOffset = new Translation2d(0.13, 0.0);
-    private Translation3d hubTranslation;
+    private Translation3d targetPose;
     private TurretSubsystem turretSubsystem;
 
-    public AimAtHubCommand(Supplier<Pose2d> botPosetPose, TurretSubsystem turretSubsystem) {
+    public AimAtPoseCommand(Supplier<Pose2d> botPosetPose, TurretSubsystem turretSubsystem,
+            Translation3d targetPose) {
         botPose = botPosetPose;
         this.turretSubsystem = turretSubsystem;
+        this.targetPose = targetPose;
         addRequirements(turretSubsystem);
     }
 
     @Override
     public void initialize() {
-        hubTranslation = FieldLayout.ShooterTargets.getAllianceHub();
+        targetPose = AllianceFlipUtil.apply(targetPose);
     }
 
     @Override
@@ -38,20 +41,20 @@ public class AimAtHubCommand extends Command {
         double worldOffsetY = shooterOffset.getX() * rot.getSin() + shooterOffset.getY() * rot.getCos();
         double shooterX = pose.getX() + worldOffsetX;
         double shooterY = pose.getY() + worldOffsetY;
-        double dx = hubTranslation.getX() - shooterX;
-        double dy = hubTranslation.getY() - shooterY;
+        double dx = targetPose.getX() - shooterX;
+        double dy = targetPose.getY() - shooterY;
         double fieldAngleDeg = Math.toDegrees(Math.atan2(dy, dx));
-    double turretAngleDeg = ((Rotation2d.fromDegrees(fieldAngleDeg).minus(rot).getDegrees()) % 360 + 360)
-        % 360;
+        double turretAngleDeg = ((Rotation2d.fromDegrees(fieldAngleDeg).minus(rot).getDegrees()) % 360 + 360)
+                % 360;
         turretSubsystem.setTarget(turretAngleDeg - 180);
 
-        Logger.recordOutput("Commands/AimAtHub/Robot/Rot", rot.getDegrees());
-        Logger.recordOutput("Commands/AimAtHub/Robot/X", shooterX);
-        Logger.recordOutput("Commands/AimAtHub/Robot/Y", shooterY);
-        Logger.recordOutput("Commands/AimAtHub/Target/FieldDeg", fieldAngleDeg);
-        Logger.recordOutput("Commands/AimAtHub/Target/TurretDeg", turretAngleDeg);
-        Logger.recordOutput("Commands/AimAtHub/Target/dX", dx);
-        Logger.recordOutput("Commands/AimAtHub/Robot/dY", dy);
+        Logger.recordOutput("Commands/AimAtPose/Robot/Rot", rot.getDegrees());
+        Logger.recordOutput("Commands/AimAtPose/Robot/X", shooterX);
+        Logger.recordOutput("Commands/AimAtPose/Robot/Y", shooterY);
+        Logger.recordOutput("Commands/AimAtPose/Target/FieldDeg", fieldAngleDeg);
+        Logger.recordOutput("Commands/AimAtPose/Target/TurretDeg", turretAngleDeg);
+        Logger.recordOutput("Commands/AimAtPose/Target/dX", dx);
+        Logger.recordOutput("Commands/AimAtPose/Robot/dY", dy);
     }
 
     @Override

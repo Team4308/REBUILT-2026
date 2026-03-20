@@ -156,8 +156,8 @@ public class SwerveSubsystem extends SubsystemBase {
     setupPathPlanner();
 
     // Initialize chooser
-    diagonalBumpChooser.setDefaultOption("Diagonal Bump Enabled", true);
-    diagonalBumpChooser.addOption("Diagonal Bump Disabled", false);
+    diagonalBumpChooser.setDefaultOption("Diagonal Bump Disabled", false);
+    diagonalBumpChooser.addOption("Diagonal Bump Enabled", true);
 
     // Put chooser on SmartDashboard
     SmartDashboard.putData("Diagonal Bump Mode", diagonalBumpChooser);

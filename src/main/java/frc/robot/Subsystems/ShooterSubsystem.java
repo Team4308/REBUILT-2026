@@ -54,7 +54,8 @@ public class ShooterSubsystem extends SubsystemBase {
         m_leftConfiguration.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
         m_leftConfiguration.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
-        m_leftMotor.setControl(new Follower(m_rightMotor.getDeviceID(), MotorAlignmentValue.Opposed));
+        m_leftMotor.setControl(new Follower(m_rightMotor.getDeviceID(),
+                MotorAlignmentValue.Opposed));
 
         var slot0Configs = new Slot0Configs();
         slot0Configs.kS = Constants.Shooting.Shooter.kS;
@@ -84,7 +85,7 @@ public class ShooterSubsystem extends SubsystemBase {
             return;
         }
         m_rightMotor.setControl(m_velocityVoltage.withVelocity(rpm / 60.0));
-        m_leftMotor.setControl(m_velocityVoltage.withVelocity(-rpm / 60));
+        // m_leftMotor.setControl(m_velocityVoltage.withVelocity(-rpm / 60));
 
     }
 
