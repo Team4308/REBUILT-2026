@@ -72,7 +72,7 @@ public class RobotContainer {
                 m_IndexerSubsystem = new IndexerSubsystem(true);
                 m_TurretSubsystem = new TurretSubsystem(true);
                 m_ShooterSubsystem = new ShooterSubsystem(true);
-                m_IntakeSubsystem = new IntakeSubsystem(false);
+                m_IntakeSubsystem = new IntakeSubsystem(true);
 
                 if (Robot.isSimulation())
                         m_Simulation = new Simulation(m_HoodSubsystem, m_IndexerSubsystem, m_IntakeSubsystem,

@@ -197,7 +197,7 @@ public final class Constants {
     public static final double ROLLER_KS = 0.23;
     public static final double ROLLER_KV = 0.115;
 
-    public static final double ROLLER_INTAKE_RPM = 4800.0;
+    public static final double ROLLER_INTAKE_RPM = 4500.0;
 
     // Pivot geometry
     public static final double PIVOT_GEAR_RATIO = 81;

@@ -35,7 +35,7 @@ public class AimEverything extends Command {
 
     // Offset of the shooter/launcher from the robot center (match your
     // TurretConstants)
-    private static final Translation2d shooterOffset = new Translation2d(/* x= */ 0.13, /* y= */ 0.0);
+    private static final Translation2d shooterOffset = new Translation2d(0.13, 0.0);
 
     private static final InterpolatingTreeMap<Double, Double> hoodAngleMap = new InterpolatingTreeMap<>(
             InverseInterpolator.forDouble(), Interpolator.forDouble());
@@ -47,11 +47,10 @@ public class AimEverything extends Command {
         hoodAngleMap.put(1.3, 8.5);
         hoodAngleMap.put(1.6, 13.2);
         hoodAngleMap.put(1.9, 15.8);
-        hoodAngleMap.put(2.3, 17.);
-        hoodAngleMap.put(2.6, 17.);
-        hoodAngleMap.put(2.9, 17.);
-
-        hoodAngleMap.put(3.3, 18.);
+        hoodAngleMap.put(2.3, 16.);
+        hoodAngleMap.put(2.6, 16.3);
+        hoodAngleMap.put(2.9, 19.);
+        hoodAngleMap.put(3.3, 20.);
         /*
          * hoodAngleMap.put(3.6, 37.0);
          * hoodAngleMap.put(3.9, 35.0);
@@ -60,13 +59,13 @@ public class AimEverything extends Command {
          */
 
         // Key = distance (meters), Value = shooter speed (RPM)
-        flywheelSpeedMap.put(1.3, 1750.0);
-        flywheelSpeedMap.put(1.6, 1820.0);
+        flywheelSpeedMap.put(1.3, 1750.0);// good
+        flywheelSpeedMap.put(1.6, 1780.0);// good
         flywheelSpeedMap.put(1.9, 1850.0);
-        flywheelSpeedMap.put(2.3, 1950.0);
-        flywheelSpeedMap.put(2.6, 2050.0);
-        flywheelSpeedMap.put(2.9, 2150.0);
-        flywheelSpeedMap.put(3.3, 2250.0);
+        flywheelSpeedMap.put(2.3, 2050.0);
+        flywheelSpeedMap.put(2.6, 2200.0);
+        flywheelSpeedMap.put(2.9, 2300.0);
+        flywheelSpeedMap.put(3.3, 2400.0);
         /*
          * flywheelSpeedMap.put(3.6, 3900.0);
          * flywheelSpeedMap.put(3.9, 4100.0);
