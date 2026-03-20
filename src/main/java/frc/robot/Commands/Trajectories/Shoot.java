@@ -46,11 +46,11 @@ public class Shoot extends Command{
         }
 
         // Only run the indexer / hopper if we have a valid launch solution.
-        if (params != null && params.isValid()) {
+        // if (params != null && params.isValid()) {
             m_IndexerSubsystem.setIndexerVelocity(Constants.Indexer.DEFAULT_HOPPER_VELOCITY, Constants.Indexer.DEFAULT_INDEXER_VELOCITY);
-        } else {
-            m_IndexerSubsystem.stopMotors();
-        }
+        // } else {
+        //     m_IndexerSubsystem.stopMotors();
+        // }
     }
 
     @Override

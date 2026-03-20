@@ -4,6 +4,8 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
@@ -82,14 +84,15 @@ public final class Constants {
       public static final int kRPMTolerance = 100;
       public static final double kPassingRPM = 3000.0;
 
-      public static final double kS = 0.4;
-      public static final double kV = 0.11;
-      public static final double kP = 0.0;
+      public static final double kS = 0.23;
+      public static final double kV = 0.12;
+      public static final double kP = 0.12;
       public static final double kI = 0.0;
       public static final double kD = 0.0;
     }
 
     public static final class Turret {
+      public static Transform3d robotToTurret = new Transform3d(0.1, 0, 0.3, Rotation3d.kZero);
       public final static double GEAR_RATIO_1 = (85. / 17.) * (40. / 31.);
       public final static double GEAR_RATIO_2 = (85. / 17.) * (40. / 33.);
       public final static double PERIOD = 1 / Math.abs(GEAR_RATIO_1 - GEAR_RATIO_2);
@@ -220,7 +223,7 @@ public final class Constants {
   }
 
   public static class Indexer {
-    public static double DEFAULT_INDEXER_VELOCITY = 6000;
+    public static double DEFAULT_INDEXER_VELOCITY = 1200;
     public static double DEFAULT_HOPPER_VELOCITY = 6000;
 
     public static double BALL_TUNNEL_GEAR_RATIO = 3.0 / 5.0;

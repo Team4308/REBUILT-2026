@@ -2,6 +2,8 @@ package frc.robot;
 
 import java.io.File;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 
 import ca.team4308.absolutelib.control.RazerWrapper;
@@ -140,9 +142,10 @@ public class RobotContainer {
 
                 // --- TRAJECTORY DEFAULT COMMANDS ---
 
-                m_TurretSubsystem.setDefaultCommand(m_TurretSubsystem.moveToTarget(() -> getTrajectoryCalculations().getNeededYaw() - 180));
-                m_HoodSubsystem.setDefaultCommand(m_HoodSubsystem.setHoodAngleCommand(() -> 90.0 - getTrajectoryCalculations().getNeededPitch()));
-                m_ShooterSubsystem.setDefaultCommand(m_ShooterSubsystem.setShooterSpeed(() -> getTrajectoryCalculations().getNeededRPM()));
+                // m_TurretSubsystem.setDefaultCommand(m_TurretSubsystem.moveToTarget(() -> LaunchCalculator.getInstance().getParameters(drivebase.getSwerveDrive(), Math.toRadians(m_TurretSubsystem.getAngleWrapped() - 180)).turretAngle().getDegrees()));
+                // m_HoodSubsystem.setDefaultCommand(m_HoodSubsystem.setHoodAngleCommand(() -> 90.0 - LaunchCalculator.getInstance().getParameters(drivebase.getSwerveDrive(), Math.toRadians(m_TurretSubsystem.getAngleWrapped() - 180)).turretAngle().getDegrees()));
+                // m_ShooterSubsystem.setDefaultCommand(m_ShooterSubsystem.setShooterSpeed(() -> LaunchCalculator.getInstance().getParameters(drivebase.getSwerveDrive(), Math.toRadians(m_TurretSubsystem.getAngleWrapped() - 180)).flywheelSpeed() * 60.0));
+                m_TurretSubsystem.setDefaultCommand(new AimAtHubCommand(() -> drivebase.getPose(), m_TurretSubsystem));
 
                 // m_IndexerSubsystem.setDefaultCommand(m_IndexerSubsystem.preLoadBalls());
 
@@ -167,11 +170,11 @@ public class RobotContainer {
                 // driver.RB.onTrue(m_ShooterSubsystem.setShooterSpeed(() -> 1000.));
                 // driver.RB.onFalse(m_ShooterSubsystem.setShooterSpeed(() -> 0.));
 
-                // driver.povUp.onTrue(new MoveHoodCommand(m_HoodSubsystem, () -> 5.));
-                // driver.povDown.onTrue(new MoveHoodCommand(m_HoodSubsystem, () -> -5.));
+                driver.povUp.onTrue(new MoveHoodCommand(m_HoodSubsystem, () -> 2.5));
+                driver.povDown.onTrue(new MoveHoodCommand(m_HoodSubsystem, () -> -2.5));
 
-                // driver.povRight.onTrue(new MoveTurretCommand(m_TurretSubsystem, () -> 20.));
-                // driver.povLeft.onTrue(new MoveTurretCommand(m_TurretSubsystem, () -> -20.));
+                driver.povRight.onTrue(new InstantCommand(() -> m_ShooterSubsystem.setTargetSpeed(m_ShooterSubsystem.getTargetRPM() + 150.)));
+                driver.povLeft.onTrue(new InstantCommand(() -> m_ShooterSubsystem.setTargetSpeed(m_ShooterSubsystem.getTargetRPM() - 150.)));
 
                 // Semi Auto Shooting
 
@@ -226,18 +229,9 @@ public class RobotContainer {
          * Called each robot loop to update any periodic non-command logic.
          */
         public void periodic() {
-                m_TrajectoryCalculations.periodic();
-                // TODO: You might wanna changet this logic so its not in periodic? this does work traj calc accounts for mirroring the field  
-                // if (drivebase.getPose() != null && drivebase.getFieldLocation() != null) {
-                //         if (drivebase.getFieldLocation().equals("NeutralZone")) {
-                //                 if (drivebase.getPose().getY() > FieldLayout.kFieldWidth / 2) {
-                //                         m_TrajectoryCalculations.setGoal(TrajectoryCalculations.ShotGoal.PASS_RIGHT);
-                //                 } else {
-                //                         m_TrajectoryCalculations.setGoal(TrajectoryCalculations.ShotGoal.PASS_LEFT);
-                //                 }
-                //         } else {
-                                m_TrajectoryCalculations.setGoal(TrajectoryCalculations.ShotGoal.HUB);
-                //         }
-                // }
+                Logger.recordOutput("CalcTurret", LaunchCalculator.getInstance().getParameters(drivebase.getSwerveDrive(), Math.toRadians(m_TurretSubsystem.getAngleWrapped() - 180)).turretAngle().getDegrees());
+                Logger.recordOutput("CalcHood", 90.0 - LaunchCalculator.getInstance().getParameters(drivebase.getSwerveDrive(), Math.toRadians(m_TurretSubsystem.getAngleWrapped() - 180)).turretAngle().getDegrees());
+                Logger.recordOutput("CalcShooter", LaunchCalculator.getInstance().getParameters(drivebase.getSwerveDrive(), Math.toRadians(m_TurretSubsystem.getAngleWrapped() - 180)).flywheelSpeed() * 60.0);
+                Logger.recordOutput("CalcDistance", LaunchCalculator.getInstance().getParameters(drivebase.getSwerveDrive(), Math.toRadians(m_TurretSubsystem.getAngleWrapped() - 180)).distance());
         }
 }

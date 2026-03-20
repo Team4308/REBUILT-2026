@@ -14,7 +14,7 @@ import frc.robot.Subsystems.TurretSubsystem;
 
 public class AimAtHubCommand extends Command {
     private Supplier<Pose2d> botPose;
-    private Translation2d shooterOffset = new Translation2d(0.1, 0.1);
+    private Translation2d shooterOffset = new Translation2d(0.13, 0.0);
     private Translation3d hubTranslation;
     private TurretSubsystem turretSubsystem;
 
@@ -43,7 +43,7 @@ public class AimAtHubCommand extends Command {
         double fieldAngleDeg = Math.toDegrees(Math.atan2(dy, dx));
     double turretAngleDeg = ((Rotation2d.fromDegrees(fieldAngleDeg).minus(rot).getDegrees()) % 360 + 360)
         % 360;
-        turretSubsystem.setTarget(turretAngleDeg);
+        turretSubsystem.setTarget(turretAngleDeg - 180);
 
         Logger.recordOutput("Commands/AimAtHub/Robot/Rot", rot.getDegrees());
         Logger.recordOutput("Commands/AimAtHub/Robot/X", shooterX);

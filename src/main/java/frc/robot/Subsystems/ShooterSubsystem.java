@@ -1,5 +1,6 @@
 package frc.robot.Subsystems;
 
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.Logger;
@@ -98,8 +99,8 @@ public class ShooterSubsystem extends SubsystemBase {
         m_leftMotor.stopMotor();
     }
 
-    public Command setShooterSpeed(Supplier<Double> rpm) {
-        return run(() -> setTargetSpeed(rpm.get()));
+    public Command setShooterSpeed(DoubleSupplier rpm) {
+        return run(() -> setTargetSpeed(rpm.getAsDouble()));
     }
 
     public Command setShooterSpeed(Supplier<Double> rpm, double timeoutMs) {
