@@ -97,8 +97,7 @@ public class LedSubsystem extends AbsoluteSubsystem {
         return allViews.get(nearestViewAngle);
     }
 
-    @Override
-    public void periodic() {
+    public void updateLeds() {
         if (currentPattern != null) {
             for (AddressableLEDBufferView view : allViews.values()) {
                 // Uncomment code when we have swerve added

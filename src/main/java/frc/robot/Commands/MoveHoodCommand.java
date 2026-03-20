@@ -27,7 +27,7 @@ public class MoveHoodCommand extends Command {
 
     @Override
     public void end(boolean interrupted) {
-        m_subsystem.stopMotors();
+        // m_subsystem.stopMotors();
     }
 
     @Override

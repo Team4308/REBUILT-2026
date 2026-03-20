@@ -16,6 +16,7 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -46,24 +47,31 @@ public class IntakeSubsystem extends SubsystemBase {
 
   private boolean enabled;
 
+  private boolean hopperExtended;
+
   public IntakeSubsystem(boolean enabled) {
     verbosity = SubsystemVerbosity.HIGH;
     m_pivotMotor.setPosition(0);
     configureRoller();
-    offset = 0;
     pidController.reset(targetAngleDeg);
 
     this.enabled = enabled;
+
+    hopperExtended = false;
   }
 
   /* ---------------- Roller ---------------- */
 
   public void setRollerSpeed(Supplier<Double> rpm) {
-    Logger.recordOutput("Subsystems/Intake/Target Roller Speed", rpm.get());
+    Logger.recordOutput("Subsystems/Intake/Target Roller Speed", (rpm.get() / -60.0) * Constants.Intake.ROLLER_GEAR_RATIO);
     if (!enabled)
       return;
-    m_rollerMotor.setControl(
-        rollerRequest.withVelocity(rpm.get() * 60.0));
+    if (hopperExtended) {
+      m_rollerMotor.setControl(
+        rollerRequest.withVelocity((rpm.get() / -60.0) * Constants.Intake.ROLLER_GEAR_RATIO));
+    } else {
+      m_rollerMotor.setControl(rollerRequest.withVelocity(1));
+    }
   }
 
   public void stopRoller() {
@@ -93,6 +101,9 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   public void resetIntake() {
+    if (!enabled) {
+      return;
+    }
     if (m_pivotMotor.getSupplyCurrent().getValueAsDouble() < 3) {
       m_pivotMotor.setVoltage(-2.0);
     } else {
@@ -140,6 +151,7 @@ public class IntakeSubsystem extends SubsystemBase {
     cfg.Slot0.kP = Constants.Intake.ROLLER_KP;
     cfg.Slot0.kI = Constants.Intake.ROLLER_KI;
     cfg.Slot0.kD = Constants.Intake.ROLLER_KD;
+    cfg.Slot0.kS = Constants.Intake.ROLLER_KS;
     cfg.Slot0.kV = Constants.Intake.ROLLER_KV;
 
     m_rollerMotor.getConfigurator().apply(cfg);
@@ -176,7 +188,14 @@ public class IntakeSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
+    targetAngleDeg = MathUtil.clamp(targetAngleDeg, 0, 127);
+
     double currentDeg = getIntakeAngle();
+
+    if (currentDeg < 3.0 && !hopperExtended) {
+      hopperExtended = true;
+    }
+
     double pidOutput = pidController.calculate(currentDeg, targetAngleDeg);
     double ffOutput = feedforward.calculate(pidController.getSetpoint().position,
         pidController.getSetpoint().velocity);
@@ -202,6 +221,7 @@ public class IntakeSubsystem extends SubsystemBase {
       Logger.recordOutput("Subsystems/Intake/Pivot/Velocity", m_pivotMotor.getVelocity().getValueAsDouble());
       Logger.recordOutput("Subsystems/Intake/Pivot/Setpoint Angle", pidController.getSetpoint().position);
       Logger.recordOutput("Subsystems/Intake/Pivot/Setpoint Velocity", pidController.getSetpoint().velocity);
+      Logger.recordOutput("Subsystems/Intake/Pivot/Target Angle", targetAngleDeg);
 
       Logger.recordOutput("Subsystems/Intake/Roller/Applied Voltage",
           m_rollerMotor.getMotorVoltage().getValueAsDouble());

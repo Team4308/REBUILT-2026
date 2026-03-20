@@ -53,6 +53,9 @@ public class Robot extends LoggedRobot {
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
 
+    // keep trajectory calculations updating every loop
+    m_robotContainer.periodic();
+
     SmartDashboard.putData("Command Scheduler", CommandScheduler.getInstance());
     Logger.recordOutput("Match Timer", DriverStation.getMatchTime());
     Logger.recordOutput("Ally Hub Active", GameData.isHubActive(false));
@@ -108,7 +111,7 @@ public class Robot extends LoggedRobot {
   @Override
   public void testInit() {
     CommandScheduler.getInstance().cancelAll();
-    m_testCommand = m_robotContainer.getTestCommand();
+    // m_testCommand = m_robotContainer.getTestCommand();
 
     if (m_testCommand != null) {
       CommandScheduler.getInstance().schedule(m_testCommand);

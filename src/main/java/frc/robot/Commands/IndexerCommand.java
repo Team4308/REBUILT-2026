@@ -18,8 +18,7 @@ public class IndexerCommand extends Command {
 
     @Override
     public void initialize() {
-        m_subsystem.setHopperVelocity(rpm.get());
-        m_subsystem.setIndexerVelocity(rpm.get());
+        m_subsystem.setIndexerVelocity(rpm.get(), rpm.get());
     }
 
     @Override
@@ -28,6 +27,7 @@ public class IndexerCommand extends Command {
 
     @Override
     public void end(boolean interrupted) {
+        m_subsystem.setIndexerVelocity(0, 0);
         m_subsystem.stopMotors();
     }
 

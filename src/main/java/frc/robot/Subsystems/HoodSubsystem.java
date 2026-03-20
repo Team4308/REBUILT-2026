@@ -25,7 +25,7 @@ import frc.robot.Util.SubsystemVerbosity;
 public class HoodSubsystem extends SubsystemBase {
     private final TalonFX m_hoodMotor = new TalonFX(Ports.Shooting.Hood.kHoodId);
 
-    private double targetAngle = 7.5;
+    private double targetAngle = Constants.Shooting.Hood.REVERSE_SOFT_LIMIT_ANGLE;
 
     private double angleOffset = Constants.Shooting.Hood.REVERSE_SOFT_LIMIT_ANGLE;
 
@@ -72,7 +72,7 @@ public class HoodSubsystem extends SubsystemBase {
     }
 
     public Command setHoodAngleCommand(Supplier<Double> angleSupplier) {
-        return run(() -> setHoodAngle(angleSupplier.get())).until(this::isAtPosition);
+        return run(() -> setHoodAngle(angleSupplier.get()));
     }
 
     public void setHoodAngle(double angle) {
@@ -108,9 +108,11 @@ public class HoodSubsystem extends SubsystemBase {
 
     public Command resetHoodCommand() {
         return run(this::resetHood)
+                .alongWith(new InstantCommand(() -> enabled = false))
                 .until(() -> m_hoodMotor.getSupplyCurrent().getValueAsDouble() > Constants.Shooting.Hood.AMP_THRESHOLD)
                 .andThen(new InstantCommand(() -> setHoodAngle(Constants.Shooting.Hood.REVERSE_SOFT_LIMIT_ANGLE)))
-                .andThen(new InstantCommand(() -> m_hoodMotor.setPosition(0)));
+                .andThen(new InstantCommand(() -> m_hoodMotor.setPosition(0)))
+                .andThen(new InstantCommand(() -> enabled = true));
     }
 
     public void stopMotors() {
@@ -132,6 +134,9 @@ public class HoodSubsystem extends SubsystemBase {
     }
 
     private Pose3d getHoodPose() {
+        if (turretSupplier == null) {
+            return new Pose3d();
+        }
         double turretYawRad = -Math.toRadians(turretSupplier.get());
         double offsetX = 0.109474;
         double offsetZ = 0.08255;
@@ -162,14 +167,25 @@ public class HoodSubsystem extends SubsystemBase {
         double ffVolts = Constants.Shooting.Hood.feedforward.calculate(
                 pidController.getSetpoint().position,
                 pidController.getSetpoint().velocity);
+
+        if (ffVolts == 0) {
+            if (pidOutput < 0) {
+                pidOutput -= 0.2;
+            } else {
+                pidOutput += 0.2;
+            }
+        }
+
         voltage = pidOutput + ffVolts;
 
-        if (enabled)
+        if (enabled) {
             m_hoodMotor.setVoltage(voltage);
+        }
 
         if (verbosity == SubsystemVerbosity.LOW || verbosity == SubsystemVerbosity.HIGH) {
             Logger.recordOutput("Subsystems/Hood/Is At Target?", isAtPosition());
             Logger.recordOutput("Subsystems/Hood/Angle", currentAngle);
+            Logger.recordOutput("Subsystems/Hood/Target Angle", targetAngle);
 
             Logger.recordOutput("Subsystems/Hood/Pose", getHoodPose());
         }

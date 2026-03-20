@@ -20,12 +20,11 @@ public class MoveTurretCommand extends Command {
 
     @Override
     public void initialize() {
-        double targetAngle = m_subsystem.getAngleWrapped() + angleDifference.get();
-        m_subsystem.setTarget(targetAngle);
     }
 
     @Override
     public void execute() {
+        m_subsystem.setTarget(angleDifference.get() + m_subsystem.getAngleWrapped());
     }
 
     @Override
@@ -35,6 +34,6 @@ public class MoveTurretCommand extends Command {
 
     @Override
     public boolean isFinished() {
-        return m_subsystem.isAtTarget();
+        return true;
     }
 }
