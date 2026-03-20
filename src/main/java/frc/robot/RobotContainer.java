@@ -138,7 +138,7 @@ public class RobotContainer {
                 // --- TRAJECTORY DEFAULT COMMANDS ---
 
                 m_TurretSubsystem.setDefaultCommand(m_TurretSubsystem.moveToTarget(() -> getTrajectoryCalculations().getNeededYaw() - 180));
-                m_HoodSubsystem.setDefaultCommand(m_HoodSubsystem.setHoodAngleCommand(() -> 90.0 -getTrajectoryCalculations().getNeededPitch()));
+                m_HoodSubsystem.setDefaultCommand(m_HoodSubsystem.setHoodAngleCommand(() -> 90.0 - getTrajectoryCalculations().getNeededPitch()));
                 m_ShooterSubsystem.setDefaultCommand(m_ShooterSubsystem.setShooterSpeed(() -> getTrajectoryCalculations().getNeededRPM()));
 
                 // m_IndexerSubsystem.setDefaultCommand(m_IndexerSubsystem.preLoadBalls());
