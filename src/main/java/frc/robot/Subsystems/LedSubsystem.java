@@ -25,15 +25,16 @@ public class LedSubsystem extends AbsoluteSubsystem {
     private final AddressableLEDBufferView underGlow; // Underneath the bot (In brain pan?)
     private Map<Integer, AddressableLEDBufferView> allViews = new java.util.HashMap<>();
     private Pose2d[] DriverSationCords = {
-        // Blue Alliance driver station locations 
-        new Pose2d(0, 7, new edu.wpi.first.math.geometry.Rotation2d()),
-        new Pose2d(0, 4, new edu.wpi.first.math.geometry.Rotation2d()),
-        new Pose2d(0, 1, new edu.wpi.first.math.geometry.Rotation2d()),
+            // Blue Alliance driver station locations
+            new Pose2d(0, 7, new edu.wpi.first.math.geometry.Rotation2d()),
+            new Pose2d(0, 4, new edu.wpi.first.math.geometry.Rotation2d()),
+            new Pose2d(0, 1, new edu.wpi.first.math.geometry.Rotation2d()),
     };
-    
 
     private LEDPattern currentPattern;
-    private LEDPattern driverPattern; /** Data for the driver **/
+    @SuppressWarnings("unused")
+    private LEDPattern driverPattern;
+    /** Data for the driver **/
     private String currentPatternName = "Idle";
     private String driverPatternName = "Idle";
     private static final int LED_PORT = Leds.LED_PORT;
@@ -48,9 +49,12 @@ public class LedSubsystem extends AbsoluteSubsystem {
         led.setData(buffer);
         led.start();
         view = new AddressableLEDBufferView(buffer, Leds.startIndexes[0], Leds.startIndexes[1] - Leds.startIndexes[0]);
-        viewBack = new AddressableLEDBufferView(buffer, Leds.startIndexes[1], Leds.startIndexes[2] - Leds.startIndexes[1]);
-        viewLeft = new AddressableLEDBufferView(buffer, Leds.startIndexes[2], Leds.startIndexes[3] - Leds.startIndexes[2]);
-        viewRight = new AddressableLEDBufferView(buffer, Leds.startIndexes[3], Leds.startIndexes[4] - Leds.startIndexes[3]);
+        viewBack = new AddressableLEDBufferView(buffer, Leds.startIndexes[1],
+                Leds.startIndexes[2] - Leds.startIndexes[1]);
+        viewLeft = new AddressableLEDBufferView(buffer, Leds.startIndexes[2],
+                Leds.startIndexes[3] - Leds.startIndexes[2]);
+        viewRight = new AddressableLEDBufferView(buffer, Leds.startIndexes[3],
+                Leds.startIndexes[4] - Leds.startIndexes[3]);
         underGlow = new AddressableLEDBufferView(buffer, Leds.startIndexes[4], LED_LENGTH - Leds.startIndexes[4]);
         allViews.put(Leds.viewAngles[0], view);
         allViews.put(Leds.viewAngles[1], viewBack);
@@ -61,12 +65,11 @@ public class LedSubsystem extends AbsoluteSubsystem {
         driverPattern = Patterns.scrollingIdle(Color.kDarkRed, 1);
     }
 
-
     public AddressableLEDBufferView getViewFacingDriver(SwerveDriveOdometry3d odometry) {
         double robotX = odometry.getPoseMeters().getX();
         double robotY = odometry.getPoseMeters().getY();
         double robotAngle = odometry.getPoseMeters().getRotation().toRotation2d().getDegrees();
-        
+
         double dsX = 0.0;
         double dsY = 0.0;
 
@@ -101,8 +104,9 @@ public class LedSubsystem extends AbsoluteSubsystem {
         if (currentPattern != null) {
             for (AddressableLEDBufferView view : allViews.values()) {
                 // Uncomment code when we have swerve added
-                // if (view == getViewFacingDriver(StateManager.getInstance().getSwerveOdometry())) {
-                //     driverPattern.applyTo(view);
+                // if (view ==
+                // getViewFacingDriver(StateManager.getInstance().getSwerveOdometry())) {
+                // driverPattern.applyTo(view);
                 // }
                 currentPattern.applyTo(view);
             }
@@ -126,29 +130,32 @@ public class LedSubsystem extends AbsoluteSubsystem {
     }
 
     /**
-     * Sets the Drivers LED pattern to error      
+     * Sets the Drivers LED pattern to error
      */
     public void setError() {
         driverPattern = Patterns.error();
         driverPatternName = "Error";
     }
 
-        /**
-     * Sets the Drivers LED pattern to success      
+    /**
+     * Sets the Drivers LED pattern to success
      */
     public void setSuccess() {
         driverPattern = Patterns.success();
         driverPatternName = "Success";
     }
+
     /**
-     * Sets the Drivers LED pattern to warning      
+     * Sets the Drivers LED pattern to warning
      */
     public void setWarning() {
         driverPattern = Patterns.warning();
         driverPatternName = "Warning";
     }
+
     /**
-     * Sets the Drivers LED pattern to loading      
+     * Sets the Drivers LED pattern to loading
+     * 
      * @param speed the speed of the loading pattern, where 1.0 is normal speed
      */
     public void setWarning(double speed) {
@@ -156,43 +163,44 @@ public class LedSubsystem extends AbsoluteSubsystem {
         driverPatternName = "Warning";
     }
 
-
-
-
     public void setChasingDot(Color color) {
         currentPattern = Patterns.chasingDot(color);
         currentPatternName = "Chasing Dot";
     }
 
     // public void applyStatePattern(StateManager.RobotState state) {
-    //     String name = state.name();
-    //     if (name.equals(currentPatternName)) {
-    //         return;
-    //     }
+    // String name = state.name();
+    // if (name.equals(currentPatternName)) {
+    // return;
+    // }
 
-    //     switch (state) {
-    //         case Home :
-    //             currentPattern = Patterns.getAllianceBreathing(2.0);
-    //             break;
+    // switch (state) {
+    // case Home :
+    // currentPattern = Patterns.getAllianceBreathing(2.0);
+    // break;
 
-    //         case ActiveTeleopAllianceZone, ActiveTeleopOpponentZone, ActiveTeleopNeutralZone:
-    //             currentPattern = Patterns.altF4();
-    //             break;
+    // case ActiveTeleopAllianceZone, ActiveTeleopOpponentZone,
+    // ActiveTeleopNeutralZone:
+    // currentPattern = Patterns.altF4();
+    // break;
 
-    //         case InactiveTeleopAllianceZone,InactiveTeleopNeutralZone, InactiveTeleopOpponentZone:
-    //             currentPattern = Patterns.defaultScrollingIdle();
-    //             break;
+    // case InactiveTeleopAllianceZone,InactiveTeleopNeutralZone,
+    // InactiveTeleopOpponentZone:
+    // currentPattern = Patterns.defaultScrollingIdle();
+    // break;
 
-    //         case EndgameTeleopAllianceZone,EndgameTeleopNeutralZone, EndgameTeleopOpponentZone:
-    //                 currentPattern = Patterns.createBlinkingPattern(Color.kRed, DriverStation.getMatchTime() / 30.0);
-    //         break;
+    // case EndgameTeleopAllianceZone,EndgameTeleopNeutralZone,
+    // EndgameTeleopOpponentZone:
+    // currentPattern = Patterns.createBlinkingPattern(Color.kRed,
+    // DriverStation.getMatchTime() / 30.0);
+    // break;
 
-    //         default:
-    //             currentPattern = Patterns.defaultScrollingIdle();
-    //             break;
-    //     }
+    // default:
+    // currentPattern = Patterns.defaultScrollingIdle();
+    // break;
+    // }
 
-    //     currentPatternName = name;
+    // currentPatternName = name;
     // }
 
     public String getCurrentPatternName() {

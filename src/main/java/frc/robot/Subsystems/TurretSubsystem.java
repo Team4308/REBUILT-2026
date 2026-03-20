@@ -11,14 +11,10 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import ca.team4308.absolutelib.math.DoubleUtils;
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -27,38 +23,31 @@ import frc.robot.Robot;
 import frc.robot.Util.SubsystemVerbosity;
 
 public class TurretSubsystem extends SubsystemBase {
-    // ── Hardware ─────────────────────────────────────────────────────────────────
     private final TalonFX m_driveMotor;
+    @SuppressWarnings("unused")
     private final CANcoder m_canCoder1;
+    @SuppressWarnings("unused")
     private final CANcoder m_canCoder2;
 
-    // ── Angle tracking ───────────────────────────────────────────────────────────
     private double m_targetDegWrapped = 0.0;
     private double m_targetDegUnWrapped = Constants.Shooting.Turret.TURRET_START_ANGLE;
     private double m_currentDegWrapped = 0.0;
     private double m_currentDegUnWrapped = Constants.Shooting.Turret.TURRET_START_ANGLE;
 
-    /**
-     * Offset applied to the motor encoder reading (set once calibration completes).
-     */
     private double m_motorEncoderOffset = -Constants.Shooting.Turret.TURRET_START_ANGLE;
 
-    // ── Controllers ──────────────────────────────────────────────────────────────
     public final static ArmFeedforward feedforward = Constants.Shooting.Turret.feedforward;
     public final static ProfiledPIDController pidController = Constants.Shooting.Turret.pidController;
 
-    // ── Sim suppliers
-    // ─────────────────────────────────────────────────────────────
     private Supplier<Double> simSupplier;
+    @SuppressWarnings("unused")
     private Supplier<Double> enc1SimSupplier;
+    @SuppressWarnings("unused")
     private Supplier<Double> enc2SimSupplier;
 
-    // ── Misc ─────────────────────────────────────────────────────────────────────
     private double voltage;
     private boolean enabled;
     private final SubsystemVerbosity verbosity;
-
-    // ─────────────────────────────────────────────────────────────────────────────
 
     public TurretSubsystem(boolean enabled) {
         m_driveMotor = new TalonFX(Ports.Shooting.Turret.kTurretMotorId);
@@ -82,9 +71,6 @@ public class TurretSubsystem extends SubsystemBase {
 
     }
 
-    // ── Public angle getters
-    // ──────────────────────────────────────────────────────
-
     public double getAngleWrapped() {
         return m_currentDegWrapped;
     }
@@ -92,9 +78,6 @@ public class TurretSubsystem extends SubsystemBase {
     public double getAngleUnWrapped() {
         return m_currentDegUnWrapped;
     }
-
-    // ── Sim wiring
-    // ────────────────────────────────────────────────────────────────
 
     public void setSimSupplier(Supplier<Double> angleSupplier,
             Supplier<Double> enc1Supplier,
@@ -222,20 +205,7 @@ public class TurretSubsystem extends SubsystemBase {
             }
         }
 
-        // double spring = 0;
-        // if (m_currentDegUnWrapped < 350) {
-        // spring = -0.23;
-        // } else if (m_currentDegUnWrapped > 500) {
-        // spring = 0.23;
-        // }
-
         voltage = pidOutput + ffOutput;
-
-        // if (m_currentDegUnWrapped < Constants.Shooting.Turret.MIN_DEGREES) {
-        // voltage = Math.max(0, voltage);
-        // } else if (m_currentDegWrapped > Constants.Shooting.Turret.MAX_DEGREES) {
-        // voltage = Math.min(0, voltage);
-        // }
 
         if (enabled)
             m_driveMotor.setVoltage(voltage);

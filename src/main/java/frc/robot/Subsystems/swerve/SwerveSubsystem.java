@@ -391,7 +391,7 @@ public class SwerveSubsystem extends SubsystemBase {
         .abs(getVelocityAsScalar() - 0.0) < Constants.Swerve.PathFinding.VELOCITY_TOLERANCE;
   }
 
-  private boolean isVelocityAligned() {
+  public boolean isVelocityAligned() {
     return Math
         .abs(getVelocityAsScalar() - targetFinalVelocityScalar) < Constants.Swerve.PathFinding.VELOCITY_TOLERANCE;
   }

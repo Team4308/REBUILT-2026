@@ -16,7 +16,6 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -63,12 +62,13 @@ public class IntakeSubsystem extends SubsystemBase {
   /* ---------------- Roller ---------------- */
 
   public void setRollerSpeed(Supplier<Double> rpm) {
-    Logger.recordOutput("Subsystems/Intake/Target Roller Speed", (rpm.get() / -60.0) * Constants.Intake.ROLLER_GEAR_RATIO);
+    Logger.recordOutput("Subsystems/Intake/Target Roller Speed",
+        (rpm.get() / -60.0) * Constants.Intake.ROLLER_GEAR_RATIO);
     if (!enabled)
       return;
     if (hopperExtended) {
       m_rollerMotor.setControl(
-        rollerRequest.withVelocity((rpm.get() / -60.0) * Constants.Intake.ROLLER_GEAR_RATIO));
+          rollerRequest.withVelocity((rpm.get() / -60.0) * Constants.Intake.ROLLER_GEAR_RATIO));
     } else {
       m_rollerMotor.setControl(rollerRequest.withVelocity(1));
     }

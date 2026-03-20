@@ -9,7 +9,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.interpolation.InterpolatingTreeMap;
 import edu.wpi.first.math.interpolation.Interpolator;
@@ -23,7 +22,7 @@ import frc.robot.Subsystems.swerve.SwerveSubsystem;
 import frc.robot.Util.AllianceFlipUtil;
 import frc.robot.Util.FieldConstants;
 
-public class AimHoodAndTurret extends Command {
+public class AimEverything extends Command {
     private final HoodSubsystem m_HoodSubsystem;
     private final ShooterSubsystem m_ShooterSubsystem;
     private final TurretSubsystem m_TurretSubsystem;
@@ -88,7 +87,7 @@ public class AimHoodAndTurret extends Command {
     private Translation3d leftTarget = new Translation3d(2, 2, 0);
     private Translation3d rightTarget = new Translation3d(2, 6, 0);
 
-    public AimHoodAndTurret(
+    public AimEverything(
             HoodSubsystem m_HoodSubsystem,
             ShooterSubsystem m_ShooterSubsystem,
             TurretSubsystem m_TurretSubsystem, Supplier<Pose2d> swervePose, Supplier<ChassisSpeeds> swerveVelocity,

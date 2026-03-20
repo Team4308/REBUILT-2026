@@ -4,12 +4,12 @@ package frc.robot.Commands;
 import frc.robot.Subsystems.HoodSubsystem;
 import frc.robot.Subsystems.IndexerSubsystem;
 import frc.robot.Subsystems.swerve.SwerveSubsystem;
-import frc.robot.Subsystems.LedSubsystem;
 import frc.robot.Subsystems.ShooterSubsystem;
 import frc.robot.Subsystems.TurretSubsystem;
 import frc.robot.Subsystems.IntakeSubsystem;
 
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -17,7 +17,7 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 public class SystemCheck extends SequentialCommandGroup {
         public SystemCheck(HoodSubsystem hoodSubsystem, IndexerSubsystem indexerSubsystem,
                         IntakeSubsystem intakeSubsystem,
-                        SwerveSubsystem swerveSubsystem, LedSubsystem ledSubsystem, ShooterSubsystem shooterSubsystem,
+                        SwerveSubsystem swerveSubsystem, ShooterSubsystem shooterSubsystem,
                         TurretSubsystem turretSubsystem) {
                 addCommands(
                                 new ParallelDeadlineGroup(new WaitCommand(1),
@@ -29,25 +29,32 @@ public class SystemCheck extends SequentialCommandGroup {
                                 new ParallelDeadlineGroup(new WaitCommand(1),
                                                 swerveSubsystem.driveCommand(() -> 0, () -> 0, () -> 5)),
 
-                                new WaitCommand(1),
                                 new InstantCommand(() -> swerveSubsystem.lock()),
 
-                                new ParallelDeadlineGroup(new WaitCommand(1),
-                                                hoodSubsystem.moveHood(() -> 15.0, 5.0)),
-                                new WaitCommand(1),
-                                new InstantCommand(() -> hoodSubsystem.resetHood()),
-                                new WaitCommand(1),
-                                new InstantCommand(() -> intakeSubsystem.resetIntake()),
-                                new InstantCommand(() -> intakeSubsystem.stopRoller()),
+                                hoodSubsystem.moveHood(() -> 42.),
+                                hoodSubsystem.moveHood(() -> 7.5),
 
-                                new ParallelDeadlineGroup(new WaitCommand(1),
-                                                turretSubsystem.moveToTarget(() -> 15.0)),
-                                new InstantCommand(() -> turretSubsystem.resetTurretCommand()),
+                                turretSubsystem.moveToTarget(() -> 500.),
+                                turretSubsystem.moveToTarget(() -> 270.),
+                                turretSubsystem.moveToTarget(() -> 360.),
 
-                                new ParallelDeadlineGroup(new WaitCommand(1),
-                                                shooterSubsystem.setShooterSpeed(() -> 10.0)),
-                                new WaitCommand(1),
-                                new InstantCommand(() -> shooterSubsystem.setShooterSpeed(() -> 0.0)));
+                                new ParallelCommandGroup(new WaitCommand(1),
+                                                shooterSubsystem.setShooterSpeed(() -> 3000)),
+                                new ParallelCommandGroup(new WaitCommand(1), shooterSubsystem.setShooterSpeed(() -> 0)),
+
+                                intakeSubsystem.moveIntakeToAngle(0),
+                                intakeSubsystem.moveIntakeToAngle(127),
+
+                                new ParallelCommandGroup(new WaitCommand(1),
+                                                new InstantCommand(() -> intakeSubsystem.setRollerSpeed(() -> 3000.))),
+                                new ParallelCommandGroup(new WaitCommand(1),
+                                                new InstantCommand(() -> intakeSubsystem.setRollerSpeed(() -> 0.))),
+
+                                new ParallelCommandGroup(new WaitCommand(1),
+                                                new InstantCommand(
+                                                                () -> indexerSubsystem.setIndexerVelocity(6000, 3000))),
+                                new ParallelCommandGroup(new WaitCommand(1),
+                                                new InstantCommand(() -> indexerSubsystem.setIndexerVelocity(0, 0))));
 
         }
 }

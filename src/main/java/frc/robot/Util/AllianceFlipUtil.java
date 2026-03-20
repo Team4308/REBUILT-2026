@@ -9,7 +9,6 @@ package frc.robot.Util;
 
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj.DriverStation;
-import frc.robot.Constants;
 import frc.robot.FieldLayout;
 
 public class AllianceFlipUtil {

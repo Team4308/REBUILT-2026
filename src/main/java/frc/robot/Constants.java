@@ -2,8 +2,6 @@ package frc.robot;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -19,9 +17,8 @@ import ca.team4308.absolutelib.math.trajectories.TrajectorySolver;
 import ca.team4308.absolutelib.math.trajectories.shooter.ShotMode;
 
 public final class Constants {
-  public static final double ROBOT_MASS = Units.lbsToKilograms(140); // TODO: update this to match the wieght in
-                                                                     // physicalproperties.json
-  public static final boolean disableHAL = false; //
+  public static final double ROBOT_MASS = Units.lbsToKilograms(135);
+  public static final boolean disableHAL = false;
   public static final double deltaTime = 0.02;
   public static final Matter CHASSIS = new Matter(
       new Translation3d(Units.inchesToMeters(0.4), Units.inchesToMeters(0.4), Units.inchesToMeters(7.2)),
