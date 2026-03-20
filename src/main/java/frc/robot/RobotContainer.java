@@ -18,6 +18,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.Commands.AimEverything;
 import frc.robot.Commands.DefaultIntakeCommand;
+import frc.robot.Commands.ShootAndAgitate254;
+import frc.robot.Commands.ShootAndAgitateJ;
 import frc.robot.Commands.ShootCommand;
 import frc.robot.Commands.SystemCheck;
 import frc.robot.Subsystems.HoodSubsystem;
@@ -85,7 +87,8 @@ public class RobotContainer {
                                 new AimEverything(m_HoodSubsystem, m_ShooterSubsystem, m_TurretSubsystem,
                                                 () -> drivebase.getPose(), () -> drivebase.getRobotVelocity(),
                                                 drivebase,
-                                                () -> driver.RB.getAsBoolean(), () -> driver.LB.getAsBoolean()));
+                                                () -> driver.RB.getAsBoolean() || driver.RightTrigger.getAsBoolean(),
+                                                () -> driver.LB.getAsBoolean() || driver.LeftTrigger.getAsBoolean()));
 
                 configureNamedCommands();
                 configureBindings();
@@ -102,6 +105,8 @@ public class RobotContainer {
 
                 driver.RB.whileTrue(new ShootCommand(m_IndexerSubsystem));
                 driver.LB.whileTrue(new ShootCommand(m_IndexerSubsystem));
+                driver.RightTrigger.whileTrue(new ShootAndAgitateJ(m_IntakeSubsystem, m_IndexerSubsystem));
+                driver.LeftTrigger.whileTrue(new ShootAndAgitate254(m_IntakeSubsystem, m_IndexerSubsystem));
 
                 driver.M4.onTrue(new InstantCommand(() -> drivebase.lock()));
 

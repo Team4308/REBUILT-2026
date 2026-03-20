@@ -78,6 +78,33 @@ public class IntakeSubsystem extends SubsystemBase {
     m_rollerMotor.stopMotor();
   }
 
+  public Command moveIntakeToAngleSlow(double targetAngle, double durationSeconds) {
+    return new Command() {
+      double startAngle;
+      double timer;
+
+      @Override
+      public void initialize() {
+        startAngle = getIntakeAngle();
+        timer = 0;
+        addRequirements(IntakeSubsystem.this);
+      }
+
+      @Override
+      public void execute() {
+        timer += 0.02; // periodic runs every 20ms
+        double t = MathUtil.clamp(timer / durationSeconds, 0, 1);
+        double interpolatedAngle = startAngle + t * (targetAngle - startAngle);
+        setIntakeAngle(interpolatedAngle);
+      }
+
+      @Override
+      public boolean isFinished() {
+        return timer >= durationSeconds && isAtAngle();
+      }
+    };
+  }
+
   /* ---------------- Pivot ---------------- */
 
   public void setIntakeAngle(double angleDeg) {
