@@ -55,6 +55,7 @@ import frc.robot.Robot;
 import frc.robot.Subsystems.vision.Vision;
 import frc.robot.Subsystems.vision.Vision.ObjectData;
 import frc.robot.Subsystems.vision.Vision.VisionMeasurement;
+import frc.robot.Util.AllianceFlipUtil;
 import swervelib.SwerveController;
 import swervelib.SwerveDrive;
 import swervelib.SwerveDriveTest;
@@ -479,7 +480,7 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   public Command driveToPoseObjAvoid(Pose2d pose, double finalVelocity) {
-    targetPose = pose; // Sets the global target pose
+    targetPose = AllianceFlipUtil.apply(pose); // Sets the global target pose
     targetFinalVelocityScalar = finalVelocity;
 
     if (targetPose == null)

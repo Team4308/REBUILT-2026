@@ -5,19 +5,31 @@
     "data": {
       "commands": [
         {
+          "type": "path",
+          "data": {
+            "pathName": "MID To Shoot"
+          }
+        },
+        {
           "type": "parallel",
           "data": {
             "commands": [
               {
-                "type": "path",
+                "type": "named",
                 "data": {
-                  "pathName": "Blue Left to Neutral"
+                  "name": "Shoot"
+                }
+              },
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 3.0
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "Intake and Shoot"
+                  "name": "Agitate"
                 }
               }
             ]
@@ -26,13 +38,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Blue Neu to Back"
+            "pathName": "MID Shoot To HP"
           }
         },
         {
-          "type": "named",
+          "type": "wait",
           "data": {
-            "name": "Shoot"
+            "waitTime": 3.0
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "HP to MID Shoot"
           }
         },
         {
@@ -40,36 +58,36 @@
           "data": {
             "commands": [
               {
-                "type": "path",
+                "type": "named",
                 "data": {
-                  "pathName": "Blue Left to Neutral"
+                  "name": "Shoot"
+                }
+              },
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 5.0
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "Intake and Shoot"
+                  "name": "Agitate"
                 }
               }
             ]
           }
         },
         {
-          "type": "path",
-          "data": {
-            "pathName": "Blue Neu to Back"
-          }
-        },
-        {
           "type": "named",
           "data": {
-            "name": "Shoot"
+            "name": "Move Away"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": "Starting Left",
+  "folder": "Starting Mid",
   "choreoAuto": false
 }

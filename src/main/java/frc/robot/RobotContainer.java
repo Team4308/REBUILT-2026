@@ -8,6 +8,7 @@ import com.pathplanner.lib.auto.NamedCommands;
 import ca.team4308.absolutelib.control.RazerWrapper;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -112,6 +113,9 @@ public class RobotContainer {
 
         public void configureNamedCommands() {
                 NamedCommands.registerCommand("Shoot", new ShootCommand(m_IndexerSubsystem));
+                NamedCommands.registerCommand("Move Away", drivebase.driveToPoseObjAvoid(
+                                () -> new Pose2d(3.5, 4, new Rotation2d(Units.degreesToRadians(180)))));
+                NamedCommands.registerCommand("Agitate", m_IntakeSubsystem.agitate());
         }
 
         public Command getTestCommand() {

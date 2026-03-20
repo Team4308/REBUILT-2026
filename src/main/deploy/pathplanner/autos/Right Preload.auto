@@ -5,46 +5,46 @@
     "data": {
       "commands": [
         {
+          "type": "path",
+          "data": {
+            "pathName": "Right Preload"
+          }
+        },
+        {
           "type": "parallel",
           "data": {
             "commands": [
               {
-                "type": "path",
+                "type": "named",
                 "data": {
-                  "pathName": "Blue Mid to Neu"
+                  "name": "Agitate"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "Intake and Shoot"
+                  "name": "Shoot"
+                }
+              },
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 3.0
                 }
               }
             ]
           }
         },
         {
-          "type": "path",
-          "data": {
-            "pathName": null
-          }
-        },
-        {
           "type": "named",
           "data": {
-            "name": "Shoot"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": null
+            "name": "Move Away"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": null,
+  "folder": "Starting Right",
   "choreoAuto": false
 }
