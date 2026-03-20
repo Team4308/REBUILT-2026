@@ -118,6 +118,10 @@ public class RobotContainer {
 
         public void configureNamedCommands() {
                 NamedCommands.registerCommand("Shoot", new ShootCommand(m_IndexerSubsystem));
+                NamedCommands.registerCommand("Shoot Agitate J",
+                                new ShootAndAgitateJ(m_IntakeSubsystem, m_IndexerSubsystem));
+                NamedCommands.registerCommand("Shoot Agitate 254",
+                                new ShootAndAgitate254(m_IntakeSubsystem, m_IndexerSubsystem));
                 NamedCommands.registerCommand("Move Away", drivebase.driveToPoseObjAvoid(
                                 () -> new Pose2d(3.5, 4, new Rotation2d(Units.degreesToRadians(180)))));
                 NamedCommands.registerCommand("Agitate", m_IntakeSubsystem.agitate());
