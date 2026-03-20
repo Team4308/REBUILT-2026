@@ -112,13 +112,7 @@ public class AimHoodAndTurret extends Command {
 
     private void hubAim() {
         Pose2d pose = m_swervePose.get();
-        Pose2d estimatedPose = m_swervePose.get();
         ChassisSpeeds robotRelativeVelocity = m_swerveVelocity.get();
-        estimatedPose = estimatedPose.exp(
-                new Twist2d(
-                        robotRelativeVelocity.vxMetersPerSecond * 0.03,
-                        robotRelativeVelocity.vyMetersPerSecond * 0.03,
-                        robotRelativeVelocity.omegaRadiansPerSecond * 0.03));
         Rotation2d rot = pose.getRotation();
 
         // Transform shooter offset from robot-relative to field-relative
@@ -127,23 +121,47 @@ public class AimHoodAndTurret extends Command {
         double shooterX = pose.getX() + worldOffsetX;
         double shooterY = pose.getY() + worldOffsetY;
 
+        // Convert robot-relative velocity to field-relative
+        double vxField = robotRelativeVelocity.vxMetersPerSecond * rot.getCos()
+                - robotRelativeVelocity.vyMetersPerSecond * rot.getSin();
+        double vyField = robotRelativeVelocity.vxMetersPerSecond * rot.getSin()
+                + robotRelativeVelocity.vyMetersPerSecond * rot.getCos();
+
         // Get the hub target (flipped for correct alliance)
         Translation2d hubTranslation = AllianceFlipUtil.apply(FieldConstants.Hub.topCenterPoint.toTranslation2d());
 
-        // Distance from shooter to hub
-        double dx = hubTranslation.getX() - shooterX;
-        double dy = hubTranslation.getY() - shooterY;
-        double distance = Math.hypot(dx, dy);
-        Logger.recordOutput("Distnace", distance);
+        // Static distance (no lookahead) — for logging
+        double dx0 = hubTranslation.getX() - shooterX;
+        double dy0 = hubTranslation.getY() - shooterY;
+        double staticDistance = Math.hypot(dx0, dy0);
 
-        // Turret angle
-        double fieldAngleDeg = Math.toDegrees(Math.atan2(dy, dx));
+        // --- Iterative shoot-on-the-move solve ---
+        // Each iteration: use current TOF estimate → project shooter forward →
+        // recompute distance → recompute TOF
+        double lookaheadShooterX = shooterX;
+        double lookaheadShooterY = shooterY;
+        double lookaheadDistance = staticDistance;
+        double timeOfFlight = timeOfFlightMap.get(staticDistance);
+
+        for (int i = 0; i < 20; i++) {
+            timeOfFlight = timeOfFlightMap.get(lookaheadDistance);
+            lookaheadShooterX = shooterX + vxField * timeOfFlight;
+            lookaheadShooterY = shooterY + vyField * timeOfFlight;
+            double ldx = hubTranslation.getX() - lookaheadShooterX;
+            double ldy = hubTranslation.getY() - lookaheadShooterY;
+            lookaheadDistance = Math.hypot(ldx, ldy);
+        }
+
+        // Aim from the lookahead position, not the current position
+        double ldx = hubTranslation.getX() - lookaheadShooterX;
+        double ldy = hubTranslation.getY() - lookaheadShooterY;
+        double fieldAngleDeg = Math.toDegrees(Math.atan2(ldy, ldx));
         double turretAngleDeg = ((Rotation2d.fromDegrees(fieldAngleDeg).minus(rot).getDegrees()) % 360 + 540) % 360;
         m_TurretSubsystem.setTarget(turretAngleDeg);
 
-        // Hood and shooter lookup from distance
-        double hoodAngle = hoodAngleMap.get(distance);
-        double shooterRpm = flywheelSpeedMap.get(distance);
+        // Hood and shooter lookup from lookahead distance
+        double hoodAngle = hoodAngleMap.get(lookaheadDistance);
+        double shooterRpm = flywheelSpeedMap.get(lookaheadDistance);
 
         m_HoodSubsystem.setHoodAngle(hoodAngle);
         m_ShooterSubsystem.setTargetSpeed(shooterRpm);
@@ -151,11 +169,15 @@ public class AimHoodAndTurret extends Command {
         Logger.recordOutput("Commands/AimAtHub/Robot/Rot", rot.getDegrees());
         Logger.recordOutput("Commands/AimAtHub/Robot/X", shooterX);
         Logger.recordOutput("Commands/AimAtHub/Robot/Y", shooterY);
+        Logger.recordOutput("Commands/AimAtHub/Robot/VxField", vxField);
+        Logger.recordOutput("Commands/AimAtHub/Robot/VyField", vyField);
+        Logger.recordOutput("Commands/AimAtHub/Lookahead/X", lookaheadShooterX);
+        Logger.recordOutput("Commands/AimAtHub/Lookahead/Y", lookaheadShooterY);
+        Logger.recordOutput("Commands/AimAtHub/Lookahead/Distance", lookaheadDistance);
+        Logger.recordOutput("Commands/AimAtHub/Lookahead/TimeOfFlight", timeOfFlight);
         Logger.recordOutput("Commands/AimAtHub/Target/FieldDeg", fieldAngleDeg);
         Logger.recordOutput("Commands/AimAtHub/Target/TurretDeg", turretAngleDeg);
-        Logger.recordOutput("Commands/AimAtHub/Target/dX", dx);
-        Logger.recordOutput("Commands/AimAtHub/Target/dY", dy);
-        Logger.recordOutput("Commands/AimAtHub/Target/Distance", distance);
+        Logger.recordOutput("Commands/AimAtHub/Target/StaticDistance", staticDistance);
         Logger.recordOutput("Commands/AimAtHub/Target/HoodAngle", hoodAngle);
         Logger.recordOutput("Commands/AimAtHub/Target/ShooterRpm", shooterRpm);
     }

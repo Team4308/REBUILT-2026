@@ -17,12 +17,13 @@ public class ShootCommand extends Command {
 
     @Override
     public void initialize() {
-        m_subsystem.setIndexerVelocity(Constants.Indexer.DEFAULT_HOPPER_VELOCITY,
-                Constants.Indexer.DEFAULT_INDEXER_VELOCITY);
+
     }
 
     @Override
     public void execute() {
+        m_subsystem.setIndexerVelocity(Constants.Indexer.DEFAULT_HOPPER_VELOCITY,
+                Constants.Indexer.DEFAULT_INDEXER_VELOCITY);
     }
 
     @Override
