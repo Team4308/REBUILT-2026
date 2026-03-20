@@ -26,9 +26,9 @@ public class Shoot extends Command{
 
     @Override
     public void initialize() {
-        if (!fieldLocation.get().equals("AllianceZone")) {
-            trajectoryCalculations.setTargetSupplier(() -> target);
-        }
+        // if (!fieldLocation.get().equals("AllianceZone")) {
+        //     trajectoryCalculations.setTargetSupplier(() -> target);
+        // }
     }
 
     @Override
@@ -39,7 +39,7 @@ public class Shoot extends Command{
     @Override
     public void end(boolean interrupted) {
         m_IndexerSubsystem.stopMotors();
-        trajectoryCalculations.setTargetSupplier(() -> FieldLayout.ShooterTargets.getAllianceHub());
+        // trajectoryCalculations.setTargetSupplier(() -> FieldLayout.ShooterTargets.getAllianceHub());
     }
 
     @Override
