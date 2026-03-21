@@ -34,6 +34,8 @@ import frc.robot.Subsystems.vision.Vision;
 import swervelib.SwerveInputStream;
 
 public class RobotContainer {
+        private double speedModifier = 1.0;
+
         // Controllers
         final RazerWrapper driver = new RazerWrapper(0);
 
@@ -54,8 +56,8 @@ public class RobotContainer {
         private final SendableChooser<Command> autoChooser;
 
         SwerveInputStream driveAngularVelocity = SwerveInputStream.of(drivebase.getSwerveDrive(),
-                        () -> driver.getLeftY() * -1,
-                        () -> driver.getLeftX() * -1)
+                        () -> driver.getLeftY() * -1 * speedModifier,
+                        () -> driver.getLeftX() * -1 * speedModifier)
                         .withControllerRotationAxis(() -> driver.getRightX())
                         .deadband(Constants.OperatorConstants.DEADBAND)
                         .scaleTranslation(1.0)
@@ -118,6 +120,15 @@ public class RobotContainer {
                                 0, new Rotation2d()))));
 
                 driver.M2.onTrue(m_HoodSubsystem.resetHoodCommand());
+
+                driver.RB.onTrue(Commands.runOnce(() -> speedModifier = 0.5));
+                driver.RB.onFalse(Commands.runOnce(() -> speedModifier = 1.0));
+                driver.LB.onTrue(Commands.runOnce(() -> speedModifier = 0.5));
+                driver.LB.onFalse(Commands.runOnce(() -> speedModifier = 1.0));
+                driver.LeftTrigger.onTrue(Commands.runOnce(() -> speedModifier = 0.5));
+                driver.LeftTrigger.onFalse(Commands.runOnce(() -> speedModifier = 1.0));
+                driver.RightTrigger.onTrue(Commands.runOnce(() -> speedModifier = 0.5));
+                driver.RightTrigger.onFalse(Commands.runOnce(() -> speedModifier = 1.0));
         }
 
         public void configureNamedCommands() {
