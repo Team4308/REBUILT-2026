@@ -34,7 +34,7 @@ public class ShooterSubsystem extends SubsystemBase {
     public double bottomMultiplier;
     public double topMultiplier;
 
-    private double m_targetRPM = 0;
+    private double m_targetRPM = 0.0;
 
     private final SubsystemVerbosity verbosity;
 
@@ -73,6 +73,7 @@ public class ShooterSubsystem extends SubsystemBase {
         verbosity = SubsystemVerbosity.HIGH;
 
         this.enabled = enabled;
+        setTargetSpeed(2800.0);
     }
 
     public void setTargetVoltage(double voltage) {

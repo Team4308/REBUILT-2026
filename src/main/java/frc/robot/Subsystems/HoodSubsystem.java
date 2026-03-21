@@ -25,7 +25,8 @@ import frc.robot.Util.SubsystemVerbosity;
 public class HoodSubsystem extends SubsystemBase {
     private final TalonFX m_hoodMotor = new TalonFX(Ports.Shooting.Hood.kHoodId);
 
-    private double targetAngle = Constants.Shooting.Hood.REVERSE_SOFT_LIMIT_ANGLE;
+    // private double targetAngle = Constants.Shooting.Hood.REVERSE_SOFT_LIMIT_ANGLE;
+    private double targetAngle = 12.5;
 
     private double angleOffset = Constants.Shooting.Hood.REVERSE_SOFT_LIMIT_ANGLE;
 
