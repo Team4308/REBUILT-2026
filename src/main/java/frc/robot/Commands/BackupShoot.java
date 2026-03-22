@@ -32,48 +32,19 @@ public class BackupShoot extends Command {
         this.m_TurretSubsystem = m_TurretSubsystem;
         this.m_ShooterSubsystem = m_ShooterSubsystem;
         this.m_drivebase = m_driveBase;
+
+        addRequirements(m_HoodSubsystem, m_TurretSubsystem, m_ShooterSubsystem);
     }
 
     @Override
     public void initialize() {
-        m_HoodSubsystem.setHoodAngle(13.2);
+        m_HoodSubsystem.setHoodAngle(12.5);
         m_ShooterSubsystem.setTargetSpeed(2800);
+        m_TurretSubsystem.setTarget(360);
     }
 
     @Override
     public void execute() {
-        Pose2d pose = m_drivebase.getPose();
-
-        Rotation2d rot = pose.getRotation();
-
-        // Transform shooter offset from robot-relative to field-relative
-        double worldOffsetX = shooterOffset.getX() * rot.getCos() - shooterOffset.getY() * rot.getSin();
-        double worldOffsetY = shooterOffset.getX() * rot.getSin() + shooterOffset.getY() * rot.getCos();
-        double shooterX = pose.getX() + worldOffsetX;
-        double shooterY = pose.getY() + worldOffsetY;
-
-        // Get the hub target (flipped for correct alliance)
-        Translation2d hubTranslation = AllianceFlipUtil.apply(FieldConstants.Hub.topCenterPoint.toTranslation2d());
-
-        // Distance from shooter to hub
-        double dx = hubTranslation.getX() - shooterX;
-        double dy = hubTranslation.getY() - shooterY;
-        double distance = Math.hypot(dx, dy);
-        Logger.recordOutput("Distnace", distance);
-
-        // Turret angle
-        double fieldAngleDeg = Math.toDegrees(Math.atan2(dy, dx));
-        double turretAngleDeg = ((Rotation2d.fromDegrees(fieldAngleDeg).minus(rot).getDegrees()) % 360 + 540) % 360;
-        m_TurretSubsystem.setTarget(360);
-
-        Logger.recordOutput("Commands/AimAtHub/Robot/Rot", rot.getDegrees());
-        Logger.recordOutput("Commands/AimAtHub/Robot/X", shooterX);
-        Logger.recordOutput("Commands/AimAtHub/Robot/Y", shooterY);
-        Logger.recordOutput("Commands/AimAtHub/Target/FieldDeg", fieldAngleDeg);
-        Logger.recordOutput("Commands/AimAtHub/Target/TurretDeg", turretAngleDeg);
-        Logger.recordOutput("Commands/AimAtHub/Target/dX", dx);
-        Logger.recordOutput("Commands/AimAtHub/Target/dY", dy);
-        Logger.recordOutput("Commands/AimAtHub/Target/Distance", distance);
     }
 
     @Override
