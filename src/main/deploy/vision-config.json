@@ -18,7 +18,7 @@
             "streamType": "PHOTON",
             "enabled": true,
             "transform": { "x": -9.549, "y": 8.925, "z": 9.39, "roll": 0.0, "pitch": -65, "yaw": -45.0 },
-            "resolution": { "width": 480, "height": 320, "fov": 70.0 }
+            "resolution": { "width": 320, "height": 240, "fov": 70.0 }
         },
         {
             "name": "TagCam_BackRight",
@@ -26,7 +26,7 @@
             "streamType": "PHOTON",
             "enabled": true,
             "transform": { "x": -12.375306, "y": -5.841, "z": 9.564, "roll": 0.0, "pitch": -65, "yaw": 45.0 },
-            "resolution": { "width": 800, "height": 600, "fov": 70.0 }
+            "resolution": { "width": 640, "height": 480, "fov": 70.0 }
         },
         {
             "name": "TagCam_FrontRight",
