@@ -36,8 +36,8 @@ public class BackupShoot extends Command {
 
     @Override
     public void initialize() {
-        m_HoodSubsystem.setHoodAngle(0); // TODO: FIND THESE VALUES
-        m_ShooterSubsystem.setTargetSpeed(0);
+        m_HoodSubsystem.setHoodAngle(13.2);
+        m_ShooterSubsystem.setTargetSpeed(2800);
     }
 
     @Override
@@ -64,7 +64,7 @@ public class BackupShoot extends Command {
         // Turret angle
         double fieldAngleDeg = Math.toDegrees(Math.atan2(dy, dx));
         double turretAngleDeg = ((Rotation2d.fromDegrees(fieldAngleDeg).minus(rot).getDegrees()) % 360 + 540) % 360;
-        m_TurretSubsystem.setTarget(turretAngleDeg);
+        m_TurretSubsystem.setTarget(360);
 
         Logger.recordOutput("Commands/AimAtHub/Robot/Rot", rot.getDegrees());
         Logger.recordOutput("Commands/AimAtHub/Robot/X", shooterX);
