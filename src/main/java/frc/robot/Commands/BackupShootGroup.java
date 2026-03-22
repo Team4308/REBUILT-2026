@@ -10,7 +10,6 @@ public class BackupShootGroup extends SequentialCommandGroup {
     public BackupShootGroup(HoodSubsystem m_HoodSubsystem, TurretSubsystem m_TurretSubsystem,
             ShooterSubsystem m_ShooterSubsystem, SwerveSubsystem m_drivebase) {
         addCommands(
-                new DriveDistanceAwayFromHub(m_drivebase, () -> 1.6), // TODO: TUne THIS
-                new BackupShoot(m_HoodSubsystem, m_TurretSubsystem, m_ShooterSubsystem, m_drivebase));
+                new BackupShoot(m_HoodSubsystem, m_TurretSubsystem, m_ShooterSubsystem));
     }
 }

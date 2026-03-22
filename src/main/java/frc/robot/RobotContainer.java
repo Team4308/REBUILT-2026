@@ -110,8 +110,7 @@ public class RobotContainer {
                 driver.RB.whileTrue(new ShootCommand(m_IndexerSubsystem));
                 driver.LB.whileTrue(new ShootCommand(m_IndexerSubsystem));
 
-                driver.X.whileTrue(new BackupShoot(m_HoodSubsystem, m_TurretSubsystem, m_ShooterSubsystem,
-                                drivebase));
+                driver.X.whileTrue(new BackupShoot(m_HoodSubsystem, m_TurretSubsystem, m_ShooterSubsystem));
 
                 driver.M1.onTrue(Commands.runOnce(() -> drivebase.resetOdometry(new Pose2d(0,
                                 0, new Rotation2d()))));
