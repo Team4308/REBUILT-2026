@@ -17,10 +17,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.Commands.AimEverything;
+import frc.robot.Commands.BackupShoot;
 import frc.robot.Commands.BackupShootGroup;
 import frc.robot.Commands.DefaultIntakeCommand;
-import frc.robot.Commands.MoveHoodCommand;
-import frc.robot.Commands.MoveTurretCommand;
 import frc.robot.Commands.ShootAndAgitate254;
 import frc.robot.Commands.ShootAndAgitateJ;
 import frc.robot.Commands.ShootCommand;
@@ -88,12 +87,12 @@ public class RobotContainer {
                                 new DefaultIntakeCommand(m_IntakeSubsystem, () -> driver.getRightTrigger(),
                                                 () -> Constants.Intake.ROLLER_INTAKE_RPM));
 
-                // m_TurretSubsystem.setDefaultCommand(
-                //                 new AimEverything(m_HoodSubsystem, m_ShooterSubsystem, m_TurretSubsystem,
-                //                                 () -> drivebase.getPose(), () -> drivebase.getRobotVelocity(),
-                //                                 drivebase,
-                //                                 () -> driver.RB.getAsBoolean() || driver.RightTrigger.getAsBoolean(),
-                //                                 () -> driver.LB.getAsBoolean() || driver.LeftTrigger.getAsBoolean()));
+                m_TurretSubsystem.setDefaultCommand(
+                                new AimEverything(m_HoodSubsystem, m_ShooterSubsystem, m_TurretSubsystem,
+                                                () -> drivebase.getPose(), () -> drivebase.getRobotVelocity(),
+                                                drivebase,
+                                                () -> driver.RB.getAsBoolean() || driver.RightTrigger.getAsBoolean(),
+                                                () -> driver.LB.getAsBoolean() || driver.LeftTrigger.getAsBoolean()));
 
                 configureNamedCommands();
                 configureBindings();
@@ -112,37 +111,20 @@ public class RobotContainer {
                 driver.RB.onTrue(m_ShooterSubsystem.setShooterSpeed(() -> 2800.));
                 driver.LB.whileTrue(new ShootCommand(m_IndexerSubsystem));
                 driver.LB.onTrue(m_ShooterSubsystem.setShooterSpeed(() -> 3600.));
-                // driver.RightTrigger.whileTrue(new ShootAndAgitateJ(m_IntakeSubsystem, m_IndexerSubsystem));
-                // driver.LeftTrigger.whileTrue(new ShootAndAgitate254(m_IntakeSubsystem, m_IndexerSubsystem));
 
-                driver.X.whileTrue(new BackupShootGroup(m_HoodSubsystem, m_TurretSubsystem, m_ShooterSubsystem,
+                driver.X.whileTrue(new BackupShoot(m_HoodSubsystem, m_TurretSubsystem, m_ShooterSubsystem,
                                 drivebase));
-
-                driver.M4.onTrue(new InstantCommand(() -> drivebase.lock()));
 
                 driver.M1.onTrue(Commands.runOnce(() -> drivebase.resetOdometry(new Pose2d(0,
                                 0, new Rotation2d()))));
 
                 driver.M2.onTrue(m_HoodSubsystem.resetHoodCommand());
+                driver.M2.onTrue(m_IntakeSubsystem.resetIntakeCommand());
 
-                // driver.RB.onTrue(Commands.runOnce(() -> speedModifier = 0.5));
-                // driver.RB.onFalse(Commands.runOnce(() -> speedModifier = 1.0));
-                // driver.LB.onTrue(Commands.runOnce(() -> speedModifier = 0.5));
-                // driver.LB.onFalse(Commands.runOnce(() -> speedModifier = 1.0));
-                // driver.LeftTrigger.onTrue(Commands.runOnce(() -> speedModifier = 0.5));
-                // driver.LeftTrigger.onFalse(Commands.runOnce(() -> speedModifier = 1.0));
-                // driver.RightTrigger.onTrue(Commands.runOnce(() -> speedModifier = 0.5));
-                // driver.RightTrigger.onFalse(Commands.runOnce(() -> speedModifier = 1.0));
-
-                // Manual Control
-                // driver.povUp.onTrue(new MoveHoodCommand(m_HoodSubsystem, () -> 2.5));
-                // driver.povDown.onTrue(new MoveHoodCommand(m_HoodSubsystem, () -> -2.5));
-
-                // driver.povRight.onTrue(new MoveTurretCommand(m_TurretSubsystem, () -> -5.));
-                // driver.povLeft.onTrue(new MoveTurretCommand(m_TurretSubsystem, () -> 5.));
-
-                // driver.Y.onTrue(new InstantCommand(() -> m_ShooterSubsystem.setTargetSpeed(m_ShooterSubsystem.getTargetRPM()+300)));
-                // driver.A.onTrue(new InstantCommand(() -> m_ShooterSubsystem.setTargetSpeed(m_ShooterSubsystem.getTargetRPM()-300)));
+                driver.RB.onTrue(Commands.runOnce(() -> speedModifier = 0.5));
+                driver.RB.onFalse(Commands.runOnce(() -> speedModifier = 1.0));
+                driver.LB.onTrue(Commands.runOnce(() -> speedModifier = 0.5));
+                driver.LB.onFalse(Commands.runOnce(() -> speedModifier = 1.0));
         }
 
         public void configureNamedCommands() {
