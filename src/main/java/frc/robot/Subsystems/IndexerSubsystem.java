@@ -1,19 +1,14 @@
 package frc.robot.Subsystems;
 
-import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.configs.Slot1Configs;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.signals.InvertedValue;
-import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.robot.Constants;
@@ -61,13 +56,13 @@ public class IndexerSubsystem extends SubsystemBase {
         // m_hopperMotor2.setControl(new Follower(m_hopperMotor1.getDeviceID(),
         // MotorAlignmentValue.Opposed));
 
-        // var slot1Configs = new Slot1Configs();
-        // slot1Configs.kS = Constants.Indexer.BALL_TUNNEL_Ks;
-        // slot1Configs.kV = Constants.Indexer.BALL_TUNNEL_Kv;
-        // slot1Configs.kP = Constants.Indexer.BALL_TUNNEL_Kp;
-        // slot1Configs.kI = Constants.Indexer.BALL_TUNNEL_Ki;
-        // slot1Configs.kD = Constants.Indexer.BALL_TUNNEL_Kd;
-        m_ballTunnelMotor.getConfigurator().apply(slot0Configs);
+        var slot1Configs = new Slot0Configs();
+        slot1Configs.kS = Constants.Indexer.BALL_TUNNEL_Ks;
+        slot1Configs.kV = Constants.Indexer.BALL_TUNNEL_Kv;
+        slot1Configs.kP = Constants.Indexer.BALL_TUNNEL_Kp;
+        slot1Configs.kI = Constants.Indexer.BALL_TUNNEL_Ki;
+        slot1Configs.kD = Constants.Indexer.BALL_TUNNEL_Kd;
+        m_ballTunnelMotor.getConfigurator().apply(slot1Configs);
 
         var motorConfigs2 = new MotorOutputConfigs();
         motorConfigs2.Inverted = InvertedValue.Clockwise_Positive;
@@ -80,49 +75,28 @@ public class IndexerSubsystem extends SubsystemBase {
         this.enabled = enabled;
     }
 
-    public void setHopperVelocity(double rpm) {
-        targetHopperVelocity = rpm;
-        targetBallTunnelVelocity = rpm;
-        double motorRPS = (rpm * Constants.Indexer.HOPPER_GEAR_RATIO) / 60.0;
-        double motorRPS2 = (rpm * Constants.Indexer.BALL_TUNNEL_GEAR_RATIO) / 60.0;
-        if (m_hopperMotor1.getTorqueCurrent().getValueAsDouble() > 120.0) {
-            timeout = Timer.getFPGATimestamp();
+    public void setIndexerVelocity(double rpmHopper, double rpmTunnel) {
+        targetHopperVelocity = rpmHopper;
+        targetBallTunnelVelocity = rpmTunnel;
+        if (!enabled) {
+            return;
         }
-        if (Timer.getFPGATimestamp() - timeout > 0.5) {
+        double motorRPS = (rpmHopper * Constants.Indexer.HOPPER_GEAR_RATIO) / 60.0;
+        double motorRPS2 = (rpmTunnel * Constants.Indexer.BALL_TUNNEL_GEAR_RATIO) / 60.0;
+        System.out.println(m_hopperMotor1.getTorqueCurrent().getValueAsDouble());
+        if (m_hopperMotor1.getTorqueCurrent().getValueAsDouble() > 120) {
+            timeout = Timer.getFPGATimestamp();
+            System.out.println("DETECTED");
+        }
+        if (Timer.getFPGATimestamp() - timeout > 0.1) {
             m_hopperMotor1.setControl(m_hopperRequest.withVelocity(motorRPS));
             m_hopperMotor2.setControl(m_hopperRequest.withVelocity(motorRPS));
-            m_ballTunnelMotor.setControl(m_hopperRequest.withVelocity(motorRPS));
         } else {
-            m_hopperMotor1.setControl(m_hopperRequest.withVelocity(-5.0));
-            m_hopperMotor2.setControl(m_hopperRequest.withVelocity(-5.0));
-            m_ballTunnelMotor.setControl(m_hopperRequest.withVelocity(-5.0));
+            System.out.println("REVERSING");
+            m_hopperMotor1.setControl(m_hopperRequest.withVelocity(-10.0));
+            m_hopperMotor2.setControl(m_hopperRequest.withVelocity(-10.0));
         }
-        // m_hopperMotor1.setVoltage(12);
-        // m_hopperMotor2.setVoltage(12);
-    }
-
-    public void setIndexerVelocity(double rpm) {
-        // targetBallTunnelVelocity = rpm;
-        // double motorRPS = (rpm * Constants.Indexer.BALL_TUNNEL_GEAR_RATIO) / 60.0;
-        // m_ballTunnelMotor.setControl(m_hopperRequest.withVelocity(10));
-        /*
-         * t;
-         * if (!enabled)
-         * return;
-         * double motorRPS = (rpm * Constants.Indexer.BALL_TUNNEL_GEAR_RATIO) / 60.0;
-         * m_ballTunnelMotor.setControl(m_indexerRequest.withVelocity(motorRPS));
-         */
-    }
-
-    public Command preLoadBalls() {
-        return run(() -> {
-            if (m_beambreak.get() && false) {
-                stopMotors();
-            } else {
-                setHopperVelocity(Constants.Indexer.PASSIVE_HOPEPR_VELOCITY);
-                setIndexerVelocity(Constants.Indexer.PASSIVE_INDEXER_VELOCITY);
-            }
-        });
+        m_ballTunnelMotor.setControl(m_indexerRequest.withVelocity(motorRPS2));
     }
 
     public void stopMotors() {

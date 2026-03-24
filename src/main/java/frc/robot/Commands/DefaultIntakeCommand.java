@@ -29,7 +29,7 @@ public class DefaultIntakeCommand extends Command {
     public void execute() {
         double control = this.controlPercent.get();
         m_subsystem.setIntakeAngle(DoubleUtils.mapRange(control, 0, 1, Constants.Intake.INTAKE_ANGLE_DEG,
-                Constants.Intake.RETRACTED_ANGLE_DEG));
+                Constants.Intake.RETRACTED_ANGLE_DEG - 15));
 
         m_subsystem.setRollerSpeed(() -> this.rollerSpeed.get());
     }

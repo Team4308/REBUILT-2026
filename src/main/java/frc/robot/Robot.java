@@ -7,8 +7,6 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 import com.pathplanner.lib.pathfinding.Pathfinding;
 
-import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.cscore.HttpCamera;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -36,17 +34,8 @@ public class Robot extends LoggedRobot {
 
     Logger.start(); // Start logging! No more data receivers, replay sources, or metadata values may
                     // be added.
-    Logger.start(); // Start logging! No more data receivers, replay sources, or metadata values may
-                    // be added.
 
     m_robotContainer = new RobotContainer();
-
-    HttpCamera backCamera = new HttpCamera(
-        "ExternalCam",
-        "http://10.43.8.11:1181", // is this right?
-        HttpCamera.HttpCameraKind.kMJPGStreamer);
-
-    CameraServer.startAutomaticCapture(backCamera);
   }
 
   @Override
@@ -58,8 +47,6 @@ public class Robot extends LoggedRobot {
     Logger.recordOutput("Ally Hub Active", GameData.isHubActive(false));
     Logger.recordOutput("Opposing Hub Active", GameData.isHubActive(true));
     Logger.recordOutput("Time To Next Phase", GameData.timeToNextPhase());
-
-    Logger.recordOutput("TrajectoryStuff", m_robotContainer.getTrajectoryCalculations().getNeededRPM());
   }
 
   @Override
@@ -110,7 +97,7 @@ public class Robot extends LoggedRobot {
   @Override
   public void testInit() {
     CommandScheduler.getInstance().cancelAll();
-    m_testCommand = m_robotContainer.getTestCommand();
+    // m_testCommand = m_robotContainer.getTestCommand();
 
     if (m_testCommand != null) {
       CommandScheduler.getInstance().schedule(m_testCommand);
@@ -129,8 +116,7 @@ public class Robot extends LoggedRobot {
   @Override
   public void simulationPeriodic() {
     FuelSim.getInstance().updateSim();
-    // Update Logger
-    // m_robotContainer.getTrajectoryCalculations().periodic();
+
     Logger.recordOutput("Moving Pose",
         new Pose3d(0, 0, 0, new Rotation3d(0, 2.0 * Math.sin(2 * Math.PI * Timer.getFPGATimestamp() / 3.0), 0)));
     Logger.recordOutput("Zeroed Pose", new Pose3d());

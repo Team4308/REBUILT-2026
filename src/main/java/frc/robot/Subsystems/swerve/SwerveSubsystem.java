@@ -55,6 +55,7 @@ import frc.robot.Robot;
 import frc.robot.Subsystems.vision.Vision;
 import frc.robot.Subsystems.vision.Vision.ObjectData;
 import frc.robot.Subsystems.vision.Vision.VisionMeasurement;
+import frc.robot.Util.AllianceFlipUtil;
 import swervelib.SwerveController;
 import swervelib.SwerveDrive;
 import swervelib.SwerveDriveTest;
@@ -156,8 +157,8 @@ public class SwerveSubsystem extends SubsystemBase {
     setupPathPlanner();
 
     // Initialize chooser
-    diagonalBumpChooser.setDefaultOption("Diagonal Bump Enabled", true);
-    diagonalBumpChooser.addOption("Diagonal Bump Disabled", false);
+    diagonalBumpChooser.setDefaultOption("Diagonal Bump Disabled", false);
+    diagonalBumpChooser.addOption("Diagonal Bump Enabled", true);
 
     // Put chooser on SmartDashboard
     SmartDashboard.putData("Diagonal Bump Mode", diagonalBumpChooser);
@@ -391,7 +392,7 @@ public class SwerveSubsystem extends SubsystemBase {
         .abs(getVelocityAsScalar() - 0.0) < Constants.Swerve.PathFinding.VELOCITY_TOLERANCE;
   }
 
-  private boolean isVelocityAligned() {
+  public boolean isVelocityAligned() {
     return Math
         .abs(getVelocityAsScalar() - targetFinalVelocityScalar) < Constants.Swerve.PathFinding.VELOCITY_TOLERANCE;
   }
@@ -479,7 +480,7 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   public Command driveToPoseObjAvoid(Pose2d pose, double finalVelocity) {
-    targetPose = pose; // Sets the global target pose
+    targetPose = AllianceFlipUtil.apply(pose); // Sets the global target pose
     targetFinalVelocityScalar = finalVelocity;
 
     if (targetPose == null)

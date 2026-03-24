@@ -2,18 +2,24 @@ package frc.robot;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
-
+import frc.robot.Util.SubsystemVerbosity;
 import swervelib.math.Matter;
 
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.path.PathConstraints;
 
+import ca.team4308.absolutelib.math.trajectories.TrajectorySolver;
+import ca.team4308.absolutelib.math.trajectories.shooter.ShotMode;
+
 public final class Constants {
-  public static final double ROBOT_MASS = Units.lbsToKilograms(140); // TODO: update this to match the wieght in
-                                                                     // physicalproperties.json
+  public static final double ROBOT_MASS = Units.lbsToKilograms(135);
+  public static final boolean disableHAL = false;
+  public static final double deltaTime = 0.02;
   public static final Matter CHASSIS = new Matter(
       new Translation3d(Units.inchesToMeters(0.4), Units.inchesToMeters(0.4), Units.inchesToMeters(7.2)),
       ROBOT_MASS);
@@ -75,73 +81,104 @@ public final class Constants {
       public static final int kRPMTolerance = 100;
       public static final double kPassingRPM = 3000.0;
 
-      public static final double kS = 0.4;
-      public static final double kV = 0.11;
-      public static final double kP = 0.0;
+      public static final double kS = 0.23;
+      public static final double kV = 0.12;
+      public static final double kP = 0.12;
       public static final double kI = 0.0;
       public static final double kD = 0.0;
     }
 
     public static final class Turret {
+      public static Transform3d robotToTurret = new Transform3d(0.1, 0, 0.3, Rotation3d.kZero);
       public final static double GEAR_RATIO_1 = (85. / 17.) * (40. / 31.);
       public final static double GEAR_RATIO_2 = (85. / 17.) * (40. / 33.);
       public final static double PERIOD = 1 / Math.abs(GEAR_RATIO_1 - GEAR_RATIO_2);
 
       public final static double GEAR_RATIO_MOTOR = (12.0 / 50.0) * (10.0 / 85.0);
-      public final static double STOPPED_VELOCITY = 0.1;
-      public final static double MIN_DEGREES = 90;
-      public final static double MAX_DEGREES = 500;
+      public final static double STOPPED_VELOCITY = 1.0;
+      public final static double MIN_DEGREES = 230;
+      public final static double MAX_DEGREES = 230 + 360;
       public final static double FULL_REVOLUTION_DEG = 360;
-      public final static double TURRET_TOLERANCE_DEGREES = 5;
+      public final static double TURRET_TOLERANCE_DEGREES = 0.5;
       public final static double TURRET_START_ANGLE = 360;
-      public final static double TURRET_OFFSET_ANGLE = -523.2; // only for CRT
+      public final static double TURRET_AIM_SIGN = -1.0; // +1 if turret rotates CCW for positive angles, -1 if opposite
 
-      public final static ArmFeedforward feedforward = new ArmFeedforward(0.24, 0, 0.0075, 0.01);
+      public final static ArmFeedforward feedforward = new ArmFeedforward(0.25, 0, 0.008, 0.0);
 
       public final static ProfiledPIDController pidController = new ProfiledPIDController(
-          0.035, 0.0, 0.0,
+          0.02, 0.0, 0.0,
+
           new TrapezoidProfile.Constraints(1500, 2000));
     }
 
     public static final class Hood {
-      public static final double TOLERANCE_DEGREES = 2.0; // Tolerance for position control
+      public static final double TOLERANCE_DEGREES = 1.0; // Tolerance for position control
       public static final double TOLERANCE_VELOCITY = 0.5;
       public static final double TOTAL_GEAR_RATIO = 120.4;
       public static final double FORWARD_SOFT_LIMIT_ANGLE = 42.5;
       public static final double REVERSE_SOFT_LIMIT_ANGLE = 7.5;
-      public static final double AMP_THRESHOLD = 2;
-      public final static ArmFeedforward feedforward = new ArmFeedforward(0.2, 0.0, 0.025, 0.0);
+
+      public static final double AMP_THRESHOLD = 1;
+      public final static ArmFeedforward feedforward = new ArmFeedforward(0.36, 0.0, 0.023, 0.0);
       public final static ProfiledPIDController pidController = new ProfiledPIDController(
-          0.005, 0.0, 0.0,
-          new TrapezoidProfile.Constraints(2000, 2000));
+          0.075, 0.0, 0.0,
+          new TrapezoidProfile.Constraints(500, 1500));
+
     }
 
     public static final class TrajectoryCalc {
-      // Rate-limiting
-      public static final double MIN_SOLVE_INTERVAL_MS = 250.0;
-      public static final double DISTANCE_CHANGE_THRESHOLD_M = 0.05;
-      public static final double YAW_CHANGE_THRESHOLD_DEG = 1.0;
+      public static final SubsystemVerbosity TRAJECTORY_VERBOSITY = SubsystemVerbosity.LOW; // Change for debugging
+      public static final TrajectorySolver.SolveMode REALTIME_SOLVER_MODE = TrajectorySolver.SolveMode.BISECTION; // Do
+                                                                                                                  // not
+                                                                                                                  // change
+      public static final TrajectorySolver.SolveMode SHOT_TABLE_GENERATION_MODE = TrajectorySolver.SolveMode.BISECTION; // Do
+                                                                                                                        // not
+                                                                                                                        // change
+      public static final ShotMode DEFAULT_SHOOTER_MODE = ShotMode.LOOKUP_WITH_SOLVER_FALLBACK; // pls leave this as
+                                                                                                // lookup with fallback,
+                                                                                                // it is much better
+                                                                                                // than the alternatives
+      public static final double MIN_TARGET_DISTANCE_METERS = 0.05;
+      public static final double VELOCITY_BUFFER_MULTIPLIER = 1.2;
+      public static final double RIM_CLEARANCE_METERS = 0.05;
+      public static final double MIN_ENTRY_ANGLE_DEGREES = 10.0;
+      public static final double DRAG_COMPENSATION_MULTIPLIER = 1.5;
+      public static final double MIN_SOLVE_INTERVAL_MS = 1.0;
+      public static final double DISTANCE_CHANGE_THRESHOLD_M = 0.0;
+      public static final double YAW_CHANGE_THRESHOLD_DEG = 0.1;
 
-      // Shooter geometry
+      public static final double MIN_PITCH_DEG = 47.5; // To Find this its 90 - Max (90 is the relative angle from the
+                                                       // horizontal plane) to Convert to the turret angles you need to
+                                                       // do 90 - Pitch
+      public static final double MAX_PITCH_DEG = 82.5; // To find this its 90 - Min
+
+      // Shooter geometry Change this to match CAD model
       public static final double SHOOTER_HEIGHT_M = 0.5;
       public static final double SHOOTER_OFFSET_X_M = 0.1;
       public static final double SHOOTER_OFFSET_Y_M = 0.1;
 
-      // Target
-      public static final double TARGET_RADIUS_M = 0.45;
+      // Target geometry Change this to match the actual target
+      public static final double TARGET_RADIUS_M = 1;
 
       // ShooterConfig
       public static final double MIN_RPM = 0.0;
       public static final double MAX_RPM = Shooter.kMaxRPM;
       public static final double RPM_TO_VELOCITY_FACTOR = 0.00532;
       public static final double MIN_DISTANCE_M = 0.5;
-      public static final double MAX_DISTANCE_M = 12.0;
+      public static final double MAX_DISTANCE_M = 999;
+      /**
+       * When close to the target, we cap the requested RPM so the shot doesn't
+       * overfly the goal. This is a safety override to keep the model producing
+       * realistic near-range values.
+       */
+      public static final double MAX_CLOSE_RANGE_DISTANCE_M = 2.0;
+      public static final double MAX_CLOSE_RANGE_RPM = 3400.0;
       public static final double RPM_FEEDBACK_THRESHOLD = 50.0;
       public static final double RPM_ABORT_THRESHOLD = 500.0;
-      public static final double PITCH_CORRECTION_PER_RPM_DEFICIT = 0.005; // Match ExampleShooter (was 0.05)
+      public static final double PITCH_CORRECTION_PER_RPM_DEFICIT = 0.005;
       public static final double MOVING_COMPENSATION_GAIN = 1.0;
       public static final int MOVING_ITERATIONS = 5;
-      public static final double SAFETY_MAX_EXIT_VELOCITY = 30.0; // Match ExampleShooter default
+      public static final double SAFETY_MAX_EXIT_VELOCITY = 100.0;
 
       // FlywheelConfig
       public static final double FLYWHEEL_DIAMETER_IN = 4.0;
@@ -153,20 +190,21 @@ public final class Constants {
 
   public static final class Intake {
     // Roller tuning
-    public static final double ROLLER_GEAR_RATIO = 1.0;
-    public static final double ROLLER_KP = 0.12;
+    public static final double ROLLER_GEAR_RATIO = 15.0 / 21.0;
+    public static final double ROLLER_KP = 0.115;
     public static final double ROLLER_KI = 0.0;
     public static final double ROLLER_KD = 0.0;
-    public static final double ROLLER_KV = 0.12;
+    public static final double ROLLER_KS = 0.23;
+    public static final double ROLLER_KV = 0.115;
 
     public static final double ROLLER_INTAKE_RPM = 4500.0;
 
     // Pivot geometry
     public static final double PIVOT_GEAR_RATIO = 81;
 
-    public static final ArmFeedforward feedforward = new ArmFeedforward(0.15, 0.15, 0.10, 0.0);
-    public static final ProfiledPIDController pidController = new ProfiledPIDController(0.1, 0.0, 0.02,
-        new TrapezoidProfile.Constraints(300, 600));
+    public static final ArmFeedforward feedforward = new ArmFeedforward(0.15, 0.15, 0.03, 0.0);
+    public static final ProfiledPIDController pidController = new ProfiledPIDController(0.3, 0.0, 0.0,
+        new TrapezoidProfile.Constraints(180, 360));
 
     // Angles
     public static final double RETRACTED_ANGLE_DEG = 127.0;
@@ -182,26 +220,28 @@ public final class Constants {
   }
 
   public static class Indexer {
-    public static double DEFAULT_INDEXER_VELOCITY = 300;
-    public static double DEFAULT_HOPPER_VELOCITY = 300;
+    public static double DEFAULT_INDEXER_VELOCITY = 2400;
+    public static double DEFAULT_HOPPER_VELOCITY = 6000;
 
-    public static double BALL_TUNNEL_GEAR_RATIO = 3 / 5;
-    public static double HOPPER_GEAR_RATIO = 1;
+    public static double BALL_TUNNEL_GEAR_RATIO = 3.0 / 5.0;
+    public static double HOPPER_GEAR_RATIO = 1.0;
 
-    public static double HOPPER_Ks = 0.5;
-    public static double HOPPER_Kv = 0.3;
-    public static double HOPPER_Kp = 0.3;
+    public static double HOPPER_Ks = 0.36;
+    public static double HOPPER_Kv = 0.12;
+    public static double HOPPER_Kp = 0.12;
     public static double HOPPER_Ki = 0;
     public static double HOPPER_Kd = 0;
 
-    public static double BALL_TUNNEL_Ks = 0.5;
-    public static double BALL_TUNNEL_Kv = 0.3;
-    public static double BALL_TUNNEL_Kp = 0.3;
+    public static double BALL_TUNNEL_Ks = 0.24;
+    public static double BALL_TUNNEL_Kv = 0.12;
+    public static double BALL_TUNNEL_Kp = 0.12;
     public static double BALL_TUNNEL_Ki = 0;
     public static double BALL_TUNNEL_Kd = 0;
 
+    public static double EJECT_CURRENT = 67.;
+
     public static double PASSIVE_INDEXER_VELOCITY = 3000;
-    public static double PASSIVE_HOPEPR_VELOCITY = 3000;
+    public static double PASSIVE_HOPEPR_VELOCITY = 6000;
   }
 
   public static class OperatorConstants {

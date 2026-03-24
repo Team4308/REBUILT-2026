@@ -1,5 +1,6 @@
 package frc.robot.Subsystems;
 
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.Logger;
@@ -33,7 +34,7 @@ public class ShooterSubsystem extends SubsystemBase {
     public double bottomMultiplier;
     public double topMultiplier;
 
-    private double m_targetRPM = 0;
+    private double m_targetRPM = 0.0;
 
     private final SubsystemVerbosity verbosity;
 
@@ -53,7 +54,8 @@ public class ShooterSubsystem extends SubsystemBase {
         m_leftConfiguration.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
         m_leftConfiguration.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
-        m_leftMotor.setControl(new Follower(m_rightMotor.getDeviceID(), MotorAlignmentValue.Opposed));
+        m_leftMotor.setControl(new Follower(m_rightMotor.getDeviceID(),
+                MotorAlignmentValue.Opposed));
 
         var slot0Configs = new Slot0Configs();
         slot0Configs.kS = Constants.Shooting.Shooter.kS;
@@ -71,6 +73,7 @@ public class ShooterSubsystem extends SubsystemBase {
         verbosity = SubsystemVerbosity.HIGH;
 
         this.enabled = enabled;
+        setTargetSpeed(2800.0);
     }
 
     public void setTargetVoltage(double voltage) {
@@ -79,8 +82,11 @@ public class ShooterSubsystem extends SubsystemBase {
 
     public void setTargetSpeed(double rpm) {
         m_targetRPM = rpm;
+        if (!enabled) {
+            return;
+        }
         m_rightMotor.setControl(m_velocityVoltage.withVelocity(rpm / 60.0));
-        m_leftMotor.setControl(m_velocityVoltage.withVelocity(-rpm / 60));
+        // m_leftMotor.setControl(m_velocityVoltage.withVelocity(-rpm / 60));
 
     }
 
@@ -95,8 +101,8 @@ public class ShooterSubsystem extends SubsystemBase {
         m_leftMotor.stopMotor();
     }
 
-    public Command setShooterSpeed(Supplier<Double> rpm) {
-        return run(() -> setTargetSpeed(rpm.get()));
+    public Command setShooterSpeed(DoubleSupplier rpm) {
+        return run(() -> setTargetSpeed(rpm.getAsDouble()));
     }
 
     public Command setShooterSpeed(Supplier<Double> rpm, double timeoutMs) {
