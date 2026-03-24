@@ -16,6 +16,7 @@ import edu.wpi.first.math.interpolation.InverseInterpolator;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Subsystems.HoodSubsystem;
+import frc.robot.Subsystems.IndexerSubsystem;
 import frc.robot.Subsystems.ShooterSubsystem;
 import frc.robot.Subsystems.TurretSubsystem;
 import frc.robot.Subsystems.swerve.SwerveSubsystem;
@@ -23,6 +24,7 @@ import frc.robot.Util.AllianceFlipUtil;
 import frc.robot.Util.FieldConstants;
 
 public class AimEverything extends Command {
+    private final IndexerSubsystem m_IndexerSubsystem;
     private final HoodSubsystem m_HoodSubsystem;
     private final ShooterSubsystem m_ShooterSubsystem;
     private final TurretSubsystem m_TurretSubsystem;
@@ -87,10 +89,12 @@ public class AimEverything extends Command {
     private Translation3d rightTarget = new Translation3d(2, 6, 0);
 
     public AimEverything(
+            IndexerSubsystem m_IndexerSubsystem,
             HoodSubsystem m_HoodSubsystem,
             ShooterSubsystem m_ShooterSubsystem,
             TurretSubsystem m_TurretSubsystem, Supplier<Pose2d> swervePose, Supplier<ChassisSpeeds> swerveVelocity,
             SwerveSubsystem m_s, BooleanSupplier joyRB, BooleanSupplier joyLB) {
+        this.m_IndexerSubsystem = m_IndexerSubsystem;
         this.m_HoodSubsystem = m_HoodSubsystem;
         this.m_ShooterSubsystem = m_ShooterSubsystem;
         this.m_TurretSubsystem = m_TurretSubsystem;
@@ -161,7 +165,9 @@ public class AimEverything extends Command {
         double hoodAngle = hoodAngleMap.get(lookaheadDistance);
         double shooterRpm = flywheelSpeedMap.get(lookaheadDistance);
 
-        m_HoodSubsystem.setHoodAngle(hoodAngle);
+        if (m_IndexerSubsystem.getTargetHopperVelocity() != 0.0) {
+            m_HoodSubsystem.setHoodAngle(hoodAngle);
+        }
         m_ShooterSubsystem.setTargetSpeed(shooterRpm);
 
         Logger.recordOutput("Commands/AimAtHub/Robot/Rot", rot.getDegrees());

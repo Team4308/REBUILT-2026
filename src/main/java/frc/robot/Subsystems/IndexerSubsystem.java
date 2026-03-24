@@ -84,17 +84,17 @@ public class IndexerSubsystem extends SubsystemBase {
         double motorRPS = (rpmHopper * Constants.Indexer.HOPPER_GEAR_RATIO) / 60.0;
         double motorRPS2 = (rpmTunnel * Constants.Indexer.BALL_TUNNEL_GEAR_RATIO) / 60.0;
         System.out.println(m_hopperMotor1.getTorqueCurrent().getValueAsDouble());
-        if (m_hopperMotor1.getTorqueCurrent().getValueAsDouble() > 120) {
+        if (m_hopperMotor1.getTorqueCurrent().getValueAsDouble() > Constants.Indexer.EJECT_CURRENT) {
             timeout = Timer.getFPGATimestamp();
             System.out.println("DETECTED");
         }
-        if (Timer.getFPGATimestamp() - timeout > 0.1) {
+        if (Timer.getFPGATimestamp() - timeout > Constants.Indexer.EJECT_SECONDS) {
             m_hopperMotor1.setControl(m_hopperRequest.withVelocity(motorRPS));
             m_hopperMotor2.setControl(m_hopperRequest.withVelocity(motorRPS));
         } else {
             System.out.println("REVERSING");
-            m_hopperMotor1.setControl(m_hopperRequest.withVelocity(-10.0));
-            m_hopperMotor2.setControl(m_hopperRequest.withVelocity(-10.0));
+            m_hopperMotor1.setControl(m_hopperRequest.withVelocity(Constants.Indexer.EJECT_SPEED));
+            m_hopperMotor2.setControl(m_hopperRequest.withVelocity(Constants.Indexer.EJECT_SPEED));
         }
         m_ballTunnelMotor.setControl(m_indexerRequest.withVelocity(motorRPS2));
     }

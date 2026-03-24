@@ -88,7 +88,7 @@ public class RobotContainer {
                                                 () -> Constants.Intake.ROLLER_INTAKE_RPM));
 
                 m_TurretSubsystem.setDefaultCommand(
-                                new AimEverything(m_HoodSubsystem, m_ShooterSubsystem, m_TurretSubsystem,
+                                new AimEverything(m_IndexerSubsystem, m_HoodSubsystem, m_ShooterSubsystem, m_TurretSubsystem,
                                                 () -> drivebase.getPose(), () -> drivebase.getRobotVelocity(),
                                                 drivebase,
                                                 () -> driver.RB.getAsBoolean() || driver.RightTrigger.getAsBoolean(),

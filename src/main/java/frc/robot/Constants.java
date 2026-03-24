@@ -238,10 +238,12 @@ public final class Constants {
     public static double BALL_TUNNEL_Ki = 0;
     public static double BALL_TUNNEL_Kd = 0;
 
-    public static double EJECT_CURRENT = 67.;
+    public static double EJECT_CURRENT = 120.0;
+    public static double EJECT_SECONDS = 0.1;
+    public static double EJECT_SPEED = -10.0;
 
     public static double PASSIVE_INDEXER_VELOCITY = 3000;
-    public static double PASSIVE_HOPEPR_VELOCITY = 6000;
+    public static double PASSIVE_HOPPER_VELOCITY = 6000;
   }
 
   public static class OperatorConstants {
