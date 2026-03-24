@@ -191,7 +191,9 @@ public class AimEverything extends Command {
         if (drivebase.getFieldLocation().equals("AllianceZone")) {
             hubAim();
         } else if (drivebase.getFieldLocation().equals("NeutralZone")) {
-            m_HoodSubsystem.setHoodAngle(42.5);
+            if (m_IndexerSubsystem.getTargetHopperVelocity() != 0.0) {
+                m_HoodSubsystem.setHoodAngle(42.5);
+            }
             m_ShooterSubsystem.setTargetSpeed(4000);
             if (joyLB.getAsBoolean()) {
                 aimAtPose(leftTarget);
@@ -199,7 +201,9 @@ public class AimEverything extends Command {
                 aimAtPose(rightTarget);
             }
         } else {
-            m_HoodSubsystem.setHoodAngle(42.5);
+            if (m_IndexerSubsystem.getTargetHopperVelocity() != 0.0) {
+                m_HoodSubsystem.setHoodAngle(42.5);
+            }
             m_ShooterSubsystem.setTargetSpeed(6000);
             if (joyLB.getAsBoolean()) {
                 aimAtPose(leftTarget);
