@@ -2,12 +2,16 @@ package frc.robot;
 
 import java.io.File;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 
 import ca.team4308.absolutelib.control.RazerWrapper;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
@@ -32,6 +36,8 @@ import frc.robot.Subsystems.Simulation;
 import frc.robot.Subsystems.TurretSubsystem;
 import frc.robot.Subsystems.swerve.SwerveSubsystem;
 import frc.robot.Subsystems.vision.Vision;
+import frc.robot.Util.AllianceFlipUtil;
+import frc.robot.Util.FieldConstants;
 import swervelib.SwerveInputStream;
 
 public class RobotContainer {
@@ -75,7 +81,7 @@ public class RobotContainer {
                 m_IndexerSubsystem = new IndexerSubsystem(true);
                 m_TurretSubsystem = new TurretSubsystem(true);
                 m_ShooterSubsystem = new ShooterSubsystem(true);
-                m_IntakeSubsystem = new IntakeSubsystem(true);
+                m_IntakeSubsystem = new IntakeSubsystem(false);
 
                 if (Robot.isSimulation())
                         m_Simulation = new Simulation(m_HoodSubsystem, m_IndexerSubsystem, m_IntakeSubsystem,
@@ -100,6 +106,36 @@ public class RobotContainer {
                 DriverStation.silenceJoystickConnectionWarning(true);
                 autoChooser = AutoBuilder.buildAutoChooser();
                 SmartDashboard.putData("Auto Chooser", autoChooser);
+        }
+
+        private static final Translation2d shooterOffset = new Translation2d(-0.16, 0.0);
+
+        public void periodic() {
+                Pose2d pose = drivebase.getPose();
+        ChassisSpeeds robotRelativeVelocity = drivebase.getRobotVelocity();
+        Rotation2d rot = pose.getRotation();
+
+        // Transform shooter offset from robot-relative to field-relative
+        double worldOffsetX = shooterOffset.getX() * rot.getCos() - shooterOffset.getY() * rot.getSin();
+        double worldOffsetY = shooterOffset.getX() * rot.getSin() + shooterOffset.getY() * rot.getCos();
+        double shooterX = pose.getX() + worldOffsetX;
+        double shooterY = pose.getY() + worldOffsetY;
+
+        // Convert robot-relative velocity to field-relative
+        double vxField = robotRelativeVelocity.vxMetersPerSecond * rot.getCos()
+                - robotRelativeVelocity.vyMetersPerSecond * rot.getSin();
+        double vyField = robotRelativeVelocity.vxMetersPerSecond * rot.getSin()
+                + robotRelativeVelocity.vyMetersPerSecond * rot.getCos();
+
+        // Get the hub target (flipped for correct alliance)
+        Translation2d hubTranslation = AllianceFlipUtil.apply(FieldConstants.Hub.topCenterPoint.toTranslation2d());
+
+        // Static distance (no lookahead) — for logging
+        double dx0 = hubTranslation.getX() - shooterX;
+        double dy0 = hubTranslation.getY() - shooterY;
+        double staticDistance = Math.hypot(dx0, dy0);
+
+        Logger.recordOutput("staticDistance", staticDistance);
         }
 
         private void configureBindings() {

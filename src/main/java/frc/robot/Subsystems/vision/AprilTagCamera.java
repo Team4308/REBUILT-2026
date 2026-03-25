@@ -92,7 +92,7 @@ public class AprilTagCamera {
 
         // High Accuracy Strategy
         if (cameraMatrix.isPresent() && distCoeffs.isPresent()) {
-            est = poseEstimator.estimateRioMultiTagPose(result, cameraMatrix.get(), distCoeffs.get());
+            est = poseEstimator.estimateCoprocMultiTagPose(result);
         }
 
         // Fallback Strategy
