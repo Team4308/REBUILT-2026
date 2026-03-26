@@ -199,7 +199,7 @@ public class AimEverything extends Command {
 
     @Override
     public void execute() {
-        if (drivebase.getFieldLocation().equals("NeutralZone")) { // TS FIX TS TODO AHH
+        if (drivebase.getFieldLocation().equals("AllianceZone")) {
             hubAim();
         } else if (drivebase.getFieldLocation().equals("NeutralZone")) {
             if (m_IndexerSubsystem.getTargetHopperVelocity() != 0.0) {

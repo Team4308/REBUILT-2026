@@ -1,5 +1,6 @@
 package frc.robot.Subsystems;
 
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.controls.VelocityVoltage;
@@ -13,10 +14,10 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.robot.Constants;
 import frc.robot.Ports;
+import frc.robot.Robot;
 import frc.robot.Util.SubsystemVerbosity;
 
 import org.littletonrobotics.junction.Logger;
-import org.opencv.core.Mat;
 
 public class IndexerSubsystem extends SubsystemBase {
 
@@ -46,6 +47,16 @@ public class IndexerSubsystem extends SubsystemBase {
         slot0Configs.kP = Constants.Indexer.HOPPER_Kp;
         slot0Configs.kI = Constants.Indexer.HOPPER_Ki;
         slot0Configs.kD = Constants.Indexer.HOPPER_Kd;
+
+        var limitConfigs = new CurrentLimitsConfigs();
+        limitConfigs.StatorCurrentLimit = 120;
+        limitConfigs.StatorCurrentLimitEnable = true;
+        limitConfigs.SupplyCurrentLimit = 60;
+        limitConfigs.SupplyCurrentLimitEnable = true;
+        m_hopperMotor1.getConfigurator().apply(limitConfigs);
+        m_hopperMotor2.getConfigurator().apply(limitConfigs);
+        m_ballTunnelMotor.getConfigurator().apply(limitConfigs);
+
         m_hopperMotor1.getConfigurator().apply(slot0Configs);
         m_hopperMotor2.getConfigurator().apply(slot0Configs);
 
@@ -71,7 +82,7 @@ public class IndexerSubsystem extends SubsystemBase {
         m_ballTunnelMotor.getConfigurator().apply(motorConfigs2);
         m_hopperMotor2.getConfigurator().apply(motorConfigs2);
 
-        verbosity = SubsystemVerbosity.HIGH;
+        verbosity = SubsystemVerbosity.LOW;
 
         this.enabled = enabled;
     }
@@ -84,16 +95,13 @@ public class IndexerSubsystem extends SubsystemBase {
         }
         double motorRPS = (rpmHopper * Constants.Indexer.HOPPER_GEAR_RATIO) / 60.0;
         double motorRPS2 = (rpmTunnel * Constants.Indexer.BALL_TUNNEL_GEAR_RATIO) / 60.0;
-        System.out.println(m_hopperMotor1.getTorqueCurrent().getValueAsDouble());
         if (m_hopperMotor1.getTorqueCurrent().getValueAsDouble() > Constants.Indexer.EJECT_CURRENT) {
             timeout = Timer.getFPGATimestamp();
-            System.out.println("DETECTED");
         }
-        if (Timer.getFPGATimestamp() - timeout > Constants.Indexer.EJECT_SECONDS) {
+        if (Timer.getFPGATimestamp() - timeout > Constants.Indexer.EJECT_SECONDS || Robot.isSimulation()) {
             m_hopperMotor1.setControl(m_hopperRequest.withVelocity(motorRPS));
             m_hopperMotor2.setControl(m_hopperRequest.withVelocity(motorRPS));
         } else {
-            System.out.println("REVERSING");
             m_hopperMotor1.setControl(m_hopperRequest.withVelocity(Constants.Indexer.EJECT_SPEED));
             m_hopperMotor2.setControl(m_hopperRequest.withVelocity(Constants.Indexer.EJECT_SPEED));
         }

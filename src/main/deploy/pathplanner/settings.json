@@ -8,9 +8,10 @@
     "Right"
   ],
   "autoFolders": [
-    "Starting Right",
+    "Simple Preloads",
     "Starting Left",
-    "Starting Mid"
+    "Starting Mid",
+    "Starting Right"
   ],
   "defaultMaxVel": 3.0,
   "defaultMaxAccel": 6.0,

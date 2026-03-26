@@ -4,6 +4,7 @@ import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.Logger;
 
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -59,13 +60,20 @@ public class TurretSubsystem extends SubsystemBase {
         driveConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         m_driveMotor.getConfigurator().apply(driveConfig);
 
+        var limitConfigs = new CurrentLimitsConfigs();
+        limitConfigs.StatorCurrentLimit = 120;
+        limitConfigs.StatorCurrentLimitEnable = true;
+        limitConfigs.SupplyCurrentLimit = 60;
+        limitConfigs.SupplyCurrentLimitEnable = true;
+        m_driveMotor.getConfigurator().apply(limitConfigs);
+
         if (Robot.isSimulation()) {
             pidController.setP(0.3);
             m_currentDegUnWrapped = Constants.Shooting.Turret.TURRET_START_ANGLE;
         }
         m_currentDegUnWrapped = Constants.Shooting.Turret.TURRET_START_ANGLE;
 
-        verbosity = SubsystemVerbosity.HIGH;
+        verbosity = SubsystemVerbosity.LOW;
         this.enabled = enabled;
         m_driveMotor.setPosition(0);
 
@@ -182,7 +190,7 @@ public class TurretSubsystem extends SubsystemBase {
 
     private Pose3d getTurretPose() {
         return new Pose3d(-0.1362075, 0, 0.3370134992,
-                new Rotation3d(0, 0, Math.toRadians(-getAngleWrapped())));
+                new Rotation3d(0, 0, Math.toRadians(getAngleWrapped())));
     }
 
     @Override

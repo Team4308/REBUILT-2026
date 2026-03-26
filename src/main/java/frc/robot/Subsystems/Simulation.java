@@ -137,8 +137,8 @@ public class Simulation extends SubsystemBase {
         fuelCount--;
 
         FuelSim.getInstance().launchFuel(
-                m_ShooterSubsystem.getTargetRPM() * 3.14 * 4 * 0.0254 / 60 * 0.7, // compression slow down and rpm
-                                                                                  // slow down
+                m_ShooterSubsystem.getTargetRPM() * 3.14 * 4 * 0.0254 / 60 * 0.85, // compression slow down and rpm
+                                                                                   // slow down
                 90 - m_HoodSubsystem.getHoodAngle(),
                 m_TurretSubsystem.getAngleWrapped(),
                 Units.inchesToMeters(10));

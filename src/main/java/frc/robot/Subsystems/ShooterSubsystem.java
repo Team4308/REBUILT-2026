@@ -5,6 +5,7 @@ import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.Logger;
 
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
@@ -70,7 +71,15 @@ public class ShooterSubsystem extends SubsystemBase {
         m_leftMotor.getConfigurator().apply(m_leftConfiguration);
         m_leftMotor.getConfigurator().apply(slot0Configs);
 
-        verbosity = SubsystemVerbosity.HIGH;
+        var limitConfigs = new CurrentLimitsConfigs();
+        limitConfigs.StatorCurrentLimit = 120;
+        limitConfigs.StatorCurrentLimitEnable = true;
+        limitConfigs.SupplyCurrentLimit = 60;
+        limitConfigs.SupplyCurrentLimitEnable = true;
+        m_leftMotor.getConfigurator().apply(limitConfigs);
+        m_rightMotor.getConfigurator().apply(limitConfigs);
+
+        verbosity = SubsystemVerbosity.LOW;
 
         this.enabled = enabled;
         setTargetSpeed(2800.0);

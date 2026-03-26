@@ -15,13 +15,13 @@ public class ShootCommand extends Command {
 
     @Override
     public void initialize() {
-
+        reachedTarget = false;
     }
 
     @Override
     public void execute() {
         if (!reachedTarget) {
-            m_subsystem.setIndexerVelocity(Constants.Indexer.DEFAULT_HOPPER_VELOCITY, 0);
+            m_subsystem.setIndexerVelocity(0, Constants.Indexer.DEFAULT_INDEXER_VELOCITY);
         } else {
             m_subsystem.setIndexerVelocity(Constants.Indexer.DEFAULT_HOPPER_VELOCITY,
                     Constants.Indexer.DEFAULT_INDEXER_VELOCITY);

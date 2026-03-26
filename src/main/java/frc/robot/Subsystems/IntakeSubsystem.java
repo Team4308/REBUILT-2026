@@ -49,10 +49,18 @@ public class IntakeSubsystem extends SubsystemBase {
   private boolean hopperExtended;
 
   public IntakeSubsystem(boolean enabled) {
-    verbosity = SubsystemVerbosity.HIGH;
+    verbosity = SubsystemVerbosity.LOW;
     m_pivotMotor.setPosition(0);
     configureRoller();
     pidController.reset(targetAngleDeg);
+
+    var limitConfigs = new CurrentLimitsConfigs();
+    limitConfigs.StatorCurrentLimit = 120;
+    limitConfigs.StatorCurrentLimitEnable = true;
+    limitConfigs.SupplyCurrentLimit = 60;
+    limitConfigs.SupplyCurrentLimitEnable = true;
+    m_rollerMotor.getConfigurator().apply(limitConfigs);
+    m_pivotMotor.getConfigurator().apply(limitConfigs);
 
     this.enabled = enabled;
 

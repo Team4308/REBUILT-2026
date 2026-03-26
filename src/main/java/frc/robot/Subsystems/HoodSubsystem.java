@@ -4,6 +4,7 @@ import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.Logger;
 
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -25,7 +26,8 @@ import frc.robot.Util.SubsystemVerbosity;
 public class HoodSubsystem extends SubsystemBase {
     private final TalonFX m_hoodMotor = new TalonFX(Ports.Shooting.Hood.kHoodId);
 
-    // private double targetAngle = Constants.Shooting.Hood.REVERSE_SOFT_LIMIT_ANGLE;
+    // private double targetAngle =
+    // Constants.Shooting.Hood.REVERSE_SOFT_LIMIT_ANGLE;
     private double targetAngle = 12.5;
 
     private double angleOffset = Constants.Shooting.Hood.REVERSE_SOFT_LIMIT_ANGLE;
@@ -45,10 +47,17 @@ public class HoodSubsystem extends SubsystemBase {
         talonFXConfigs.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         talonFXConfigs.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
+        var limitConfigs = new CurrentLimitsConfigs();
+        limitConfigs.StatorCurrentLimit = 120;
+        limitConfigs.StatorCurrentLimitEnable = true;
+        limitConfigs.SupplyCurrentLimit = 60;
+        limitConfigs.SupplyCurrentLimitEnable = true;
+        m_hoodMotor.getConfigurator().apply(limitConfigs);
+
         m_hoodMotor.getConfigurator().apply(talonFXConfigs);
         m_hoodMotor.setPosition(0);
 
-        verbosity = SubsystemVerbosity.HIGH;
+        verbosity = SubsystemVerbosity.LOW;
 
         if (Robot.isSimulation()) { // Brute force sim
             pidController.setP(1);
@@ -138,7 +147,7 @@ public class HoodSubsystem extends SubsystemBase {
         if (turretSupplier == null) {
             return new Pose3d();
         }
-        double turretYawRad = -Math.toRadians(turretSupplier.get());
+        double turretYawRad = Math.toRadians(turretSupplier.get());
         double offsetX = 0.109474;
         double offsetZ = 0.08255;
         double rotatedX = offsetX * Math.cos(turretYawRad);
