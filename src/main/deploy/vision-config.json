@@ -23,9 +23,14 @@
         {
             "name": "TagCam_BackRight",
             "type": "APRILTAG",
-            "streamType": "PHOTON",
+            "streamType": "PHOTON", 
             "enabled": true,
+<<<<<<< HEAD
             "transform": { "x": -5.840764, "y": -12.375306, "z": 9.564047, "roll": 0.0, "pitch": -25, "yaw": -135.0 },
+=======
+            "transform": {
+                "x": -5.840764, "y": -12.375306, "z": 9.564047, "roll": 0.0, "pitch": -25, "yaw": -135.0},
+>>>>>>> c66f5f537c2289416674ee638bb44dcef4c1fe3f
             "resolution": { "width": 640, "height": 480, "fov": 70.0 }
         },
         {
