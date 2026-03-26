@@ -47,33 +47,30 @@ public class AimEverything extends Command {
     static {
         // Key = distance (meters), Value = hood angle (degrees from horizontal)
         hoodAngleMap.put(1.3, 8.5);
-        hoodAngleMap.put(1.6, 13.2);
-        hoodAngleMap.put(1.9, 15.8);
-        hoodAngleMap.put(2.3, 16.);
-        hoodAngleMap.put(2.6, 16.3);
-        hoodAngleMap.put(2.9, 19.);
-        hoodAngleMap.put(3.3, 20.);
-        /*
-         * hoodAngleMap.put(3.6, 37.0);
-         * hoodAngleMap.put(3.9, 35.0);
-         * hoodAngleMap.put(4.3, 33.0);
-         * hoodAngleMap.put(4.6, 31.0);
-         */
+        hoodAngleMap.put(1.6, 12.5);
+        hoodAngleMap.put(1.9, 13.5);
+        hoodAngleMap.put(2.3, 14.5);
+        hoodAngleMap.put(2.6, 15.5);
+        hoodAngleMap.put(2.9, 16.5);
+        hoodAngleMap.put(3.3, 17.);
+        hoodAngleMap.put(3.6, 17.5);
+        hoodAngleMap.put(3.9, 18.0);
+        hoodAngleMap.put(4.3, 18.5);
+        hoodAngleMap.put(4.6,19.0);
 
         // Key = distance (meters), Value = shooter speed (RPM)
-        flywheelSpeedMap.put(1.3, 1750.0);// good
-        flywheelSpeedMap.put(1.6, 1780.0);// good
-        flywheelSpeedMap.put(1.9, 1850.0);
-        flywheelSpeedMap.put(2.3, 2050.0);
-        flywheelSpeedMap.put(2.6, 2200.0);
-        flywheelSpeedMap.put(2.9, 2300.0);
-        flywheelSpeedMap.put(3.3, 2400.0);
-        /*
-         * flywheelSpeedMap.put(3.6, 3900.0);
-         * flywheelSpeedMap.put(3.9, 4100.0);
-         * flywheelSpeedMap.put(4.3, 4300.0);
-         * flywheelSpeedMap.put(4.6, 4500.0);
-         */
+        flywheelSpeedMap.put(1.3, 1700.0);// good
+        flywheelSpeedMap.put(1.6, 1750.0);// good
+        flywheelSpeedMap.put(1.9, 1800.0);
+        flywheelSpeedMap.put(2.3, 1850.0);
+        flywheelSpeedMap.put(2.6, 1900.0);
+        flywheelSpeedMap.put(2.9, 1950.0);
+        flywheelSpeedMap.put(3.3, 2000.0);
+        flywheelSpeedMap.put(3.6, 2050.0);
+        flywheelSpeedMap.put(3.9, 2100.0);
+        flywheelSpeedMap.put(4.3, 2150.0);
+        flywheelSpeedMap.put(4.6, 2200.0);
+
 
         timeOfFlightMap.put(1.3, 0.76);
         timeOfFlightMap.put(1.6, 0.76);
@@ -159,13 +156,13 @@ public class AimEverything extends Command {
         double ldy = hubTranslation.getY() - lookaheadShooterY;
         double fieldAngleDeg = Math.toDegrees(Math.atan2(ldy, ldx));
         double turretAngleDeg = ((Rotation2d.fromDegrees(fieldAngleDeg).minus(rot).getDegrees()) % 360 + 540) % 360;
-        m_TurretSubsystem.setTarget(turretAngleDeg);
+        m_TurretSubsystem.setTarget(turretAngleDeg - 180);
 
         // Hood and shooter lookup from lookahead distance
         double hoodAngle = hoodAngleMap.get(lookaheadDistance);
         double shooterRpm = flywheelSpeedMap.get(lookaheadDistance);
 
-        if (m_IndexerSubsystem.getTargetHopperVelocity() != 0.0) {
+        if (m_IndexerSubsystem.getTargetHopperVelocity() != 0.0 || true) {
             m_HoodSubsystem.setHoodAngle(hoodAngle);
         }
         m_ShooterSubsystem.setTargetSpeed(shooterRpm);
@@ -188,7 +185,7 @@ public class AimEverything extends Command {
 
     @Override
     public void execute() {
-        if (drivebase.getFieldLocation().equals("AllianceZone")) {
+        if (drivebase.getFieldLocation().equals("AllianceZone") || true) {
             hubAim();
         } else if (drivebase.getFieldLocation().equals("NeutralZone")) {
             if (m_IndexerSubsystem.getTargetHopperVelocity() != 0.0) {

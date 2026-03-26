@@ -144,9 +144,9 @@ public class RobotContainer {
                 drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
 
                 driver.RB.whileTrue(new ShootCommand(m_IndexerSubsystem));
-                driver.RB.onTrue(m_ShooterSubsystem.setShooterSpeed(() -> 2800.));
+                // driver.RB.onTrue(m_ShooterSubsystem.setShooterSpeed(() -> 2800.));
                 driver.LB.whileTrue(new ShootCommand(m_IndexerSubsystem));
-                driver.LB.onTrue(m_ShooterSubsystem.setShooterSpeed(() -> 3600.));
+                // driver.LB.onTrue(m_ShooterSubsystem.setShooterSpeed(() -> 3600.));
 
                 driver.X.whileTrue(new BackupShoot(m_HoodSubsystem, m_TurretSubsystem, m_ShooterSubsystem,
                                 drivebase));
