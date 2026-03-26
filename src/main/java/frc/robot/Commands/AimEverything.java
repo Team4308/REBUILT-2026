@@ -15,6 +15,7 @@ import edu.wpi.first.math.interpolation.Interpolator;
 import edu.wpi.first.math.interpolation.InverseInterpolator;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants;
 import frc.robot.Subsystems.HoodSubsystem;
 import frc.robot.Subsystems.IndexerSubsystem;
 import frc.robot.Subsystems.ShooterSubsystem;
@@ -162,8 +163,10 @@ public class AimEverything extends Command {
         double hoodAngle = hoodAngleMap.get(lookaheadDistance);
         double shooterRpm = flywheelSpeedMap.get(lookaheadDistance);
 
-        if (m_IndexerSubsystem.getTargetHopperVelocity() != 0.0 || true) {
+        if (m_IndexerSubsystem.getTargetHopperVelocity() != 0.0) {
             m_HoodSubsystem.setHoodAngle(hoodAngle);
+        } else {
+            m_HoodSubsystem.setHoodAngle(Constants.Shooting.Hood.REVERSE_SOFT_LIMIT_ANGLE);
         }
         m_ShooterSubsystem.setTargetSpeed(shooterRpm);
 
@@ -185,11 +188,13 @@ public class AimEverything extends Command {
 
     @Override
     public void execute() {
-        if (drivebase.getFieldLocation().equals("AllianceZone") || true) {
+        if (drivebase.getFieldLocation().equals("AllianceZone")) {
             hubAim();
         } else if (drivebase.getFieldLocation().equals("NeutralZone")) {
             if (m_IndexerSubsystem.getTargetHopperVelocity() != 0.0) {
                 m_HoodSubsystem.setHoodAngle(42.5);
+            } else {
+                m_HoodSubsystem.setHoodAngle(Constants.Shooting.Hood.REVERSE_SOFT_LIMIT_ANGLE);
             }
             m_ShooterSubsystem.setTargetSpeed(4000);
             if (joyLB.getAsBoolean()) {
@@ -200,6 +205,8 @@ public class AimEverything extends Command {
         } else {
             if (m_IndexerSubsystem.getTargetHopperVelocity() != 0.0) {
                 m_HoodSubsystem.setHoodAngle(42.5);
+            } else {
+                m_HoodSubsystem.setHoodAngle(Constants.Shooting.Hood.REVERSE_SOFT_LIMIT_ANGLE);
             }
             m_ShooterSubsystem.setTargetSpeed(6000);
             if (joyLB.getAsBoolean()) {
