@@ -16,6 +16,7 @@ import frc.robot.Ports;
 import frc.robot.Util.SubsystemVerbosity;
 
 import org.littletonrobotics.junction.Logger;
+import org.opencv.core.Mat;
 
 public class IndexerSubsystem extends SubsystemBase {
 
@@ -113,6 +114,10 @@ public class IndexerSubsystem extends SubsystemBase {
 
     public double getTargetHopperVelocity() {
         return targetHopperVelocity;
+    }
+
+    public double getBallTunnelVelocity() {
+        return m_ballTunnelMotor.getVelocity().getValueAsDouble();
     }
 
     public boolean getBeambreak() {

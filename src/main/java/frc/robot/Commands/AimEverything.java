@@ -38,7 +38,7 @@ public class AimEverything extends Command {
 
     // Offset of the shooter/launcher from the robot center (match your
     // TurretConstants)
-    private static final Translation2d shooterOffset = new Translation2d(0.13, 0.0);
+    private static final Translation2d shooterOffset = new Translation2d(-0.16, 0.0);
 
     private static final InterpolatingTreeMap<Double, Double> hoodAngleMap = new InterpolatingTreeMap<>(
             InverseInterpolator.forDouble(), Interpolator.forDouble());
@@ -57,21 +57,26 @@ public class AimEverything extends Command {
         hoodAngleMap.put(3.6, 17.5);
         hoodAngleMap.put(3.9, 18.0);
         hoodAngleMap.put(4.3, 18.5);
-        hoodAngleMap.put(4.6,19.0);
+        hoodAngleMap.put(4.6, 19.0);
+        hoodAngleMap.put(4.9, 19.0);
+        hoodAngleMap.put(5.2, 19.5);
+        hoodAngleMap.put(4.5, 19.5);
 
         // Key = distance (meters), Value = shooter speed (RPM)
-        flywheelSpeedMap.put(1.3, 1700.0);// good
-        flywheelSpeedMap.put(1.6, 1750.0);// good
-        flywheelSpeedMap.put(1.9, 1800.0);
-        flywheelSpeedMap.put(2.3, 1850.0);
-        flywheelSpeedMap.put(2.6, 1900.0);
-        flywheelSpeedMap.put(2.9, 1950.0);
-        flywheelSpeedMap.put(3.3, 2000.0);
-        flywheelSpeedMap.put(3.6, 2050.0);
-        flywheelSpeedMap.put(3.9, 2100.0);
-        flywheelSpeedMap.put(4.3, 2150.0);
-        flywheelSpeedMap.put(4.6, 2200.0);
-
+        flywheelSpeedMap.put(1.3, 1700.0);
+        flywheelSpeedMap.put(1.6, 1750.0);
+        flywheelSpeedMap.put(1.9, 1780.0);
+        flywheelSpeedMap.put(2.3, 1830.0);
+        flywheelSpeedMap.put(2.6, 1890.0);
+        flywheelSpeedMap.put(2.9, 1980.0);
+        flywheelSpeedMap.put(3.3, 2080.0);
+        flywheelSpeedMap.put(3.6, 2160.0);
+        flywheelSpeedMap.put(3.9, 2200.0);
+        flywheelSpeedMap.put(4.3, 2240.0);
+        flywheelSpeedMap.put(4.6, 2280.0);
+        flywheelSpeedMap.put(4.9, 2320.);
+        flywheelSpeedMap.put(5.2, 2380.);
+        flywheelSpeedMap.put(4.5, 2450.);
 
         timeOfFlightMap.put(1.3, 0.76);
         timeOfFlightMap.put(1.6, 0.76);
@@ -79,8 +84,14 @@ public class AimEverything extends Command {
         timeOfFlightMap.put(2.5, 0.75);
         timeOfFlightMap.put(2.7, 0.9);
         timeOfFlightMap.put(3., 0.9);
-        timeOfFlightMap.put(3.3, 0.9);
-
+        timeOfFlightMap.put(3.3, 1.);
+        timeOfFlightMap.put(3.6, 1.);
+        timeOfFlightMap.put(3.9, 1.);
+        timeOfFlightMap.put(4.2, 1.1);
+        timeOfFlightMap.put(4.5, 1.1);
+        timeOfFlightMap.put(4.8, 1.15);
+        timeOfFlightMap.put(5.2, 1.2);
+        timeOfFlightMap.put(5.5, 1.25);
     }
 
     private Translation3d leftTarget = new Translation3d(2, 2, 0);
@@ -188,7 +199,7 @@ public class AimEverything extends Command {
 
     @Override
     public void execute() {
-        if (drivebase.getFieldLocation().equals("AllianceZone")) {
+        if (drivebase.getFieldLocation().equals("NeutralZone")) { // TS FIX TS TODO AHH
             hubAim();
         } else if (drivebase.getFieldLocation().equals("NeutralZone")) {
             if (m_IndexerSubsystem.getTargetHopperVelocity() != 0.0) {

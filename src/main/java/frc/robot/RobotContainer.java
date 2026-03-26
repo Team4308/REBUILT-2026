@@ -94,7 +94,8 @@ public class RobotContainer {
                                                 () -> Constants.Intake.ROLLER_INTAKE_RPM));
 
                 m_TurretSubsystem.setDefaultCommand(
-                                new AimEverything(m_IndexerSubsystem, m_HoodSubsystem, m_ShooterSubsystem, m_TurretSubsystem,
+                                new AimEverything(m_IndexerSubsystem, m_HoodSubsystem, m_ShooterSubsystem,
+                                                m_TurretSubsystem,
                                                 () -> drivebase.getPose(), () -> drivebase.getRobotVelocity(),
                                                 drivebase,
                                                 () -> driver.RB.getAsBoolean() || driver.RightTrigger.getAsBoolean(),
@@ -108,45 +109,13 @@ public class RobotContainer {
                 SmartDashboard.putData("Auto Chooser", autoChooser);
         }
 
-        private static final Translation2d shooterOffset = new Translation2d(-0.16, 0.0);
-
-        public void periodic() {
-                Pose2d pose = drivebase.getPose();
-        ChassisSpeeds robotRelativeVelocity = drivebase.getRobotVelocity();
-        Rotation2d rot = pose.getRotation();
-
-        // Transform shooter offset from robot-relative to field-relative
-        double worldOffsetX = shooterOffset.getX() * rot.getCos() - shooterOffset.getY() * rot.getSin();
-        double worldOffsetY = shooterOffset.getX() * rot.getSin() + shooterOffset.getY() * rot.getCos();
-        double shooterX = pose.getX() + worldOffsetX;
-        double shooterY = pose.getY() + worldOffsetY;
-
-        // Convert robot-relative velocity to field-relative
-        double vxField = robotRelativeVelocity.vxMetersPerSecond * rot.getCos()
-                - robotRelativeVelocity.vyMetersPerSecond * rot.getSin();
-        double vyField = robotRelativeVelocity.vxMetersPerSecond * rot.getSin()
-                + robotRelativeVelocity.vyMetersPerSecond * rot.getCos();
-
-        // Get the hub target (flipped for correct alliance)
-        Translation2d hubTranslation = AllianceFlipUtil.apply(FieldConstants.Hub.topCenterPoint.toTranslation2d());
-
-        // Static distance (no lookahead) — for logging
-        double dx0 = hubTranslation.getX() - shooterX;
-        double dy0 = hubTranslation.getY() - shooterY;
-        double staticDistance = Math.hypot(dx0, dy0);
-
-        Logger.recordOutput("staticDistance", staticDistance);
-        }
-
         private void configureBindings() {
                 Command driveFieldOrientedAnglularVelocity = drivebase.driveFieldOriented(driveAngularVelocity);
 
                 drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
 
                 driver.RB.whileTrue(new ShootCommand(m_IndexerSubsystem));
-                // driver.RB.onTrue(m_ShooterSubsystem.setShooterSpeed(() -> 2800.));
                 driver.LB.whileTrue(new ShootCommand(m_IndexerSubsystem));
-                // driver.LB.onTrue(m_ShooterSubsystem.setShooterSpeed(() -> 3600.));
 
                 driver.X.whileTrue(new BackupShoot(m_HoodSubsystem, m_TurretSubsystem, m_ShooterSubsystem,
                                 drivebase));

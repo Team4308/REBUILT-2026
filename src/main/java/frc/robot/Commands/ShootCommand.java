@@ -6,6 +6,7 @@ import frc.robot.Subsystems.IndexerSubsystem;
 
 public class ShootCommand extends Command {
     private final IndexerSubsystem m_subsystem;
+    private boolean reachedTarget = false;
 
     public ShootCommand(IndexerSubsystem subsystem) {
         m_subsystem = subsystem;
@@ -19,8 +20,16 @@ public class ShootCommand extends Command {
 
     @Override
     public void execute() {
-        m_subsystem.setIndexerVelocity(Constants.Indexer.DEFAULT_HOPPER_VELOCITY,
-                Constants.Indexer.DEFAULT_INDEXER_VELOCITY);
+        if (!reachedTarget) {
+            m_subsystem.setIndexerVelocity(Constants.Indexer.DEFAULT_HOPPER_VELOCITY, 0);
+        } else {
+            m_subsystem.setIndexerVelocity(Constants.Indexer.DEFAULT_HOPPER_VELOCITY,
+                    Constants.Indexer.DEFAULT_INDEXER_VELOCITY);
+        }
+
+        if (m_subsystem.getBallTunnelVelocity() > Constants.Indexer.DEFAULT_INDEXER_VELOCITY * 0.8) {
+            reachedTarget = true;
+        }
     }
 
     @Override
