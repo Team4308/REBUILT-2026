@@ -2,16 +2,12 @@ package frc.robot;
 
 import java.io.File;
 
-import org.littletonrobotics.junction.Logger;
-
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 
 import ca.team4308.absolutelib.control.RazerWrapper;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
@@ -22,7 +18,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.Commands.AimEverything;
 import frc.robot.Commands.BackupShoot;
-import frc.robot.Commands.BackupShootGroup;
 import frc.robot.Commands.DefaultIntakeCommand;
 import frc.robot.Commands.ShootAndAgitate254;
 import frc.robot.Commands.ShootAndAgitateJ;
@@ -36,13 +31,9 @@ import frc.robot.Subsystems.Simulation;
 import frc.robot.Subsystems.TurretSubsystem;
 import frc.robot.Subsystems.swerve.SwerveSubsystem;
 import frc.robot.Subsystems.vision.Vision;
-import frc.robot.Util.AllianceFlipUtil;
-import frc.robot.Util.FieldConstants;
 import swervelib.SwerveInputStream;
 
 public class RobotContainer {
-        private double speedModifier = 1.0;
-
         // Controllers
         final RazerWrapper driver = new RazerWrapper(0);
 
@@ -63,8 +54,8 @@ public class RobotContainer {
         private final SendableChooser<Command> autoChooser;
 
         SwerveInputStream driveAngularVelocity = SwerveInputStream.of(drivebase.getSwerveDrive(),
-                        () -> driver.getLeftY() * -1 * speedModifier,
-                        () -> driver.getLeftX() * -1 * speedModifier)
+                        () -> driver.getLeftY() * -1,
+                        () -> driver.getLeftX() * -1)
                         .withControllerRotationAxis(() -> driver.getRightX() * -1)
                         .deadband(Constants.OperatorConstants.DEADBAND)
                         .scaleTranslation(1.0)
@@ -81,7 +72,7 @@ public class RobotContainer {
                 m_IndexerSubsystem = new IndexerSubsystem(true);
                 m_TurretSubsystem = new TurretSubsystem(true);
                 m_ShooterSubsystem = new ShooterSubsystem(true);
-                m_IntakeSubsystem = new IntakeSubsystem(false);
+                m_IntakeSubsystem = new IntakeSubsystem(true);
 
                 if (Robot.isSimulation())
                         m_Simulation = new Simulation(m_HoodSubsystem, m_IndexerSubsystem, m_IntakeSubsystem,
@@ -98,8 +89,8 @@ public class RobotContainer {
                                                 m_TurretSubsystem,
                                                 () -> drivebase.getPose(), () -> drivebase.getRobotVelocity(),
                                                 drivebase,
-                                                () -> driver.RB.getAsBoolean() || driver.RightTrigger.getAsBoolean(),
-                                                () -> driver.LB.getAsBoolean() || driver.LeftTrigger.getAsBoolean()));
+                                                () -> driver.RB.getAsBoolean() || driver.M3.getAsBoolean(),
+                                                () -> driver.LB.getAsBoolean() || driver.M4.getAsBoolean()));
 
                 configureNamedCommands();
                 configureBindings();
@@ -117,7 +108,10 @@ public class RobotContainer {
                 driver.RB.whileTrue(new ShootCommand(m_IndexerSubsystem));
                 driver.LB.whileTrue(new ShootCommand(m_IndexerSubsystem));
 
-                driver.X.whileTrue(new BackupShoot(m_HoodSubsystem, m_TurretSubsystem, m_ShooterSubsystem,
+                driver.M3.onTrue(new ShootAndAgitate254(m_IntakeSubsystem, m_IndexerSubsystem));
+                driver.M4.onTrue(new ShootAndAgitateJ(m_IntakeSubsystem, m_IndexerSubsystem));
+
+                driver.Y.whileTrue(new BackupShoot(m_HoodSubsystem, m_TurretSubsystem, m_ShooterSubsystem,
                                 drivebase));
 
                 driver.M1.onTrue(Commands.runOnce(() -> drivebase.resetOdometry(new Pose2d(0,
@@ -125,11 +119,6 @@ public class RobotContainer {
 
                 driver.M2.onTrue(m_HoodSubsystem.resetHoodCommand());
                 driver.M2.onTrue(m_IntakeSubsystem.resetIntakeCommand());
-
-                driver.RB.onTrue(Commands.runOnce(() -> speedModifier = 0.5));
-                driver.RB.onFalse(Commands.runOnce(() -> speedModifier = 1.0));
-                driver.LB.onTrue(Commands.runOnce(() -> speedModifier = 0.5));
-                driver.LB.onFalse(Commands.runOnce(() -> speedModifier = 1.0));
         }
 
         public void configureNamedCommands() {
@@ -141,6 +130,8 @@ public class RobotContainer {
                 NamedCommands.registerCommand("Move Away", drivebase.driveToPoseObjAvoid(
                                 () -> new Pose2d(3.5, 4, new Rotation2d(Units.degreesToRadians(180)))));
                 NamedCommands.registerCommand("Agitate", m_IntakeSubsystem.agitate());
+                NamedCommands.registerCommand("Extend Intake", new InstantCommand(
+                                () -> m_IntakeSubsystem.setIntakeAngle(Constants.Intake.INTAKE_ANGLE_DEG)));
         }
 
         public Command getTestCommand() {

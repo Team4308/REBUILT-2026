@@ -72,26 +72,26 @@ public class AimEverything extends Command {
         flywheelSpeedMap.put(3.3, 2080.0);
         flywheelSpeedMap.put(3.6, 2160.0);
         flywheelSpeedMap.put(3.9, 2200.0);
-        flywheelSpeedMap.put(4.3, 2240.0);
-        flywheelSpeedMap.put(4.6, 2280.0);
-        flywheelSpeedMap.put(4.9, 2320.);
-        flywheelSpeedMap.put(5.2, 2380.);
-        flywheelSpeedMap.put(4.5, 2450.);
+        flywheelSpeedMap.put(4.3, 2300.0);
+        flywheelSpeedMap.put(4.6, 2330.0);
+        flywheelSpeedMap.put(4.9, 23800.);
+        flywheelSpeedMap.put(5.2, 2420.);
+        flywheelSpeedMap.put(5.5, 2480.);
 
-        timeOfFlightMap.put(1.3, 0.76);
-        timeOfFlightMap.put(1.6, 0.76);
-        timeOfFlightMap.put(2.2, 0.96);
-        timeOfFlightMap.put(2.5, 0.75);
-        timeOfFlightMap.put(2.7, 0.9);
-        timeOfFlightMap.put(3., 0.9);
-        timeOfFlightMap.put(3.3, 1.);
-        timeOfFlightMap.put(3.6, 1.);
-        timeOfFlightMap.put(3.9, 1.);
-        timeOfFlightMap.put(4.2, 1.1);
-        timeOfFlightMap.put(4.5, 1.1);
-        timeOfFlightMap.put(4.8, 1.15);
-        timeOfFlightMap.put(5.2, 1.2);
-        timeOfFlightMap.put(5.5, 1.25);
+        timeOfFlightMap.put(1.3, 0.8);
+        timeOfFlightMap.put(1.6, 0.9);
+        timeOfFlightMap.put(2.2, 1.);
+        timeOfFlightMap.put(2.5, 1.);
+        timeOfFlightMap.put(2.7, 1.1);
+        timeOfFlightMap.put(3., 1.1);
+        timeOfFlightMap.put(3.3, 1.1);
+        timeOfFlightMap.put(3.6, 1.2);
+        timeOfFlightMap.put(3.9, 1.3);
+        timeOfFlightMap.put(4.2, 1.4);
+        timeOfFlightMap.put(4.5, 1.6);
+        timeOfFlightMap.put(4.8, 1.7);
+        timeOfFlightMap.put(5.2, 2.);
+        timeOfFlightMap.put(5.5, 2.2);
     }
 
     private Translation3d leftTarget = new Translation3d(2, 2, 0);
@@ -167,8 +167,8 @@ public class AimEverything extends Command {
         double ldx = hubTranslation.getX() - lookaheadShooterX;
         double ldy = hubTranslation.getY() - lookaheadShooterY;
         double fieldAngleDeg = Math.toDegrees(Math.atan2(ldy, ldx));
-        double turretAngleDeg = ((Rotation2d.fromDegrees(fieldAngleDeg).minus(rot).getDegrees()) % 360 + 540) % 360;
-        m_TurretSubsystem.setTarget(turretAngleDeg - 180);
+        double turretAngleDeg = (Rotation2d.fromDegrees(fieldAngleDeg).minus(rot).getDegrees() % 360 + 360) % 360;
+        m_TurretSubsystem.setTarget(turretAngleDeg);
 
         // Hood and shooter lookup from lookahead distance
         double hoodAngle = hoodAngleMap.get(lookaheadDistance);
@@ -242,7 +242,7 @@ public class AimEverything extends Command {
         double fieldAngleDeg = Math.toDegrees(Math.atan2(dy, dx));
         double turretAngleDeg = ((Rotation2d.fromDegrees(fieldAngleDeg).minus(rot).getDegrees()) % 360 + 360)
                 % 360;
-        m_TurretSubsystem.setTarget(turretAngleDeg - 180);
+        m_TurretSubsystem.setTarget(turretAngleDeg);
 
         Logger.recordOutput("Commands/AimAtPose/Robot/Rot", rot.getDegrees());
         Logger.recordOutput("Commands/AimAtPose/Robot/X", shooterX);

@@ -21,7 +21,7 @@ public final class Constants {
   public static final boolean disableHAL = false;
   public static final double deltaTime = 0.02;
   public static final Matter CHASSIS = new Matter(
-      new Translation3d(Units.inchesToMeters(0.4), Units.inchesToMeters(0.4), Units.inchesToMeters(7.2)),
+      new Translation3d(Units.inchesToMeters(0.4), Units.inchesToMeters(0), Units.inchesToMeters(7.2)),
       ROBOT_MASS);
   public static final double LOOP_TIME = 0.13;
   public static final double MAX_SPEED = Units.feetToMeters(15.1);

@@ -53,8 +53,8 @@ public class IndexerSubsystem extends SubsystemBase {
         limitConfigs.StatorCurrentLimitEnable = true;
         limitConfigs.SupplyCurrentLimit = 60;
         limitConfigs.SupplyCurrentLimitEnable = true;
-        m_hopperMotor1.getConfigurator().apply(limitConfigs);
-        m_hopperMotor2.getConfigurator().apply(limitConfigs);
+        // m_hopperMotor1.getConfigurator().apply(limitConfigs);
+        // m_hopperMotor2.getConfigurator().apply(limitConfigs);
         m_ballTunnelMotor.getConfigurator().apply(limitConfigs);
 
         m_hopperMotor1.getConfigurator().apply(slot0Configs);

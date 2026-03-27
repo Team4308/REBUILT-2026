@@ -15,6 +15,12 @@
           "data": {
             "commands": [
               {
+                "type": "wait",
+                "data": {
+                  "waitTime": 6.0
+                }
+              },
+              {
                 "type": "named",
                 "data": {
                   "name": "Agitate"
@@ -25,14 +31,14 @@
                 "data": {
                   "name": "Shoot"
                 }
-              },
-              {
-                "type": "wait",
-                "data": {
-                  "waitTime": 6.0
-                }
               }
             ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Extend Intake"
           }
         },
         {
@@ -58,6 +64,12 @@
           "data": {
             "commands": [
               {
+                "type": "wait",
+                "data": {
+                  "waitTime": 6.0
+                }
+              },
+              {
                 "type": "named",
                 "data": {
                   "name": "Agitate"
@@ -67,12 +79,6 @@
                 "type": "named",
                 "data": {
                   "name": "Shoot"
-                }
-              },
-              {
-                "type": "wait",
-                "data": {
-                  "waitTime": 6.0
                 }
               }
             ]
