@@ -27,7 +27,7 @@ public class ShootCommand extends Command {
             m_subsystem.setIndexerVelocity(0, Constants.Indexer.DEFAULT_INDEXER_VELOCITY);
         }
 
-        if (m_subsystem.getBallTunnelVelocity() >= 0.8 * m_subsystem.getTargetBallTunnelVelocity()) {
+        if (m_subsystem.getBallTunnelVelocity() >= 0.8 * Constants.Indexer.DEFAULT_INDEXER_VELOCITY) {
             reachedTarget = true;
         }
     }

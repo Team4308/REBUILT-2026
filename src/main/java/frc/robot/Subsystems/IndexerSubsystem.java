@@ -125,7 +125,8 @@ public class IndexerSubsystem extends SubsystemBase {
     }
 
     public double getBallTunnelVelocity() {
-        return m_ballTunnelMotor.getVelocity().getValueAsDouble();
+        return m_ballTunnelMotor.getVelocity().getValueAsDouble()
+                / Constants.Indexer.BALL_TUNNEL_GEAR_RATIO * 60.0;
     }
 
     public boolean getBeambreak() {
