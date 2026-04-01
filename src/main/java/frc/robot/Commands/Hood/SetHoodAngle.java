@@ -18,4 +18,8 @@ public class SetHoodAngle extends Command {
         m_HoodSubsystem.setHoodAngle(targetAngle);
     }
 
+    @Override
+    public boolean isFinished() {
+        return true;
+    }
 }
