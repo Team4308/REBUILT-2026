@@ -18,12 +18,14 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.Commands.AimEverything;
 import frc.robot.Commands.BackupShoot;
-import frc.robot.Commands.DefaultIntakeCommand;
 import frc.robot.Commands.ShootAndAgitate254;
 import frc.robot.Commands.ShootAndAgitateJ;
 import frc.robot.Commands.ShootCommand;
 import frc.robot.Commands.SystemCheck;
 import frc.robot.Commands.Hood.ResetHood;
+import frc.robot.Commands.Intake.AgitateJ;
+import frc.robot.Commands.Intake.DefaultIntake;
+import frc.robot.Commands.Intake.ResetIntake;
 import frc.robot.Subsystems.HoodSubsystem;
 import frc.robot.Subsystems.IndexerSubsystem;
 import frc.robot.Subsystems.IntakeSubsystem;
@@ -82,7 +84,7 @@ public class RobotContainer {
                 m_HoodSubsystem.setTurretSupplier(() -> m_TurretSubsystem.getAngleWrapped());
 
                 m_IntakeSubsystem.setDefaultCommand(
-                                new DefaultIntakeCommand(m_IntakeSubsystem, () -> driver.getRightTrigger(),
+                                new DefaultIntake(m_IntakeSubsystem, () -> driver.getRightTrigger(),
                                                 () -> Constants.Intake.ROLLER_INTAKE_RPM));
 
                 m_TurretSubsystem.setDefaultCommand(
@@ -119,7 +121,7 @@ public class RobotContainer {
                                 0, new Rotation2d()))));
 
                 driver.M2.onTrue(new ResetHood(m_HoodSubsystem));
-                driver.M2.onTrue(m_IntakeSubsystem.resetIntakeCommand());
+                driver.M2.onTrue(new ResetIntake(m_IntakeSubsystem));
         }
 
         public void configureNamedCommands() {
@@ -130,7 +132,7 @@ public class RobotContainer {
                                 new ShootAndAgitate254(m_IntakeSubsystem, m_IndexerSubsystem));
                 NamedCommands.registerCommand("Move Away", drivebase.driveToPoseObjAvoid(
                                 () -> new Pose2d(3.5, 4, new Rotation2d(Units.degreesToRadians(180)))));
-                NamedCommands.registerCommand("Agitate", m_IntakeSubsystem.agitate());
+                NamedCommands.registerCommand("Agitate", new AgitateJ(m_IntakeSubsystem));
                 NamedCommands.registerCommand("Extend Intake", new InstantCommand(
                                 () -> m_IntakeSubsystem.setIntakeAngle(Constants.Intake.INTAKE_ANGLE_DEG)));
         }
