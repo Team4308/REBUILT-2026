@@ -70,6 +70,10 @@ public class HoodSubsystem extends SubsystemBase {
         return voltage;
     }
 
+    public double getTargetAngle() {
+        return targetAngle;
+    }
+
     public double getHoodAngle() {
         if (Robot.isSimulation()) {
             if (simSupplier == null) {
