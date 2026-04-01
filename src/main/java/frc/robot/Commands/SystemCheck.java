@@ -2,6 +2,7 @@
 package frc.robot.Commands;
 
 import frc.robot.Commands.Hood.MoveHoodToAngle;
+import frc.robot.Commands.Intake.MoveIntakeToAngle;
 import frc.robot.Subsystems.HoodSubsystem;
 import frc.robot.Subsystems.IndexerSubsystem;
 import frc.robot.Subsystems.swerve.SwerveSubsystem;
@@ -43,8 +44,8 @@ public class SystemCheck extends SequentialCommandGroup {
                                                 shooterSubsystem.setShooterSpeed(() -> 3000)),
                                 new ParallelCommandGroup(new WaitCommand(1), shooterSubsystem.setShooterSpeed(() -> 0)),
 
-                                intakeSubsystem.moveIntakeToAngle(0),
-                                intakeSubsystem.moveIntakeToAngle(127),
+                                new MoveIntakeToAngle(intakeSubsystem, 0),
+                                new MoveIntakeToAngle(intakeSubsystem, 127),
 
                                 new ParallelCommandGroup(new WaitCommand(1),
                                                 new InstantCommand(() -> intakeSubsystem.setRollerSpeed(() -> 3000.))),

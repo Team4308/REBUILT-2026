@@ -1,4 +1,4 @@
-package frc.robot.Commands;
+package frc.robot.Commands.Intake;
 
 import java.util.function.Supplier;
 
@@ -7,17 +7,21 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.Subsystems.IntakeSubsystem;
 
-public class DefaultIntakeCommand extends Command {
+public class DefaultIntake extends Command {
     private final IntakeSubsystem m_subsystem;
     private final Supplier<Double> controlPercent;
     private final Supplier<Double> rollerSpeed;
 
-    public DefaultIntakeCommand(IntakeSubsystem subsystem, Supplier<Double> controlPercent,
+    public DefaultIntake(IntakeSubsystem subsystem, Supplier<Double> controlPercent,
             Supplier<Double> rollerSpeed) {
         m_subsystem = subsystem;
         this.controlPercent = controlPercent;
         this.rollerSpeed = rollerSpeed;
         addRequirements(subsystem);
+    }
+
+    public DefaultIntake(IntakeSubsystem subsystem, Supplier<Double> controlPercent) {
+        this(subsystem, controlPercent, () -> Constants.Intake.ROLLER_INTAKE_RPM);
     }
 
     @Override

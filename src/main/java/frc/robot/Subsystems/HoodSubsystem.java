@@ -28,7 +28,7 @@ public class HoodSubsystem extends SubsystemBase {
 
     private double targetAngle = Constants.Shooting.Hood.REVERSE_SOFT_LIMIT_ANGLE;
 
-    private double angleOffset = Constants.Shooting.Hood.REVERSE_SOFT_LIMIT_ANGLE;
+    private double angleOffset = -Constants.Shooting.Hood.REVERSE_SOFT_LIMIT_ANGLE;
 
     private SubsystemVerbosity verbosity;
 
@@ -77,8 +77,8 @@ public class HoodSubsystem extends SubsystemBase {
             }
             return simSupplier.get();
         }
-        return angleOffset
-                + (m_hoodMotor.getPosition().getValueAsDouble() / Constants.Shooting.Hood.TOTAL_GEAR_RATIO) * 360.0;
+        return (m_hoodMotor.getPosition().getValueAsDouble() / Constants.Shooting.Hood.TOTAL_GEAR_RATIO) * 360.0
+                - angleOffset;
     }
 
     public void setHoodAngle(double angle) {

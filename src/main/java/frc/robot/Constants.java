@@ -214,9 +214,11 @@ public final class Constants {
     public static final double AGITATE_LOW_DEG = 45.0;
     public static final double AGITATE_HIGH_DEG = 70.0;
 
-    // ToleranceW
+    // Tolerance
     public static final double ANGLE_TOLERANCE_DEG = 3;
     public static final double VELOCITY_TOLERANCE = 3;
+
+    public static final double AMP_THRESHOLD = 15.0;
   }
 
   public static class Indexer {
@@ -238,7 +240,7 @@ public final class Constants {
     public static double BALL_TUNNEL_Ki = 0;
     public static double BALL_TUNNEL_Kd = 0;
 
-    public static double EJECT_CURRENT = 120.0;
+    public static double EJECT_CURRENT = 110.0;
     public static double EJECT_SECONDS = 0.1;
     public static double EJECT_SPEED = -10.0;
 

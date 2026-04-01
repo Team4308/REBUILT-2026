@@ -40,7 +40,6 @@ public class IndexerSubsystem extends SubsystemBase {
     private double timeout = 0;
 
     public IndexerSubsystem(boolean enabled) {
-        // in init function, set slot 0 gains
         var slot0Configs = new Slot0Configs();
         slot0Configs.kS = Constants.Indexer.HOPPER_Ks;
         slot0Configs.kV = Constants.Indexer.HOPPER_Kv;
@@ -53,8 +52,8 @@ public class IndexerSubsystem extends SubsystemBase {
         limitConfigs.StatorCurrentLimitEnable = true;
         limitConfigs.SupplyCurrentLimit = 60;
         limitConfigs.SupplyCurrentLimitEnable = true;
-        // m_hopperMotor1.getConfigurator().apply(limitConfigs);
-        // m_hopperMotor2.getConfigurator().apply(limitConfigs);
+        m_hopperMotor1.getConfigurator().apply(limitConfigs);
+        m_hopperMotor2.getConfigurator().apply(limitConfigs);
         m_ballTunnelMotor.getConfigurator().apply(limitConfigs);
 
         m_hopperMotor1.getConfigurator().apply(slot0Configs);

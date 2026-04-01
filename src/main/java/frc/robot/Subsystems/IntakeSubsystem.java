@@ -9,6 +9,7 @@ import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.Logger;
 
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.*;
 
 import edu.wpi.first.math.MathUtil;
@@ -16,8 +17,7 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Ports;
@@ -34,6 +34,8 @@ public class IntakeSubsystem extends SubsystemBase {
   private double targetAngleDeg = Constants.Intake.RETRACTED_ANGLE_DEG;
 
   private double offset = -Constants.Intake.RETRACTED_ANGLE_DEG;
+
+  private StatusSignal<Current> pivotSupplyCurrent = m_pivotMotor.getSupplyCurrent();
 
   private final SubsystemVerbosity verbosity;
 
@@ -86,31 +88,16 @@ public class IntakeSubsystem extends SubsystemBase {
     m_rollerMotor.stopMotor();
   }
 
-  public Command moveIntakeToAngleSlow(double targetAngle, double durationSeconds) {
-    return new Command() {
-      double startAngle;
-      double timer;
+  public void setPivotVoltage(double voltage) {
+    m_pivotMotor.setVoltage(voltage);
+  }
 
-      @Override
-      public void initialize() {
-        startAngle = getIntakeAngle();
-        timer = 0;
-        addRequirements(IntakeSubsystem.this);
-      }
+  public void setEnabled(boolean enabled) {
+    this.enabled = enabled;
+  }
 
-      @Override
-      public void execute() {
-        timer += 0.02; // periodic runs every 20ms
-        double t = MathUtil.clamp(timer / durationSeconds, 0, 1);
-        double interpolatedAngle = startAngle + t * (targetAngle - startAngle);
-        setIntakeAngle(interpolatedAngle);
-      }
-
-      @Override
-      public boolean isFinished() {
-        return timer >= durationSeconds && isAtAngle();
-      }
-    };
+  public double getPivotSupplyCurrent() {
+    return pivotSupplyCurrent.getValueAsDouble();
   }
 
   /* ---------------- Pivot ---------------- */
@@ -131,26 +118,13 @@ public class IntakeSubsystem extends SubsystemBase {
 
   public boolean isAtAngle() {
     double currentDeg = getIntakeAngle();
+    return Math.abs(currentDeg - targetAngleDeg) < Constants.Intake.ANGLE_TOLERANCE_DEG;
+  }
+
+  public boolean isAtAngleStopped() {
+    double currentDeg = getIntakeAngle();
     return Math.abs(currentDeg - targetAngleDeg) < Constants.Intake.ANGLE_TOLERANCE_DEG
         && m_pivotMotor.getVelocity().getValueAsDouble() < Constants.Intake.VELOCITY_TOLERANCE;
-  }
-
-  public void resetIntake() {
-    if (!enabled) {
-      return;
-    }
-    if (m_pivotMotor.getSupplyCurrent().getValueAsDouble() < 3) {
-      m_pivotMotor.setVoltage(-2.0);
-    } else {
-      m_pivotMotor.setVoltage(0);
-    }
-  }
-
-  public Command resetIntakeCommand() {
-    return run(this::resetIntake)
-        .until(() -> m_pivotMotor.getSupplyCurrent().getValueAsDouble() > 3)
-        .andThen(new InstantCommand(() -> setIntakeAngle(0)))
-        .andThen(new InstantCommand(() -> m_pivotMotor.setPosition(0)));
   }
 
   public void stopMotors() {
@@ -158,24 +132,6 @@ public class IntakeSubsystem extends SubsystemBase {
     setRollerSpeed(() -> 0.);
     m_rollerMotor.stopMotor();
     m_pivotMotor.stopMotor();
-  }
-
-  public Command moveIntakeToAngle(double targetAngle) {
-    return run(() -> setIntakeAngle(targetAngle)).until(() -> isAtAngle());
-  }
-
-  public Command retract() {
-    return (moveIntakeToAngle(Constants.Intake.RETRACTED_ANGLE_DEG).alongWith(run(() -> stopRoller())))
-        .until(() -> isAtAngle());
-  }
-
-  public Command retract(double timeoutMs) {
-    return retract().withTimeout(timeoutMs / 1000);
-  }
-
-  public Command agitate() {
-    return (moveIntakeToAngle(Constants.Intake.AGITATE_HIGH_DEG).until(() -> isAtAngle()).andThen(
-        moveIntakeToAngle(Constants.Intake.AGITATE_LOW_DEG).until(() -> isAtAngle()))).repeatedly();
   }
 
   /* ---------------- Helpers ---------------- */
