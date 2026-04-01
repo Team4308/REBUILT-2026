@@ -23,6 +23,7 @@ import frc.robot.Commands.ShootAndAgitate254;
 import frc.robot.Commands.ShootAndAgitateJ;
 import frc.robot.Commands.ShootCommand;
 import frc.robot.Commands.SystemCheck;
+import frc.robot.Commands.Hood.ResetHood;
 import frc.robot.Subsystems.HoodSubsystem;
 import frc.robot.Subsystems.IndexerSubsystem;
 import frc.robot.Subsystems.IntakeSubsystem;
@@ -117,7 +118,7 @@ public class RobotContainer {
                 driver.M1.onTrue(Commands.runOnce(() -> drivebase.resetOdometry(new Pose2d(0,
                                 0, new Rotation2d()))));
 
-                driver.M2.onTrue(m_HoodSubsystem.resetHoodCommand());
+                driver.M2.onTrue(new ResetHood(m_HoodSubsystem));
                 driver.M2.onTrue(m_IntakeSubsystem.resetIntakeCommand());
         }
 

@@ -4,6 +4,7 @@ import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.Logger;
 
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -15,8 +16,7 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Ports;
@@ -26,9 +26,7 @@ import frc.robot.Util.SubsystemVerbosity;
 public class HoodSubsystem extends SubsystemBase {
     private final TalonFX m_hoodMotor = new TalonFX(Ports.Shooting.Hood.kHoodId);
 
-    // private double targetAngle =
-    // Constants.Shooting.Hood.REVERSE_SOFT_LIMIT_ANGLE;
-    private double targetAngle = 12.5;
+    private double targetAngle = Constants.Shooting.Hood.REVERSE_SOFT_LIMIT_ANGLE;
 
     private double angleOffset = Constants.Shooting.Hood.REVERSE_SOFT_LIMIT_ANGLE;
 
@@ -37,6 +35,8 @@ public class HoodSubsystem extends SubsystemBase {
     private Supplier<Double> turretSupplier;
     private Supplier<Double> simSupplier;
     private double voltage;
+
+    private StatusSignal<Current> hoodSupplyCurrent = m_hoodMotor.getSupplyCurrent();
 
     private ProfiledPIDController pidController = Constants.Shooting.Hood.pidController;
 
@@ -48,9 +48,9 @@ public class HoodSubsystem extends SubsystemBase {
         talonFXConfigs.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
         var limitConfigs = new CurrentLimitsConfigs();
-        limitConfigs.StatorCurrentLimit = 120;
+        limitConfigs.StatorCurrentLimit = 60;
         limitConfigs.StatorCurrentLimitEnable = true;
-        limitConfigs.SupplyCurrentLimit = 60;
+        limitConfigs.SupplyCurrentLimit = 30;
         limitConfigs.SupplyCurrentLimitEnable = true;
         m_hoodMotor.getConfigurator().apply(limitConfigs);
 
@@ -81,10 +81,6 @@ public class HoodSubsystem extends SubsystemBase {
                 + (m_hoodMotor.getPosition().getValueAsDouble() / Constants.Shooting.Hood.TOTAL_GEAR_RATIO) * 360.0;
     }
 
-    public Command setHoodAngleCommand(Supplier<Double> angleSupplier) {
-        return run(() -> setHoodAngle(angleSupplier.get()));
-    }
-
     public void setHoodAngle(double angle) {
         targetAngle = MathUtil.clamp(
                 angle,
@@ -98,31 +94,16 @@ public class HoodSubsystem extends SubsystemBase {
                 && m_hoodMotor.getVelocity().getValueAsDouble() < Constants.Shooting.Hood.TOLERANCE_VELOCITY;
     }
 
-    // Move to angle (Supplier allows for dynamic targets like Limelight)
-    public Command moveHood(Supplier<Double> angleSupplier) {
-        return run(() -> setHoodAngle(angleSupplier.get())).until(this::isAtPosition);
+    public double getSupplyCurrent() {
+        return hoodSupplyCurrent.getValueAsDouble();
     }
 
-    // Move to angle with Timeout
-    public Command moveHood(Supplier<Double> angleSupplier, double timeoutSeconds) {
-        return moveHood(angleSupplier).withTimeout(timeoutSeconds);
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
-    public void resetHood() {
-        if (m_hoodMotor.getSupplyCurrent().getValueAsDouble() < Constants.Shooting.Hood.AMP_THRESHOLD) {
-            m_hoodMotor.setVoltage(-2.0);
-        } else {
-            m_hoodMotor.setVoltage(0);
-        }
-    }
-
-    public Command resetHoodCommand() {
-        return run(this::resetHood)
-                .alongWith(new InstantCommand(() -> enabled = false))
-                .until(() -> m_hoodMotor.getSupplyCurrent().getValueAsDouble() > Constants.Shooting.Hood.AMP_THRESHOLD)
-                .andThen(new InstantCommand(() -> setHoodAngle(Constants.Shooting.Hood.REVERSE_SOFT_LIMIT_ANGLE)))
-                .andThen(new InstantCommand(() -> m_hoodMotor.setPosition(0)))
-                .andThen(new InstantCommand(() -> enabled = true));
+    public void setHoodVoltage(double voltage) {
+        m_hoodMotor.setVoltage(voltage);
     }
 
     public void stopMotors() {

@@ -1,6 +1,7 @@
 
 package frc.robot.Commands;
 
+import frc.robot.Commands.Hood.MoveHoodToAngle;
 import frc.robot.Subsystems.HoodSubsystem;
 import frc.robot.Subsystems.IndexerSubsystem;
 import frc.robot.Subsystems.swerve.SwerveSubsystem;
@@ -31,8 +32,8 @@ public class SystemCheck extends SequentialCommandGroup {
 
                                 new InstantCommand(() -> swerveSubsystem.lock()),
 
-                                hoodSubsystem.moveHood(() -> 42.),
-                                hoodSubsystem.moveHood(() -> 7.5),
+                                new MoveHoodToAngle(hoodSubsystem, 42.),
+                                new MoveHoodToAngle(hoodSubsystem, 7.5),
 
                                 turretSubsystem.moveToTarget(() -> 500.),
                                 turretSubsystem.moveToTarget(() -> 270.),

@@ -55,9 +55,9 @@ public class IntakeSubsystem extends SubsystemBase {
     pidController.reset(targetAngleDeg);
 
     var limitConfigs = new CurrentLimitsConfigs();
-    limitConfigs.StatorCurrentLimit = 120;
+    limitConfigs.StatorCurrentLimit = 80;
     limitConfigs.StatorCurrentLimitEnable = true;
-    limitConfigs.SupplyCurrentLimit = 60;
+    limitConfigs.SupplyCurrentLimit = 40;
     limitConfigs.SupplyCurrentLimitEnable = true;
     m_rollerMotor.getConfigurator().apply(limitConfigs);
     m_pivotMotor.getConfigurator().apply(limitConfigs);
