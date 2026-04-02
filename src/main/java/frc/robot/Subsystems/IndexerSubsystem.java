@@ -48,7 +48,7 @@ public class IndexerSubsystem extends SubsystemBase {
         slot0Configs.kD = Constants.Indexer.HOPPER_Kd;
 
         var limitConfigs = new CurrentLimitsConfigs();
-        limitConfigs.StatorCurrentLimit = 120;
+        limitConfigs.StatorCurrentLimit = 160;
         limitConfigs.StatorCurrentLimitEnable = true;
         limitConfigs.SupplyCurrentLimit = 60;
         limitConfigs.SupplyCurrentLimitEnable = true;

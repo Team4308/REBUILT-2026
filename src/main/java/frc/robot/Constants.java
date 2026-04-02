@@ -222,15 +222,15 @@ public final class Constants {
   }
 
   public static class Indexer {
-    public static double DEFAULT_INDEXER_VELOCITY = 2400;
-    public static double DEFAULT_HOPPER_VELOCITY = 6000;
+    public static double DEFAULT_INDEXER_VELOCITY = 2800;
+    public static double DEFAULT_HOPPER_VELOCITY = 1800;
 
     public static double BALL_TUNNEL_GEAR_RATIO = 3.0 / 5.0;
     public static double HOPPER_GEAR_RATIO = 1.0;
 
     public static double HOPPER_Ks = 0.36;
     public static double HOPPER_Kv = 0.12;
-    public static double HOPPER_Kp = 0.12;
+    public static double HOPPER_Kp = 0.62;
     public static double HOPPER_Ki = 0;
     public static double HOPPER_Kd = 0;
 
@@ -240,7 +240,7 @@ public final class Constants {
     public static double BALL_TUNNEL_Ki = 0;
     public static double BALL_TUNNEL_Kd = 0;
 
-    public static double EJECT_CURRENT = 110.0;
+    public static double EJECT_CURRENT = 160.0;
     public static double EJECT_SECONDS = 0.1;
     public static double EJECT_SPEED = -10.0;
 

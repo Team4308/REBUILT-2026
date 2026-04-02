@@ -8,7 +8,6 @@ import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.interpolation.InterpolatingTreeMap;
 import edu.wpi.first.math.interpolation.Interpolator;
@@ -61,6 +60,18 @@ public class AimEverything extends Command {
         hoodAngleMap.put(4.9, 19.0);
         hoodAngleMap.put(5.2, 19.5);
         hoodAngleMap.put(4.5, 19.5);
+        hoodAngleMap.put(5.5, 20.0);
+        hoodAngleMap.put(6.0, 20.0);
+        hoodAngleMap.put(7.0, 21.0);
+        hoodAngleMap.put(8.0, 22.0);
+        hoodAngleMap.put(9.0, 22.5);
+        hoodAngleMap.put(10.0, 23.0);
+        hoodAngleMap.put(11.0, 23.5);
+        hoodAngleMap.put(12.0, 24.0);
+        hoodAngleMap.put(13.0, 24.5);
+        hoodAngleMap.put(14.0, 25.0);
+        hoodAngleMap.put(15.0, 25.5);
+        hoodAngleMap.put(16.0, 26.0);
 
         // Key = distance (meters), Value = shooter speed (RPM)
         flywheelSpeedMap.put(1.3, 1700.0);
@@ -77,6 +88,17 @@ public class AimEverything extends Command {
         flywheelSpeedMap.put(4.9, 23800.);
         flywheelSpeedMap.put(5.2, 2420.);
         flywheelSpeedMap.put(5.5, 2480.);
+        flywheelSpeedMap.put(6.0, 2550.);
+        flywheelSpeedMap.put(7.0, 2650.);
+        flywheelSpeedMap.put(8.0, 2750.);
+        flywheelSpeedMap.put(9.0, 2900.);
+        flywheelSpeedMap.put(10.0, 3000.);
+        flywheelSpeedMap.put(11.0, 3100.);
+        flywheelSpeedMap.put(12.0, 3200.);
+        flywheelSpeedMap.put(13.0, 3300.);
+        flywheelSpeedMap.put(14.0, 3400.);
+        flywheelSpeedMap.put(15.0, 3500.);
+        flywheelSpeedMap.put(16.0, 3600.);
 
         timeOfFlightMap.put(1.3, 0.8);
         timeOfFlightMap.put(1.6, 0.9);
@@ -92,10 +114,21 @@ public class AimEverything extends Command {
         timeOfFlightMap.put(4.8, 1.7);
         timeOfFlightMap.put(5.2, 2.);
         timeOfFlightMap.put(5.5, 2.2);
+        timeOfFlightMap.put(6.0, 2.4);
+        timeOfFlightMap.put(7.0, 2.6);
+        timeOfFlightMap.put(8.0, 2.8);
+        timeOfFlightMap.put(9.0, 3.0);
+        timeOfFlightMap.put(10.0, 3.2);
+        timeOfFlightMap.put(11.0, 3.4);
+        timeOfFlightMap.put(12.0, 3.6);
+        timeOfFlightMap.put(13.0, 3.8);
+        timeOfFlightMap.put(14.0, 4.0);
+        timeOfFlightMap.put(15.0, 4.2);
+        timeOfFlightMap.put(16.0, 4.4);
     }
 
-    private Translation3d leftTarget = new Translation3d(2, 2, 0);
-    private Translation3d rightTarget = new Translation3d(2, 6, 0);
+    private Translation2d leftTarget = new Translation2d(2, 2);
+    private Translation2d rightTarget = new Translation2d(2, 6);
 
     public AimEverything(
             IndexerSubsystem m_IndexerSubsystem,
@@ -117,11 +150,9 @@ public class AimEverything extends Command {
 
     @Override
     public void initialize() {
-        leftTarget = AllianceFlipUtil.apply(leftTarget);
-        rightTarget = AllianceFlipUtil.apply(rightTarget);
     }
 
-    private void hubAim() {
+    private void aimAtPoint(Translation2d targetPoint) {
         Pose2d pose = m_swervePose.get();
         ChassisSpeeds robotRelativeVelocity = m_swerveVelocity.get();
         Rotation2d rot = pose.getRotation();
@@ -139,11 +170,11 @@ public class AimEverything extends Command {
                 + robotRelativeVelocity.vyMetersPerSecond * rot.getCos();
 
         // Get the hub target (flipped for correct alliance)
-        Translation2d hubTranslation = AllianceFlipUtil.apply(FieldConstants.Hub.topCenterPoint.toTranslation2d());
+        Translation2d targetTranslation = AllianceFlipUtil.apply(targetPoint);
 
         // Static distance (no lookahead) — for logging
-        double dx0 = hubTranslation.getX() - shooterX;
-        double dy0 = hubTranslation.getY() - shooterY;
+        double dx0 = targetTranslation.getX() - shooterX;
+        double dy0 = targetTranslation.getY() - shooterY;
         double staticDistance = Math.hypot(dx0, dy0);
 
         // --- Iterative shoot-on-the-move solve ---
@@ -158,14 +189,14 @@ public class AimEverything extends Command {
             timeOfFlight = timeOfFlightMap.get(lookaheadDistance);
             lookaheadShooterX = shooterX + vxField * timeOfFlight;
             lookaheadShooterY = shooterY + vyField * timeOfFlight;
-            double ldx = hubTranslation.getX() - lookaheadShooterX;
-            double ldy = hubTranslation.getY() - lookaheadShooterY;
+            double ldx = targetTranslation.getX() - lookaheadShooterX;
+            double ldy = targetTranslation.getY() - lookaheadShooterY;
             lookaheadDistance = Math.hypot(ldx, ldy);
         }
 
         // Aim from the lookahead position, not the current position
-        double ldx = hubTranslation.getX() - lookaheadShooterX;
-        double ldy = hubTranslation.getY() - lookaheadShooterY;
+        double ldx = targetTranslation.getX() - lookaheadShooterX;
+        double ldy = targetTranslation.getY() - lookaheadShooterY;
         double fieldAngleDeg = Math.toDegrees(Math.atan2(ldy, ldx));
         double turretAngleDeg = (Rotation2d.fromDegrees(fieldAngleDeg).minus(rot).getDegrees() % 360 + 360) % 360;
         m_TurretSubsystem.setTarget(turretAngleDeg);
@@ -181,26 +212,27 @@ public class AimEverything extends Command {
         }
         m_ShooterSubsystem.setTargetSpeed(shooterRpm);
 
-        Logger.recordOutput("Commands/AimAtHub/Robot/Rot", rot.getDegrees());
-        Logger.recordOutput("Commands/AimAtHub/Robot/X", shooterX);
-        Logger.recordOutput("Commands/AimAtHub/Robot/Y", shooterY);
-        Logger.recordOutput("Commands/AimAtHub/Robot/VxField", vxField);
-        Logger.recordOutput("Commands/AimAtHub/Robot/VyField", vyField);
-        Logger.recordOutput("Commands/AimAtHub/Lookahead/X", lookaheadShooterX);
-        Logger.recordOutput("Commands/AimAtHub/Lookahead/Y", lookaheadShooterY);
-        Logger.recordOutput("Commands/AimAtHub/Lookahead/Distance", lookaheadDistance);
-        Logger.recordOutput("Commands/AimAtHub/Lookahead/TimeOfFlight", timeOfFlight);
-        Logger.recordOutput("Commands/AimAtHub/Target/FieldDeg", fieldAngleDeg);
-        Logger.recordOutput("Commands/AimAtHub/Target/TurretDeg", turretAngleDeg);
-        Logger.recordOutput("Commands/AimAtHub/Target/StaticDistance", staticDistance);
-        Logger.recordOutput("Commands/AimAtHub/Target/HoodAngle", hoodAngle);
-        Logger.recordOutput("Commands/AimAtHub/Target/ShooterRpm", shooterRpm);
+        Logger.recordOutput("Commands/AimAtPoint/Target/Pose", targetPoint);
+        Logger.recordOutput("Commands/AimAtPoint/Robot/Rot", rot.getDegrees());
+        Logger.recordOutput("Commands/AimAtPoint/Robot/X", shooterX);
+        Logger.recordOutput("Commands/AimAtPoint/Robot/Y", shooterY);
+        Logger.recordOutput("Commands/AimAtPoint/Robot/VxField", vxField);
+        Logger.recordOutput("Commands/AimAtPoint/Robot/VyField", vyField);
+        Logger.recordOutput("Commands/AimAtPoint/Lookahead/X", lookaheadShooterX);
+        Logger.recordOutput("Commands/AimAtPoint/Lookahead/Y", lookaheadShooterY);
+        Logger.recordOutput("Commands/AimAtPoint/Lookahead/Distance", lookaheadDistance);
+        Logger.recordOutput("Commands/AimAtPoint/Lookahead/TimeOfFlight", timeOfFlight);
+        Logger.recordOutput("Commands/AimAtPoint/Target/FieldDeg", fieldAngleDeg);
+        Logger.recordOutput("Commands/AimAtPoint/Target/TurretDeg", turretAngleDeg);
+        Logger.recordOutput("Commands/AimAtPoint/Target/StaticDistance", staticDistance);
+        Logger.recordOutput("Commands/AimAtPoint/Target/HoodAngle", hoodAngle);
+        Logger.recordOutput("Commands/AimAtPoint/Target/ShooterRpm", shooterRpm);
     }
 
     @Override
     public void execute() {
         if (drivebase.getFieldLocation().equals("AllianceZone")) {
-            hubAim();
+            aimAtPoint(FieldConstants.Hub.topCenterPoint.toTranslation2d());
         } else if (drivebase.getFieldLocation().equals("NeutralZone")) {
             if (m_IndexerSubsystem.getTargetHopperVelocity() != 0.0) {
                 m_HoodSubsystem.setHoodAngle(42.5);
@@ -209,9 +241,9 @@ public class AimEverything extends Command {
             }
             m_ShooterSubsystem.setTargetSpeed(4000);
             if (joyLB.getAsBoolean()) {
-                aimAtPose(leftTarget);
+                aimAtPoint(leftTarget);
             } else if (joyRB.getAsBoolean()) {
-                aimAtPose(rightTarget);
+                aimAtPoint(rightTarget);
             }
         } else {
             if (m_IndexerSubsystem.getTargetHopperVelocity() != 0.0) {
@@ -221,36 +253,11 @@ public class AimEverything extends Command {
             }
             m_ShooterSubsystem.setTargetSpeed(6000);
             if (joyLB.getAsBoolean()) {
-                aimAtPose(leftTarget);
+                aimAtPoint(leftTarget);
             } else if (joyRB.getAsBoolean()) {
-                aimAtPose(rightTarget);
+                aimAtPoint(rightTarget);
             }
         }
-    }
-
-    private void aimAtPose(Translation3d targetPose) {
-        Pose2d botPose = drivebase.getPose();
-        Pose2d pose = new Pose2d(botPose.getX(), botPose.getY(),
-                botPose.getRotation());
-        Rotation2d rot = pose.getRotation();
-        double worldOffsetX = shooterOffset.getX() * rot.getCos() - shooterOffset.getY() * rot.getSin();
-        double worldOffsetY = shooterOffset.getX() * rot.getSin() + shooterOffset.getY() * rot.getCos();
-        double shooterX = pose.getX() + worldOffsetX;
-        double shooterY = pose.getY() + worldOffsetY;
-        double dx = targetPose.getX() - shooterX;
-        double dy = targetPose.getY() - shooterY;
-        double fieldAngleDeg = Math.toDegrees(Math.atan2(dy, dx));
-        double turretAngleDeg = ((Rotation2d.fromDegrees(fieldAngleDeg).minus(rot).getDegrees()) % 360 + 360)
-                % 360;
-        m_TurretSubsystem.setTarget(turretAngleDeg);
-
-        Logger.recordOutput("Commands/AimAtPose/Robot/Rot", rot.getDegrees());
-        Logger.recordOutput("Commands/AimAtPose/Robot/X", shooterX);
-        Logger.recordOutput("Commands/AimAtPose/Robot/Y", shooterY);
-        Logger.recordOutput("Commands/AimAtPose/Target/FieldDeg", fieldAngleDeg);
-        Logger.recordOutput("Commands/AimAtPose/Target/TurretDeg", turretAngleDeg);
-        Logger.recordOutput("Commands/AimAtPose/Target/dX", dx);
-        Logger.recordOutput("Commands/AimAtPose/Robot/dY", dy);
     }
 
     @Override
