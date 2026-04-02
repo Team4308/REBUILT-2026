@@ -6,7 +6,6 @@ import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -26,10 +25,6 @@ import frc.robot.Util.SubsystemVerbosity;
 
 public class TurretSubsystem extends SubsystemBase {
     private final TalonFX m_driveMotor;
-    @SuppressWarnings("unused")
-    private final CANcoder m_canCoder1;
-    @SuppressWarnings("unused")
-    private final CANcoder m_canCoder2;
 
     private double m_targetDegWrapped = 0.0;
     private double m_targetDegUnWrapped = Constants.Shooting.Turret.TURRET_START_ANGLE;
@@ -42,10 +37,6 @@ public class TurretSubsystem extends SubsystemBase {
     public final static ProfiledPIDController pidController = Constants.Shooting.Turret.pidController;
 
     private Supplier<Double> simSupplier;
-    @SuppressWarnings("unused")
-    private Supplier<Double> enc1SimSupplier;
-    @SuppressWarnings("unused")
-    private Supplier<Double> enc2SimSupplier;
 
     private double voltage;
     private boolean enabled;
@@ -53,8 +44,6 @@ public class TurretSubsystem extends SubsystemBase {
 
     public TurretSubsystem(boolean enabled) {
         m_driveMotor = new TalonFX(Ports.Shooting.Turret.kTurretMotorId);
-        m_canCoder1 = new CANcoder(Ports.Shooting.Turret.kCanCoder1Id);
-        m_canCoder2 = new CANcoder(Ports.Shooting.Turret.kCanCoder2Id);
 
         TalonFXConfiguration driveConfig = new TalonFXConfiguration();
         driveConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
@@ -88,12 +77,8 @@ public class TurretSubsystem extends SubsystemBase {
         return m_currentDegUnWrapped;
     }
 
-    public void setSimSupplier(Supplier<Double> angleSupplier,
-            Supplier<Double> enc1Supplier,
-            Supplier<Double> enc2Supplier) {
+    public void setSimSupplier(Supplier<Double> angleSupplier) {
         simSupplier = angleSupplier;
-        enc1SimSupplier = enc1Supplier;
-        enc2SimSupplier = enc2Supplier;
     }
 
     public double getVoltage() {
