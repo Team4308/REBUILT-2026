@@ -103,12 +103,13 @@ public final class Constants {
       public final static double TURRET_START_ANGLE = 360;
       public final static double TURRET_AIM_SIGN = -1.0; // +1 if turret rotates CCW for positive angles, -1 if opposite
 
-      public final static ArmFeedforward feedforward = new ArmFeedforward(0.25, 0, 0.008, 0.0);
+      public final static ArmFeedforward feedforward = new ArmFeedforward(0.25, 0, 0.008, 0.02);
+
+      public final static double MAX_ACCELERATION = 2000.0;
 
       public final static ProfiledPIDController pidController = new ProfiledPIDController(
           0.02, 0.0, 0.0,
-
-          new TrapezoidProfile.Constraints(1500, 2000));
+          new TrapezoidProfile.Constraints(1500, MAX_ACCELERATION));
     }
 
     public static final class Hood {

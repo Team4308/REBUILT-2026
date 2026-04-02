@@ -16,6 +16,7 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -203,7 +204,8 @@ public class TurretSubsystem extends SubsystemBase {
         double pidOutput = pidController.calculate(m_currentDegUnWrapped, m_targetDegUnWrapped);
         double ffOutput = feedforward.calculate(
                 pidController.getSetpoint().position,
-                pidController.getSetpoint().velocity);
+                pidController.getSetpoint().velocity,
+                Units.degreesToRadians(Constants.Shooting.Turret.MAX_ACCELERATION));
 
         if (ffOutput == 0 && !isAtTarget()) {
             if (pidOutput < 0) {
