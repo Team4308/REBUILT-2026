@@ -50,6 +50,14 @@ public class IntakeSubsystem extends SubsystemBase {
 
   private boolean hopperExtended;
 
+  public enum HopperStates {
+    EMPTY,
+    HALF,
+    FULL
+  }
+
+  private HopperStates hopperState = HopperStates.EMPTY;
+
   public IntakeSubsystem(boolean enabled) {
     verbosity = SubsystemVerbosity.LOW;
     m_pivotMotor.setPosition(0);
@@ -82,6 +90,14 @@ public class IntakeSubsystem extends SubsystemBase {
     } else {
       m_rollerMotor.setControl(rollerRequest.withVelocity(1));
     }
+  }
+
+  public void setHopperState(HopperStates state) {
+    hopperState = state;
+  }
+
+  public HopperStates getHopperState() {
+    return hopperState;
   }
 
   public void stopRoller() {
@@ -200,6 +216,7 @@ public class IntakeSubsystem extends SubsystemBase {
       Logger.recordOutput("Subsystems/Intake/Roller/Roller Speed", m_rollerMotor.getVelocity().getValueAsDouble());
       Logger.recordOutput("Subsystems/Intake/Hopper Pose", getHopperPose());
       Logger.recordOutput("Subsystems/Intake/Pivot Pose", getPivotPose());
+      Logger.recordOutput("Subsystems/Intake/Hopper State", hopperState.toString());
     }
 
     if (verbosity == SubsystemVerbosity.HIGH) {

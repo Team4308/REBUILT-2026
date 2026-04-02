@@ -19,6 +19,13 @@ public class MoveIntakeTimed extends Command {
         addRequirements(intakeSubsystem);
     }
 
+    public MoveIntakeTimed(IntakeSubsystem intakeSubsystem, double targetAngle,
+            IntakeSubsystem.HopperStates hopperState) {
+        this(intakeSubsystem, targetAngle,
+                hopperState == IntakeSubsystem.HopperStates.FULL ? 5
+                        : hopperState == IntakeSubsystem.HopperStates.HALF ? 3 : 1);
+    }
+
     @Override
     public void initialize() {
         startAngle = intakeSubsystem.getIntakeAngle();

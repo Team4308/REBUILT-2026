@@ -5,7 +5,6 @@ import java.io.File;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 
-import ca.team4308.absolutelib.control.RazerWrapper;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
@@ -34,11 +33,12 @@ import frc.robot.Subsystems.Simulation;
 import frc.robot.Subsystems.TurretSubsystem;
 import frc.robot.Subsystems.swerve.SwerveSubsystem;
 import frc.robot.Subsystems.vision.Vision;
+import frc.robot.Util.Razer2Wrapper;
 import swervelib.SwerveInputStream;
 
 public class RobotContainer {
         // Controllers
-        final RazerWrapper driver = new RazerWrapper(0);
+        final Razer2Wrapper driver = new Razer2Wrapper(0, 1);
 
         // Subsystems
         private final Vision vision = new Vision();
@@ -92,8 +92,8 @@ public class RobotContainer {
                                                 m_TurretSubsystem,
                                                 () -> drivebase.getPose(), () -> drivebase.getRobotVelocity(),
                                                 drivebase,
-                                                () -> driver.RB.getAsBoolean() || driver.M3.getAsBoolean(),
-                                                () -> driver.LB.getAsBoolean() || driver.M4.getAsBoolean()));
+                                                () -> driver.RB.getAsBoolean() || driver.RightTrigger.getAsBoolean(),
+                                                () -> driver.LB.getAsBoolean() || driver.LeftTrigger.getAsBoolean()));
 
                 configureNamedCommands();
                 configureBindings();
@@ -111,10 +111,19 @@ public class RobotContainer {
                 driver.RB.whileTrue(new ShootCommand(m_IndexerSubsystem));
                 driver.LB.whileTrue(new ShootCommand(m_IndexerSubsystem));
 
-                driver.M3.onTrue(new ShootAndAgitate254(m_IntakeSubsystem, m_IndexerSubsystem));
-                driver.M4.onTrue(new ShootAndAgitateJ(m_IntakeSubsystem, m_IndexerSubsystem));
+                driver.RightTrigger.onTrue(new ShootAndAgitate254(m_IntakeSubsystem, m_IndexerSubsystem,
+                                () -> m_IntakeSubsystem.getHopperState()));
+                driver.LeftTrigger.onTrue(new ShootAndAgitate254(m_IntakeSubsystem, m_IndexerSubsystem,
+                                () -> m_IntakeSubsystem.getHopperState()));
 
-                driver.Y.whileTrue(new BackupShoot(m_HoodSubsystem, m_TurretSubsystem, m_ShooterSubsystem,
+                driver.A.onTrue(new InstantCommand(
+                                () -> m_IntakeSubsystem.setHopperState(IntakeSubsystem.HopperStates.EMPTY)));
+                driver.X.onTrue(new InstantCommand(
+                                () -> m_IntakeSubsystem.setHopperState(IntakeSubsystem.HopperStates.HALF)));
+                driver.Y.onTrue(new InstantCommand(
+                                () -> m_IntakeSubsystem.setHopperState(IntakeSubsystem.HopperStates.FULL)));
+
+                driver.B.whileTrue(new BackupShoot(m_HoodSubsystem, m_TurretSubsystem, m_ShooterSubsystem,
                                 drivebase));
 
                 driver.M1.onTrue(Commands.runOnce(() -> drivebase.resetOdometry(new Pose2d(0,
