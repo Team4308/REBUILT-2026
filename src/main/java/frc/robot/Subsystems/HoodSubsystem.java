@@ -92,10 +92,15 @@ public class HoodSubsystem extends SubsystemBase {
                 Constants.Shooting.Hood.FORWARD_SOFT_LIMIT_ANGLE);
     }
 
-    public boolean isAtPosition() {
+    public boolean isAtPositionAtRest() {
         // Uses a tolerance value from Constants
         return Math.abs(getHoodAngle() - targetAngle) < Constants.Shooting.Hood.TOLERANCE_DEGREES
                 && m_hoodMotor.getVelocity().getValueAsDouble() < Constants.Shooting.Hood.TOLERANCE_VELOCITY;
+    }
+
+    public boolean isAtPosition() {
+        // Uses a tolerance value from Constants
+        return Math.abs(getHoodAngle() - targetAngle) < Constants.Shooting.Hood.TOLERANCE_DEGREES;
     }
 
     public double getSupplyCurrent() {

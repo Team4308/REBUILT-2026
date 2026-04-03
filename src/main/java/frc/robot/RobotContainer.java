@@ -56,6 +56,8 @@ public class RobotContainer {
         // Commands
         private final SendableChooser<Command> autoChooser;
 
+        private final AimEverything aimEverythingCommand;
+
         SwerveInputStream driveAngularVelocity = SwerveInputStream.of(drivebase.getSwerveDrive(),
                         () -> driver.getLeftY() * -1,
                         () -> driver.getLeftX() * -1)
@@ -87,13 +89,12 @@ public class RobotContainer {
                                 new DefaultIntake(m_IntakeSubsystem, () -> driver.getRightTrigger(),
                                                 () -> Constants.Intake.ROLLER_INTAKE_RPM));
 
+                aimEverythingCommand = new AimEverything(m_IndexerSubsystem, m_HoodSubsystem, m_ShooterSubsystem,
+                                m_TurretSubsystem,
+                                () -> drivebase.getPose(), () -> drivebase.getRobotVelocity(),
+                                drivebase);
                 m_TurretSubsystem.setDefaultCommand(
-                                new AimEverything(m_IndexerSubsystem, m_HoodSubsystem, m_ShooterSubsystem,
-                                                m_TurretSubsystem,
-                                                () -> drivebase.getPose(), () -> drivebase.getRobotVelocity(),
-                                                drivebase,
-                                                () -> driver.RB.getAsBoolean() || driver.RightTrigger.getAsBoolean(),
-                                                () -> driver.LB.getAsBoolean() || driver.LeftTrigger.getAsBoolean()));
+                                aimEverythingCommand);
 
                 configureNamedCommands();
                 configureBindings();
@@ -108,13 +109,22 @@ public class RobotContainer {
 
                 drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
 
-                driver.RB.whileTrue(new ShootCommand(m_IndexerSubsystem));
-                driver.LB.whileTrue(new ShootCommand(m_IndexerSubsystem));
+                driver.RB.whileTrue(new ShootCommand(m_IndexerSubsystem, m_TurretSubsystem, m_HoodSubsystem)
+                                .alongWith(new InstantCommand(() -> aimEverythingCommand.setSide("Right"))));
+                driver.LB.whileTrue(new ShootCommand(m_IndexerSubsystem, m_TurretSubsystem, m_HoodSubsystem)
+                                .alongWith(new InstantCommand(() -> aimEverythingCommand.setSide("Left"))));
 
-                driver.RightTrigger.onTrue(new ShootAndAgitate254(m_IntakeSubsystem, m_IndexerSubsystem,
-                                () -> m_IntakeSubsystem.getHopperState()));
-                driver.LeftTrigger.onTrue(new ShootAndAgitate254(m_IntakeSubsystem, m_IndexerSubsystem,
-                                () -> m_IntakeSubsystem.getHopperState()));
+                driver.RightTrigger.whileTrue(new ShootAndAgitate254(m_IntakeSubsystem, m_IndexerSubsystem,
+                                m_TurretSubsystem, m_HoodSubsystem,
+                                () -> m_IntakeSubsystem.getHopperState())
+                                .alongWith(new InstantCommand(() -> aimEverythingCommand.setSide("Right"))));
+                driver.LeftTrigger.whileTrue(new ShootAndAgitate254(m_IntakeSubsystem, m_IndexerSubsystem,
+                                m_TurretSubsystem, m_HoodSubsystem,
+                                () -> m_IntakeSubsystem.getHopperState())
+                                .alongWith(new InstantCommand(() -> aimEverythingCommand.setSide("Left"))));
+
+                driver.povUp.onTrue(new InstantCommand(() -> aimEverythingCommand.updatePowerOffset(100)));
+                driver.povDown.onTrue(new InstantCommand(() -> aimEverythingCommand.updatePowerOffset(-100)));
 
                 driver.A.onTrue(new InstantCommand(
                                 () -> m_IntakeSubsystem.setHopperState(IntakeSubsystem.HopperStates.EMPTY)));
@@ -134,11 +144,15 @@ public class RobotContainer {
         }
 
         public void configureNamedCommands() {
-                NamedCommands.registerCommand("Shoot", new ShootCommand(m_IndexerSubsystem));
+                NamedCommands.registerCommand("Shoot",
+                                new ShootCommand(m_IndexerSubsystem, m_TurretSubsystem, m_HoodSubsystem));
                 NamedCommands.registerCommand("Shoot Agitate J",
-                                new ShootAndAgitateJ(m_IntakeSubsystem, m_IndexerSubsystem));
+                                new ShootAndAgitateJ(m_IntakeSubsystem, m_IndexerSubsystem, m_TurretSubsystem,
+                                                m_HoodSubsystem));
                 NamedCommands.registerCommand("Shoot Agitate 254",
-                                new ShootAndAgitate254(m_IntakeSubsystem, m_IndexerSubsystem));
+                                new ShootAndAgitate254(m_IntakeSubsystem, m_IndexerSubsystem, m_TurretSubsystem,
+                                                m_HoodSubsystem,
+                                                () -> m_IntakeSubsystem.getHopperState()));
                 NamedCommands.registerCommand("Move Away", drivebase.driveToPoseObjAvoid(
                                 () -> new Pose2d(3.5, 4, new Rotation2d(Units.degreesToRadians(180)))));
                 NamedCommands.registerCommand("Agitate", new AgitateJ(m_IntakeSubsystem));

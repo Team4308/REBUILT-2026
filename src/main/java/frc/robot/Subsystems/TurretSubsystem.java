@@ -148,10 +148,15 @@ public class TurretSubsystem extends SubsystemBase {
                 Constants.Shooting.Turret.FULL_REVOLUTION_DEG);
     }
 
-    public boolean isAtTarget() {
+    public boolean isAtTargetAtRest() {
         double wrappedError = getWrappedError(m_currentDegWrapped, m_targetDegWrapped);
         return Math.abs(wrappedError) <= Constants.Shooting.Turret.TURRET_TOLERANCE_DEGREES
                 && Math.abs(m_driveMotor.getVelocity().getValueAsDouble()) < Constants.Shooting.Turret.STOPPED_VELOCITY;
+    }
+
+    public boolean isAtTarget() {
+        double wrappedError = getWrappedError(m_currentDegWrapped, m_targetDegWrapped);
+        return Math.abs(wrappedError) <= Constants.Shooting.Turret.TURRET_TOLERANCE_DEGREES;
     }
 
     public Command moveToTarget(Supplier<Double> degrees) {

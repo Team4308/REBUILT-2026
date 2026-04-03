@@ -99,7 +99,7 @@ public final class Constants {
       public final static double MIN_DEGREES = 230;
       public final static double MAX_DEGREES = 230 + 360;
       public final static double FULL_REVOLUTION_DEG = 360;
-      public final static double TURRET_TOLERANCE_DEGREES = 0.5;
+      public final static double TURRET_TOLERANCE_DEGREES = 4.0;
       public final static double TURRET_START_ANGLE = 360;
       public final static double TURRET_AIM_SIGN = -1.0; // +1 if turret rotates CCW for positive angles, -1 if opposite
 
@@ -113,7 +113,7 @@ public final class Constants {
     }
 
     public static final class Hood {
-      public static final double TOLERANCE_DEGREES = 1.0; // Tolerance for position control
+      public static final double TOLERANCE_DEGREES = 2; // Tolerance for position control
       public static final double TOLERANCE_VELOCITY = 0.5;
       public static final double TOTAL_GEAR_RATIO = 120.4;
       public static final double FORWARD_SOFT_LIMIT_ANGLE = 42.5;

@@ -1,6 +1,5 @@
 package frc.robot.Commands;
 
-import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.Logger;
@@ -32,8 +31,6 @@ public class AimEverything extends Command {
 
     private final Supplier<Pose2d> m_swervePose;
     private final Supplier<ChassisSpeeds> m_swerveVelocity;
-    private final BooleanSupplier joyRB;
-    private final BooleanSupplier joyLB;
 
     // Offset of the shooter/launcher from the robot center (match your
     // TurretConstants)
@@ -43,6 +40,9 @@ public class AimEverything extends Command {
             InverseInterpolator.forDouble(), Interpolator.forDouble());
     private static final InterpolatingDoubleTreeMap flywheelSpeedMap = new InterpolatingDoubleTreeMap();
     private static final InterpolatingDoubleTreeMap timeOfFlightMap = new InterpolatingDoubleTreeMap();
+
+    private String side = "Left";
+    private double powerOffset = 0;
 
     static {
         // Key = distance (meters), Value = hood angle (degrees from horizontal)
@@ -135,7 +135,7 @@ public class AimEverything extends Command {
             HoodSubsystem m_HoodSubsystem,
             ShooterSubsystem m_ShooterSubsystem,
             TurretSubsystem m_TurretSubsystem, Supplier<Pose2d> swervePose, Supplier<ChassisSpeeds> swerveVelocity,
-            SwerveSubsystem m_s, BooleanSupplier joyRB, BooleanSupplier joyLB) {
+            SwerveSubsystem m_s) {
         this.m_IndexerSubsystem = m_IndexerSubsystem;
         this.m_HoodSubsystem = m_HoodSubsystem;
         this.m_ShooterSubsystem = m_ShooterSubsystem;
@@ -143,13 +143,15 @@ public class AimEverything extends Command {
         this.m_swervePose = swervePose;
         this.m_swerveVelocity = swerveVelocity;
         this.drivebase = m_s;
-        this.joyLB = joyLB;
-        this.joyRB = joyRB;
         addRequirements(m_HoodSubsystem, m_ShooterSubsystem, m_TurretSubsystem);
     }
 
-    @Override
-    public void initialize() {
+    public void setSide(String side) {
+        this.side = side;
+    }
+
+    public void updatePowerOffset(double offset) {
+        this.powerOffset += offset;
     }
 
     private void aimAtPoint(Translation2d targetPoint) {
@@ -210,51 +212,34 @@ public class AimEverything extends Command {
         } else {
             m_HoodSubsystem.setHoodAngle(Constants.Shooting.Hood.REVERSE_SOFT_LIMIT_ANGLE);
         }
-        m_ShooterSubsystem.setTargetSpeed(shooterRpm);
+        m_ShooterSubsystem.setTargetSpeed(shooterRpm + powerOffset);
 
         Logger.recordOutput("Commands/AimAtPoint/Target/Pose", targetPoint);
         Logger.recordOutput("Commands/AimAtPoint/Robot/Rot", rot.getDegrees());
         Logger.recordOutput("Commands/AimAtPoint/Robot/X", shooterX);
         Logger.recordOutput("Commands/AimAtPoint/Robot/Y", shooterY);
-        Logger.recordOutput("Commands/AimAtPoint/Robot/VxField", vxField);
-        Logger.recordOutput("Commands/AimAtPoint/Robot/VyField", vyField);
+        Logger.recordOutput("Commands/AimAtPoint/Robot/Vx Field", vxField);
+        Logger.recordOutput("Commands/AimAtPoint/Robot/Vy Field", vyField);
         Logger.recordOutput("Commands/AimAtPoint/Lookahead/X", lookaheadShooterX);
         Logger.recordOutput("Commands/AimAtPoint/Lookahead/Y", lookaheadShooterY);
         Logger.recordOutput("Commands/AimAtPoint/Lookahead/Distance", lookaheadDistance);
-        Logger.recordOutput("Commands/AimAtPoint/Lookahead/TimeOfFlight", timeOfFlight);
-        Logger.recordOutput("Commands/AimAtPoint/Target/FieldDeg", fieldAngleDeg);
-        Logger.recordOutput("Commands/AimAtPoint/Target/TurretDeg", turretAngleDeg);
-        Logger.recordOutput("Commands/AimAtPoint/Target/StaticDistance", staticDistance);
-        Logger.recordOutput("Commands/AimAtPoint/Target/HoodAngle", hoodAngle);
-        Logger.recordOutput("Commands/AimAtPoint/Target/ShooterRpm", shooterRpm);
+        Logger.recordOutput("Commands/AimAtPoint/Lookahead/Time Of Flight", timeOfFlight);
+        Logger.recordOutput("Commands/AimAtPoint/Target/Field Deg", fieldAngleDeg);
+        Logger.recordOutput("Commands/AimAtPoint/Target/Turret Deg", turretAngleDeg);
+        Logger.recordOutput("Commands/AimAtPoint/Target/Static Distance", staticDistance);
+        Logger.recordOutput("Commands/AimAtPoint/Target/Hood Angle", hoodAngle);
+        Logger.recordOutput("Commands/AimAtPoint/Target/Shooter Rpm", shooterRpm);
+        Logger.recordOutput("Commands/AimAtPoint/Power Offset", powerOffset);
     }
 
     @Override
     public void execute() {
         if (drivebase.getFieldLocation().equals("AllianceZone")) {
             aimAtPoint(FieldConstants.Hub.topCenterPoint.toTranslation2d());
-        } else if (drivebase.getFieldLocation().equals("NeutralZone")) {
-            if (m_IndexerSubsystem.getTargetHopperVelocity() != 0.0) {
-                m_HoodSubsystem.setHoodAngle(42.5);
-            } else {
-                m_HoodSubsystem.setHoodAngle(Constants.Shooting.Hood.REVERSE_SOFT_LIMIT_ANGLE);
-            }
-            m_ShooterSubsystem.setTargetSpeed(4000);
-            if (joyLB.getAsBoolean()) {
-                aimAtPoint(leftTarget);
-            } else if (joyRB.getAsBoolean()) {
-                aimAtPoint(rightTarget);
-            }
         } else {
-            if (m_IndexerSubsystem.getTargetHopperVelocity() != 0.0) {
-                m_HoodSubsystem.setHoodAngle(42.5);
-            } else {
-                m_HoodSubsystem.setHoodAngle(Constants.Shooting.Hood.REVERSE_SOFT_LIMIT_ANGLE);
-            }
-            m_ShooterSubsystem.setTargetSpeed(6000);
-            if (joyLB.getAsBoolean()) {
+            if (side.equals("Left")) {
                 aimAtPoint(leftTarget);
-            } else if (joyRB.getAsBoolean()) {
+            } else if (side.equals("Right")) {
                 aimAtPoint(rightTarget);
             }
         }
