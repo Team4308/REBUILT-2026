@@ -31,8 +31,8 @@ import frc.robot.Subsystems.IntakeSubsystem;
 import frc.robot.Subsystems.ShooterSubsystem;
 import frc.robot.Subsystems.Simulation;
 import frc.robot.Subsystems.TurretSubsystem;
-import frc.robot.Subsystems.swerve.SwerveSubsystem;
-import frc.robot.Subsystems.vision.Vision;
+import frc.robot.Subsystems.Swerve.SwerveSubsystem;
+import frc.robot.Subsystems.Vision.Vision;
 import frc.robot.Util.Razer2Wrapper;
 import swervelib.SwerveInputStream;
 
