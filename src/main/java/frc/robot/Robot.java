@@ -37,8 +37,6 @@ public class Robot extends LoggedRobot {
                     // be added.
 
     m_robotContainer = new RobotContainer();
-
-    PathfindingCommand.warmupCommand().schedule();
   }
 
   @Override
