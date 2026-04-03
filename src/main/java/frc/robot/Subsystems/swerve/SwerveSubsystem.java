@@ -471,6 +471,34 @@ public class SwerveSubsystem extends SubsystemBase {
     });
   }
 
+  public Command followWaypoints(List<Pose2d> waypoints, double finalVelocity) {
+    PathPlannerPath path = new PathPlannerPath(
+        PathPlannerPath.waypointsFromPoses(waypoints),
+        Constants.Swerve.PathFinding.constraints,
+        new IdealStartingState(
+            MetersPerSecond.of(
+                new Translation2d(
+                    getFieldVelocity().vxMetersPerSecond,
+                    getFieldVelocity().vyMetersPerSecond)
+                    .getNorm()),
+            getHeading()),
+        new GoalEndState(finalVelocity, waypoints.get(waypoints.size() - 1).getRotation()));
+    path.preventFlipping = true;
+
+    Logger.recordOutput("Swerve/Path Goal", waypoints.get(waypoints.size() - 1));
+
+    // Visualize Path on driver station
+    ArrayList<Pose2d> points = new ArrayList<>();
+    for (PathPoint state : path.getAllPathPoints()) {
+      points.add(new Pose2d(state.position, new Rotation2d(0)));
+    }
+
+    m_driverStationField.getObject("Path").setPoses(points);
+    Logger.recordOutput("Swerve/Path", points.toArray(new Pose2d[0]));
+
+    return AutoBuilder.followPath(path);
+  }
+
   public Command driveToPoseObjAvoid(Supplier<Pose2d> pose, Supplier<Double> finalVelocity) {
     return defer(() -> driveToPoseObjAvoid(pose.get(), finalVelocity.get()));
   }
