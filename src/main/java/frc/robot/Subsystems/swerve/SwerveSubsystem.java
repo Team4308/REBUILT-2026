@@ -1,4 +1,4 @@
-package frc.robot.Subsystems.swerve;
+package frc.robot.Subsystems.Swerve;
 
 import static edu.wpi.first.units.Units.Meter;
 import static edu.wpi.first.units.Units.MetersPerSecond;
@@ -52,9 +52,9 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import frc.robot.Constants;
 import frc.robot.FieldLayout;
 import frc.robot.Robot;
-import frc.robot.Subsystems.vision.Vision;
-import frc.robot.Subsystems.vision.Vision.ObjectData;
-import frc.robot.Subsystems.vision.Vision.VisionMeasurement;
+import frc.robot.Subsystems.Vision.Vision;
+import frc.robot.Subsystems.Vision.Vision.ObjectData;
+import frc.robot.Subsystems.Vision.Vision.VisionMeasurement;
 import frc.robot.Util.AllianceFlipUtil;
 import swervelib.SwerveController;
 import swervelib.SwerveDrive;

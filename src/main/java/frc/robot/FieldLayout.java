@@ -43,12 +43,14 @@ public class FieldLayout {
 
                 public static Translation3d getAlliancePassRight() {
                         boolean isRed = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
-                        return isRed ? new Translation3d(kFieldLength - kPASS_RIGHT_POSE.getX(), kPASS_RIGHT_POSE.getY(), kHUB_HEIGHT) : kPASS_RIGHT_POSE;
+                        return isRed ? new Translation3d(kFieldLength - kPASS_RIGHT_POSE.getX(),
+                                        kPASS_RIGHT_POSE.getY(), kHUB_HEIGHT) : kPASS_RIGHT_POSE;
                 }
 
                 public static Translation3d getAlliancePassLeft() {
                         boolean isRed = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
-                        return isRed ? new Translation3d(kFieldLength - kPASS_LEFT_POSE.getX(), kPASS_LEFT_POSE.getY(), kHUB_HEIGHT) : kPASS_LEFT_POSE;
+                        return isRed ? new Translation3d(kFieldLength - kPASS_LEFT_POSE.getX(), kPASS_LEFT_POSE.getY(),
+                                        kHUB_HEIGHT) : kPASS_LEFT_POSE;
                 }
 
                 public static Translation3d getAllianceHub() {
@@ -174,6 +176,72 @@ public class FieldLayout {
 
                 public static Translation3d getAllianceRightTranslation3d() {
                         return new Translation3d(getAllianceRightPose().getX(), getAllianceRightPose().getY(), 0.0);
+                }
+        }
+
+        public static class StartingPoses {
+                public static final Pose2d midStartingPose = new Pose2d(3.5, kFieldWidth / 2.0, new Rotation2d(0));
+                public static final Pose2d leftStartingPose = new Pose2d(3.5, 7.375, new Rotation2d(0));
+                public static final Pose2d rightStartingPose = new Pose2d(3.5, 0.625, new Rotation2d(0));
+                public static final Pose2d leftTrenchStartingPose = new Pose2d(4.5, 7.375, new Rotation2d(0));
+                public static final Pose2d rightTrenchStartingPose = new Pose2d(4.5, 0.625, new Rotation2d(0));
+                public static final Pose2d leftBumpStartingPose = new Pose2d(4.5, 5.5, new Rotation2d(0));
+                public static final Pose2d rightBumpStartingPose = new Pose2d(4.5, 2.5, new Rotation2d(0));
+
+                public static Pose2d getMidStartingPose() {
+                        return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
+                                        ? midStartingPose
+                                        : new Pose2d(kFieldLength - midStartingPose.getX(),
+                                                        midStartingPose.getY(),
+                                                        midStartingPose.getRotation().unaryMinus());
+                }
+
+                public static Pose2d getLeftStartingPose() {
+                        return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
+                                        ? leftStartingPose
+                                        : new Pose2d(kFieldLength - leftStartingPose.getX(),
+                                                        leftStartingPose.getY(),
+                                                        leftStartingPose.getRotation().unaryMinus());
+                }
+
+                public static Pose2d getRightStartingPose() {
+                        return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
+                                        ? rightStartingPose
+                                        : new Pose2d(kFieldLength - rightStartingPose.getX(),
+                                                        rightStartingPose.getY(),
+                                                        rightStartingPose.getRotation().unaryMinus());
+                }
+
+                public static Pose2d getLeftTrenchStartingPose() {
+                        return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
+                                        ? leftTrenchStartingPose
+                                        : new Pose2d(kFieldLength - leftTrenchStartingPose.getX(),
+                                                        leftTrenchStartingPose.getY(),
+                                                        leftTrenchStartingPose.getRotation().unaryMinus());
+                }
+
+                public static Pose2d getRightTrenchStartingPose() {
+                        return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
+                                        ? rightTrenchStartingPose
+                                        : new Pose2d(kFieldLength - rightTrenchStartingPose.getX(),
+                                                        rightTrenchStartingPose.getY(),
+                                                        rightTrenchStartingPose.getRotation().unaryMinus());
+                }
+
+                public static Pose2d getLeftBumpStartingPose() {
+                        return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
+                                        ? leftBumpStartingPose
+                                        : new Pose2d(kFieldLength - leftBumpStartingPose.getX(),
+                                                        leftBumpStartingPose.getY(),
+                                                        leftBumpStartingPose.getRotation().unaryMinus());
+                }
+
+                public static Pose2d getRightBumpStartingPose() {
+                        return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
+                                        ? rightBumpStartingPose
+                                        : new Pose2d(kFieldLength - rightBumpStartingPose.getX(),
+                                                        rightBumpStartingPose.getY(),
+                                                        rightBumpStartingPose.getRotation().unaryMinus());
                 }
         }
 }

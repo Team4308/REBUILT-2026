@@ -2,27 +2,21 @@ package frc.robot;
 
 import java.io.File;
 
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.auto.NamedCommands;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import frc.robot.Auton.AutoChooser;
 import frc.robot.Commands.AimEverything;
 import frc.robot.Commands.BackupShoot;
 import frc.robot.Commands.ShootAndAgitate254;
-import frc.robot.Commands.ShootAndAgitateJ;
 import frc.robot.Commands.ShootCommand;
 import frc.robot.Commands.SystemCheck;
 import frc.robot.Commands.Hood.ResetHood;
-import frc.robot.Commands.Intake.AgitateJ;
 import frc.robot.Commands.Intake.DefaultIntake;
 import frc.robot.Commands.Intake.ResetIntake;
 import frc.robot.Subsystems.HoodSubsystem;
@@ -31,8 +25,8 @@ import frc.robot.Subsystems.IntakeSubsystem;
 import frc.robot.Subsystems.ShooterSubsystem;
 import frc.robot.Subsystems.Simulation;
 import frc.robot.Subsystems.TurretSubsystem;
-import frc.robot.Subsystems.swerve.SwerveSubsystem;
-import frc.robot.Subsystems.vision.Vision;
+import frc.robot.Subsystems.Swerve.SwerveSubsystem;
+import frc.robot.Subsystems.Vision.Vision;
 import frc.robot.Util.Razer2Wrapper;
 import swervelib.SwerveInputStream;
 
@@ -54,7 +48,7 @@ public class RobotContainer {
         private Simulation m_Simulation = null;
 
         // Commands
-        private final SendableChooser<Command> autoChooser;
+        private final AutoChooser autoChooser;
 
         SwerveInputStream driveAngularVelocity = SwerveInputStream.of(drivebase.getSwerveDrive(),
                         () -> driver.getLeftY() * -1,
@@ -95,11 +89,12 @@ public class RobotContainer {
                                                 () -> driver.RB.getAsBoolean() || driver.RightTrigger.getAsBoolean(),
                                                 () -> driver.LB.getAsBoolean() || driver.LeftTrigger.getAsBoolean()));
 
-                configureNamedCommands();
                 configureBindings();
 
                 DriverStation.silenceJoystickConnectionWarning(true);
-                autoChooser = AutoBuilder.buildAutoChooser();
+                autoChooser = new AutoChooser(drivebase, m_HoodSubsystem, m_IntakeSubsystem, m_TurretSubsystem,
+                                m_IndexerSubsystem,
+                                m_ShooterSubsystem);
                 SmartDashboard.putData("Auto Chooser", autoChooser);
         }
 
@@ -133,25 +128,12 @@ public class RobotContainer {
                 driver.M2.onTrue(new ResetIntake(m_IntakeSubsystem));
         }
 
-        public void configureNamedCommands() {
-                NamedCommands.registerCommand("Shoot", new ShootCommand(m_IndexerSubsystem));
-                NamedCommands.registerCommand("Shoot Agitate J",
-                                new ShootAndAgitateJ(m_IntakeSubsystem, m_IndexerSubsystem));
-                NamedCommands.registerCommand("Shoot Agitate 254",
-                                new ShootAndAgitate254(m_IntakeSubsystem, m_IndexerSubsystem));
-                NamedCommands.registerCommand("Move Away", drivebase.driveToPoseObjAvoid(
-                                () -> new Pose2d(3.5, 4, new Rotation2d(Units.degreesToRadians(180)))));
-                NamedCommands.registerCommand("Agitate", new AgitateJ(m_IntakeSubsystem));
-                NamedCommands.registerCommand("Extend Intake", new InstantCommand(
-                                () -> m_IntakeSubsystem.setIntakeAngle(Constants.Intake.INTAKE_ANGLE_DEG)));
-        }
-
         public Command getTestCommand() {
                 return new SystemCheck(m_HoodSubsystem, m_IndexerSubsystem, m_IntakeSubsystem, drivebase,
                                 m_ShooterSubsystem, m_TurretSubsystem);
         }
 
         public Command getAutonomousCommand() {
-                return autoChooser.getSelected();
+                return autoChooser.getSelectedAutoProgram();
         }
 }

@@ -14,9 +14,9 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.Subsystems.Swerve.LocalADStarAK;
 import frc.robot.Util.FuelSim;
 import frc.robot.Util.GameData;
-import frc.robot.Subsystems.swerve.LocalADStarAK;
 
 public class Robot extends LoggedRobot {
   private Command m_autonomousCommand;
