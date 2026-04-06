@@ -1,210 +1,137 @@
 package frc.robot.Subsystems;
 
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
-import ca.team4308.absolutelib.leds.AddressableLEDBufferView;
-import ca.team4308.absolutelib.leds.LEDPattern;
-import ca.team4308.absolutelib.leds.Patterns;
 import ca.team4308.absolutelib.wrapper.AbsoluteSubsystem;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.kinematics.SwerveDriveOdometry3d;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.util.Color;
 import frc.robot.Constants.Leds;
+import frc.robot.Util.AddressableLEDBufferView;
+import frc.robot.Util.LEDPattern;
+import frc.robot.Util.Patterns;
 
 public class LedSubsystem extends AbsoluteSubsystem {
     private final AddressableLED led;
     private final AddressableLEDBuffer buffer;
-    private final AddressableLEDBufferView view; // Front
-    private final AddressableLEDBufferView viewBack; // Back
-    private final AddressableLEDBufferView viewLeft; // Left
-    private final AddressableLEDBufferView viewRight; // Right
-    private final AddressableLEDBufferView underGlow; // Underneath the bot (In brain pan?)
-    private Map<Integer, AddressableLEDBufferView> allViews = new java.util.HashMap<>();
-    private Pose2d[] DriverSationCords = {
-            // Blue Alliance driver station locations
-            new Pose2d(0, 7, new edu.wpi.first.math.geometry.Rotation2d()),
-            new Pose2d(0, 4, new edu.wpi.first.math.geometry.Rotation2d()),
-            new Pose2d(0, 1, new edu.wpi.first.math.geometry.Rotation2d()),
-    };
+    private final AddressableLEDBufferView hopperLeft;
+    private final AddressableLEDBufferView hopperRight;
+    private final AddressableLEDBufferView shooterLeft;
+    private final AddressableLEDBufferView shooterRight;
+
+    private List<AddressableLEDBufferView> bufferList = new ArrayList<>();
 
     private LEDPattern currentPattern;
-    @SuppressWarnings("unused")
-    private LEDPattern driverPattern;
-    /** Data for the driver **/
-    private String currentPatternName = "Idle";
-    private String driverPatternName = "Idle";
     private static final int LED_PORT = Leds.LED_PORT;
     private static final int LED_LENGTH = Leds.LED_LENGTH;
-    private static final double BRIGHTNESS = 0.55; // 0.0 = off, 1.0 = full brightness
+    private static final double BRIGHTNESS = 0.55;
 
-    public LedSubsystem() {
+    // Tune this to whatever current (amps) reliably indicates the intake is running
+    private static final double INTAKE_CURRENT_THRESHOLD = 5.0;
+
+    // How long (ms) to blink the LEDs off when the beambreak triggers
+    private static final long BEAMBREAK_BLINK_DURATION_MS = 150;
+
+    private boolean prevBeambreak = false;
+    private long beambreakBlinkStartMs = -1;
+
+    private final IntakeSubsystem m_IntakeSubsystem;
+    private final IndexerSubsystem m_IndexerSubsystem;
+
+    public LedSubsystem(IntakeSubsystem m_IntakeSubsystem, IndexerSubsystem m_IndexerSubsystem) {
         super();
         led = new AddressableLED(LED_PORT);
         buffer = new AddressableLEDBuffer(LED_LENGTH);
         led.setLength(LED_LENGTH);
         led.setData(buffer);
         led.start();
-        view = new AddressableLEDBufferView(buffer, Leds.startIndexes[0], Leds.startIndexes[1] - Leds.startIndexes[0]);
-        viewBack = new AddressableLEDBufferView(buffer, Leds.startIndexes[1],
+
+        hopperLeft = new AddressableLEDBufferView(buffer, Leds.startIndexes[0],
+                Leds.startIndexes[1] - Leds.startIndexes[0]);
+        hopperRight = new AddressableLEDBufferView(buffer, Leds.startIndexes[1],
                 Leds.startIndexes[2] - Leds.startIndexes[1]);
-        viewLeft = new AddressableLEDBufferView(buffer, Leds.startIndexes[2],
+        shooterLeft = new AddressableLEDBufferView(buffer, Leds.startIndexes[2],
                 Leds.startIndexes[3] - Leds.startIndexes[2]);
-        viewRight = new AddressableLEDBufferView(buffer, Leds.startIndexes[3],
+        shooterRight = new AddressableLEDBufferView(buffer, Leds.startIndexes[3],
                 Leds.startIndexes[4] - Leds.startIndexes[3]);
-        underGlow = new AddressableLEDBufferView(buffer, Leds.startIndexes[4], LED_LENGTH - Leds.startIndexes[4]);
-        allViews.put(Leds.viewAngles[0], view);
-        allViews.put(Leds.viewAngles[1], viewBack);
-        allViews.put(Leds.viewAngles[2], viewLeft);
-        allViews.put(Leds.viewAngles[3], viewRight);
+
+        bufferList.add(hopperLeft);
+        bufferList.add(hopperRight);
+        bufferList.add(shooterLeft);
+        bufferList.add(shooterRight);
 
         currentPattern = Patterns.scrollingIdle(Color.kDarkRed, 1);
-        driverPattern = Patterns.scrollingIdle(Color.kDarkRed, 1);
+
+        this.m_IndexerSubsystem = m_IndexerSubsystem;
+        this.m_IntakeSubsystem = m_IntakeSubsystem;
     }
 
-    public AddressableLEDBufferView getViewFacingDriver(SwerveDriveOdometry3d odometry) {
-        double robotX = odometry.getPoseMeters().getX();
-        double robotY = odometry.getPoseMeters().getY();
-        double robotAngle = odometry.getPoseMeters().getRotation().toRotation2d().getDegrees();
+    private LEDPattern getIdlePattern() {
+        if (DriverStation.getAlliance().get().equals(Alliance.Red))
+            return Patterns.scrollingIdle(Color.lerpRGB(Color.kDarkRed, Color.kRed, 0.5), 1);
+        return Patterns.scrollingIdle(Color.lerpRGB(Color.kDarkBlue, Color.kBlue, 0.5), 1);
+    }
 
-        double dsX = 0.0;
-        double dsY = 0.0;
+    /** Periodic yellow blink — one flash every 0.5 s */
+    private LEDPattern getIntakingPattern() {
+        return Patterns.createBlinkingPattern(Color.kYellow, 0.5);
+    }
 
-        var location = DriverStation.getLocation();
-        if (location.isPresent() && location.getAsInt() >= 1 && location.getAsInt() <= 3) {
-            Pose2d dsPose = DriverSationCords[location.getAsInt() - 1];
-            dsX = dsPose.getX();
-            dsY = dsPose.getY();
-        }
+    /** Solid green used for shooting / intake+shooting base state */
+    private LEDPattern getSolidGreenPattern() {
+        return Patterns.createSolidPattern(Color.kGreen);
+    }
 
-        var alliance = DriverStation.getAlliance();
-        if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) {
-            dsX = 16.541;
-        }
-
-        double driverStationAngle = Math.toDegrees(Math.atan2(dsY - robotY, dsX - robotX));
-
-        double angleToDriver = (driverStationAngle - robotAngle) % 360.0;
-        if (angleToDriver < 0) {
-            angleToDriver += 360.0;
-        }
-
-        int nearestViewAngle = (int) Math.round(angleToDriver / 90.0) * 90;
-        if (nearestViewAngle == 360) {
-            nearestViewAngle = 0;
-        }
-
-        return allViews.get(nearestViewAngle);
+    /** All-off pattern used for the beambreak blink-off window */
+    private LEDPattern getOffPattern() {
+        return Patterns.createSolidPattern(Color.kBlack);
     }
 
     public void updateLeds() {
-        if (currentPattern != null) {
-            for (AddressableLEDBufferView view : allViews.values()) {
-                // Uncomment code when we have swerve added
-                // if (view ==
-                // getViewFacingDriver(StateManager.getInstance().getSwerveOdometry())) {
-                // driverPattern.applyTo(view);
-                // }
-                currentPattern.applyTo(view);
-            }
-            Patterns.defaultScrollingIdle().applyTo(underGlow);
+        for (AddressableLEDBufferView view : bufferList) {
+            currentPattern.applyTo(view);
         }
-        // Dim the entire buffer to the desired brightness
+        // Apply global brightness scalar
         for (int i = 0; i < buffer.getLength(); i++) {
             Color c = buffer.getLED(i);
-            buffer.setLED(i, new Color(c.red * BRIGHTNESS, c.green * BRIGHTNESS, c.blue * BRIGHTNESS));
+            buffer.setLED(i, new Color(
+                    c.red * BRIGHTNESS,
+                    c.green * BRIGHTNESS,
+                    c.blue * BRIGHTNESS));
         }
         led.setData(buffer);
     }
 
-    public void setIdle() {
-        currentPattern = Patterns.scrollingIdle(Color.lerpRGB(Color.kDodgerBlue, Color.kBlue, 0.5), 1);
-        currentPatternName = "Idle";
+    @Override
+    public void periodic() {
+        boolean beambreak = m_IndexerSubsystem.getBeambreak();
+        double intakeCurrent = m_IntakeSubsystem.getRollerSupplyCurrent();
+        boolean indexerSpinning = m_IndexerSubsystem.getBallTunnelVelocity() > 1;
 
-        driverPattern = Patterns.scrollingIdle(Color.lerpRGB(Color.kDodgerBlue, Color.kBlue, 0.5), 1);
-        driverPatternName = "Idle";
+        boolean isIntaking = intakeCurrent > INTAKE_CURRENT_THRESHOLD;
+        boolean isShooting = indexerSpinning;
 
-    }
+        if (beambreak && !prevBeambreak) {
+            beambreakBlinkStartMs = System.currentTimeMillis();
+        }
+        prevBeambreak = beambreak;
 
-    /**
-     * Sets the Drivers LED pattern to error
-     */
-    public void setError() {
-        driverPattern = Patterns.error();
-        driverPatternName = "Error";
-    }
+        boolean inBeambreakBlink = beambreakBlinkStartMs >= 0
+                && (System.currentTimeMillis() - beambreakBlinkStartMs) < BEAMBREAK_BLINK_DURATION_MS;
 
-    /**
-     * Sets the Drivers LED pattern to success
-     */
-    public void setSuccess() {
-        driverPattern = Patterns.success();
-        driverPatternName = "Success";
-    }
+        if (isShooting) {
+            currentPattern = inBeambreakBlink ? getOffPattern() : getSolidGreenPattern();
+        } else if (isIntaking) {
+            currentPattern = getIntakingPattern();
+        } else {
+            currentPattern = getIdlePattern();
+        }
 
-    /**
-     * Sets the Drivers LED pattern to warning
-     */
-    public void setWarning() {
-        driverPattern = Patterns.warning();
-        driverPatternName = "Warning";
-    }
-
-    /**
-     * Sets the Drivers LED pattern to loading
-     * 
-     * @param speed the speed of the loading pattern, where 1.0 is normal speed
-     */
-    public void setWarning(double speed) {
-        driverPattern = Patterns.createBreathingPattern(Color.kYellow, speed);
-        driverPatternName = "Warning";
-    }
-
-    public void setChasingDot(Color color) {
-        currentPattern = Patterns.chasingDot(color);
-        currentPatternName = "Chasing Dot";
-    }
-
-    // public void applyStatePattern(StateManager.RobotState state) {
-    // String name = state.name();
-    // if (name.equals(currentPatternName)) {
-    // return;
-    // }
-
-    // switch (state) {
-    // case Home :
-    // currentPattern = Patterns.getAllianceBreathing(2.0);
-    // break;
-
-    // case ActiveTeleopAllianceZone, ActiveTeleopOpponentZone,
-    // ActiveTeleopNeutralZone:
-    // currentPattern = Patterns.altF4();
-    // break;
-
-    // case InactiveTeleopAllianceZone,InactiveTeleopNeutralZone,
-    // InactiveTeleopOpponentZone:
-    // currentPattern = Patterns.defaultScrollingIdle();
-    // break;
-
-    // case EndgameTeleopAllianceZone,EndgameTeleopNeutralZone,
-    // EndgameTeleopOpponentZone:
-    // currentPattern = Patterns.createBlinkingPattern(Color.kRed,
-    // DriverStation.getMatchTime() / 30.0);
-    // break;
-
-    // default:
-    // currentPattern = Patterns.defaultScrollingIdle();
-    // break;
-    // }
-
-    // currentPatternName = name;
-    // }
-
-    public String getCurrentPatternName() {
-        return currentPatternName + ", " + driverPatternName;
+        updateLeds();
     }
 
     @Override

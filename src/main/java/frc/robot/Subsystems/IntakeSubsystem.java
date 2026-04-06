@@ -36,6 +36,7 @@ public class IntakeSubsystem extends SubsystemBase {
   private double offset = -Constants.Intake.RETRACTED_ANGLE_DEG;
 
   private StatusSignal<Current> pivotSupplyCurrent = m_pivotMotor.getSupplyCurrent();
+  private StatusSignal<Current> rollerSupplyCurrent = m_rollerMotor.getSupplyCurrent();
 
   private final SubsystemVerbosity verbosity;
 
@@ -114,6 +115,10 @@ public class IntakeSubsystem extends SubsystemBase {
 
   public double getPivotSupplyCurrent() {
     return pivotSupplyCurrent.getValueAsDouble();
+  }
+
+  public double getRollerSupplyCurrent() {
+    return rollerSupplyCurrent.getValueAsDouble();
   }
 
   /* ---------------- Pivot ---------------- */
