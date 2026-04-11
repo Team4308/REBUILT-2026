@@ -91,10 +91,38 @@ public class LedSubsystem extends AbsoluteSubsystem {
         return Patterns.createSolidPattern(Color.kBlack);
     }
 
-    public void updateLeds() {
+    /**
+     * Update LEDs and apply hopper-fill mask.
+     * 
+     * @param hopperFillCount number of hopper LEDs (starting from the leftmost
+     *                        hopper LED) to keep lit. Remaining hopper LEDs will be
+     *                        forced off.
+     */
+    public void updateLeds(int hopperFillCount) {
         for (AddressableLEDBufferView view : bufferList) {
             currentPattern.applyTo(view);
         }
+
+        // Mask out hopper LEDs beyond the requested fill count so only the first
+        // `hopperFillCount` LEDs (starting from the left hopper end) remain visible.
+        int leftStart = Leds.startIndexes[0];
+        int leftEnd = Leds.startIndexes[1];
+        int rightStart = Leds.startIndexes[1];
+        int rightEnd = Leds.startIndexes[2];
+
+        int leftLen = leftEnd - leftStart;
+        int rightLen = rightEnd - rightStart;
+        int totalHopper = leftLen + rightLen;
+
+        int fill = Math.max(0, Math.min(hopperFillCount, totalHopper));
+
+        for (int i = 0; i < totalHopper; i++) {
+            if (i >= fill) {
+                int globalIndex = (i < leftLen) ? (leftStart + i) : (rightStart + (i - leftLen));
+                buffer.setLED(globalIndex, Color.kBlack);
+            }
+        }
+
         // Apply global brightness scalar
         for (int i = 0; i < buffer.getLength(); i++) {
             Color c = buffer.getLED(i);
@@ -111,6 +139,7 @@ public class LedSubsystem extends AbsoluteSubsystem {
         boolean beambreak = m_IndexerSubsystem.getBeambreak();
         double intakeCurrent = m_IntakeSubsystem.getRollerSupplyCurrent();
         boolean indexerSpinning = m_IndexerSubsystem.getBallTunnelVelocity() > 1;
+        var hopperState = m_IntakeSubsystem.getHopperState();
 
         boolean isIntaking = intakeCurrent > INTAKE_CURRENT_THRESHOLD;
         boolean isShooting = indexerSpinning;
@@ -131,7 +160,34 @@ public class LedSubsystem extends AbsoluteSubsystem {
             currentPattern = getIdlePattern();
         }
 
-        updateLeds();
+        // Decide hopper fill count based on hopper state: EMPTY=10%, HALF=50%,
+        // FULL=100%
+        int leftStart = Leds.startIndexes[0];
+        int leftEnd = Leds.startIndexes[1];
+        int rightStart = Leds.startIndexes[1];
+        int rightEnd = Leds.startIndexes[2];
+        int leftLen = leftEnd - leftStart;
+        int rightLen = rightEnd - rightStart;
+        int totalHopper = leftLen + rightLen;
+
+        double fillPercent;
+        switch (hopperState) {
+            case FULL:
+                fillPercent = 1.0;
+                break;
+            case HALF:
+                fillPercent = 0.5;
+                break;
+            case EMPTY:
+            default:
+                fillPercent = 0.10;
+                break;
+        }
+
+        int fillCount = (int) Math.ceil(totalHopper * fillPercent);
+        fillCount = Math.max(0, Math.min(fillCount, totalHopper));
+
+        updateLeds(fillCount);
     }
 
     @Override
