@@ -191,6 +191,9 @@ public final class Constants {
 
   public static final class Intake {
     // Roller tuning
+
+    public static final boolean TUNING_MODE = true;
+    
     public static final double ROLLER_GEAR_RATIO = 15.0 / 21.0;
     public static final double ROLLER_KP = 0.115;
     public static final double ROLLER_KI = 0.0;

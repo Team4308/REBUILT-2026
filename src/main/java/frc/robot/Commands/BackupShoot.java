@@ -36,7 +36,7 @@ public class BackupShoot extends Command {
 
     @Override
     public void initialize() {
-        m_HoodSubsystem.setHoodAngle(0); // TODO: FIND THESE VALUES
+        m_HoodSubsystem.setHoodAngle(0); 
         m_ShooterSubsystem.setTargetSpeed(0);
     }
 
