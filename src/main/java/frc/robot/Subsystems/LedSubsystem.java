@@ -28,13 +28,9 @@ public class LedSubsystem extends AbsoluteSubsystem {
     private LEDPattern currentPattern;
     private static final int LED_PORT = Leds.LED_PORT;
     private static final int LED_LENGTH = Leds.LED_LENGTH;
-    private static final double BRIGHTNESS = 0.55;
-
-    // Tune this to whatever current (amps) reliably indicates the intake is running
-    private static final double INTAKE_CURRENT_THRESHOLD = 5.0;
-
-    // How long (ms) to blink the LEDs off when the beambreak triggers
-    private static final long BEAMBREAK_BLINK_DURATION_MS = 150;
+    private static final double BRIGHTNESS = Leds.BRIGHTNESS;
+    private static final double INTAKE_CURRENT_THRESHOLD = Leds.INTAKE_CURRENT_THRESHOLD;
+    private static final long BEAMBREAK_BLINK_DURATION_MS = Leds.BEAMBREAK_BLINK_DURATION_MS;
 
     private boolean prevBeambreak = false;
     private long beambreakBlinkStartMs = -1;
@@ -72,8 +68,8 @@ public class LedSubsystem extends AbsoluteSubsystem {
 
     private LEDPattern getIdlePattern() {
         if (DriverStation.getAlliance().get().equals(Alliance.Red))
-            return Patterns.scrollingIdle(Color.lerpRGB(Color.kDarkRed, Color.kRed, 0.5), 1);
-        return Patterns.scrollingIdle(Color.lerpRGB(Color.kDarkBlue, Color.kBlue, 0.5), 1);
+            return Patterns.getAlliancePattern(Color.kRed);
+        return Patterns.getAlliancePattern(Color.kBlue);
     }
 
     /** Periodic yellow blink — one flash every 0.5 s */
@@ -103,8 +99,6 @@ public class LedSubsystem extends AbsoluteSubsystem {
             currentPattern.applyTo(view);
         }
 
-        // Mask out hopper LEDs beyond the requested fill count so only the first
-        // `hopperFillCount` LEDs (starting from the left hopper end) remain visible.
         int leftStart = Leds.startIndexes[0];
         int leftEnd = Leds.startIndexes[1];
         int rightStart = Leds.startIndexes[1];
@@ -123,7 +117,6 @@ public class LedSubsystem extends AbsoluteSubsystem {
             }
         }
 
-        // Apply global brightness scalar
         for (int i = 0; i < buffer.getLength(); i++) {
             Color c = buffer.getLED(i);
             buffer.setLED(i, new Color(
@@ -160,8 +153,7 @@ public class LedSubsystem extends AbsoluteSubsystem {
             currentPattern = getIdlePattern();
         }
 
-        // Decide hopper fill count based on hopper state: EMPTY=10%, HALF=50%,
-        // FULL=100%
+    
         int leftStart = Leds.startIndexes[0];
         int leftEnd = Leds.startIndexes[1];
         int rightStart = Leds.startIndexes[1];

@@ -267,6 +267,9 @@ public final class Constants {
     public static final int[] startIndexes = new int[] { 0, 1, 2, 3, 60 }; // Front, Back, Left, Right, UnderGlow
     public static final int[] viewAngles = new int[] { 0, 90, 180, 270 }; // Front, Back, Left, Right (in Degrees from
                                                                           // facing the front of the robot)
+    public static final double BRIGHTNESS = 0.55;
+    public static final double INTAKE_CURRENT_THRESHOLD = 5.0;
+    public static final long BEAMBREAK_BLINK_DURATION_MS = 150;
   }
 
   public static final class Simulation {
