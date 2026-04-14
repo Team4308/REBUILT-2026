@@ -14,7 +14,7 @@ public class MiddleDepotAuto extends AutoProgram {
     public MiddleDepotAuto(SwerveSubsystem drivebase, IndexerSubsystem m_indexerSubsystem,
             IntakeSubsystem m_intakeSubsystem) {
         super(Auto.MIDDEPOT, "Middle Depot", drivebase, FieldLayout.StartingPoses.getMidStartingPose(),
-                drivebase.driveToPoseObjAvoid(() -> new Pose2d(3.5, 4, new Rotation2d())),
+                drivebase.driveToPoseObjAvoid(new Pose2d(3.5, 4, new Rotation2d()), 0, 6),
                 new ShootAndAgitate254(m_intakeSubsystem, m_indexerSubsystem));
     }
 }

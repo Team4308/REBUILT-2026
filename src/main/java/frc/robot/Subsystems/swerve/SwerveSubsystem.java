@@ -471,6 +471,14 @@ public class SwerveSubsystem extends SubsystemBase {
     });
   }
 
+  public Command driveToPoseObjAvoid(Supplier<Pose2d> pose, Supplier<Double> finalVelocity, double timeoutMs) {
+    return defer(() -> driveToPoseObjAvoid(pose.get(), finalVelocity.get())).withTimeout(timeoutMs * 1000);
+  }
+
+  public Command driveToPoseObjAvoid(Pose2d pose, double finalVelocity, double timeoutMs) {
+    return defer(() -> driveToPoseObjAvoid(pose, finalVelocity)).withTimeout(timeoutMs * 1000);
+  }
+
   public Command driveToPoseObjAvoid(Supplier<Pose2d> pose, Supplier<Double> finalVelocity) {
     return defer(() -> driveToPoseObjAvoid(pose.get(), finalVelocity.get()));
   }
