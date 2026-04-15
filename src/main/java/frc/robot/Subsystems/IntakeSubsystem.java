@@ -8,6 +8,7 @@ import ca.team4308.absolutelib.math.DoubleUtils;
 import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.*;
@@ -43,6 +44,24 @@ public class IntakeSubsystem extends SubsystemBase {
   public final static ArmFeedforward feedforward = Constants.Intake.feedforward;
   public final static ProfiledPIDController pidController = Constants.Intake.pidController;
 
+  // Tuning for Rollers
+  public final LoggedNetworkNumber Roller_kP;
+  public final LoggedNetworkNumber Roller_kI;
+  public final LoggedNetworkNumber Roller_kD;
+  public final LoggedNetworkNumber Roller_kV;
+  public final LoggedNetworkNumber Roller_kS;
+
+  public final LoggedNetworkNumber Pivot_kP;
+  public final LoggedNetworkNumber Pivot_kI;
+  public final LoggedNetworkNumber Pivot_kD;
+  public final LoggedNetworkNumber Pivot_kV;
+  public final LoggedNetworkNumber Pivot_kS;
+
+  public TalonFXConfiguration oldConfig = new TalonFXConfiguration();
+  public TalonFXConfiguration tunableConfig = new TalonFXConfiguration();
+
+  // PID and FF
+
   private Supplier<Double> simSupplier;
 
   private double voltage;
@@ -72,6 +91,17 @@ public class IntakeSubsystem extends SubsystemBase {
     m_pivotMotor.getConfigurator().apply(limitConfigs);
 
     this.enabled = enabled;
+
+    Roller_kP = new LoggedNetworkNumber("/Tuning/Roller_kP", Constants.Intake.ROLLER_KP);
+    Roller_kI = new LoggedNetworkNumber("/Tuning/Roller_kI", Constants.Intake.ROLLER_KI);
+    Roller_kD = new LoggedNetworkNumber("/Tuning/Roller_kD", Constants.Intake.ROLLER_KD);
+    Roller_kV = new LoggedNetworkNumber("/Tuning/Roller_kV", Constants.Intake.ROLLER_KV);
+    Roller_kS = new LoggedNetworkNumber("/Tuning/Roller_kS", Constants.Intake.ROLLER_KS);
+    Pivot_kP = new LoggedNetworkNumber("/Tuning/Pivot_kP", Constants.Intake.pidController.getP());
+    Pivot_kI = new LoggedNetworkNumber("/Tuning/Pivot_kI", Constants.Intake.pidController.getI());
+    Pivot_kD = new LoggedNetworkNumber("/Tuning/Pivot_kD", Constants.Intake.pidController.getD());
+    Pivot_kV = new LoggedNetworkNumber("/Tuning/Pivot_kV", Constants.Intake.feedforward.getKv());
+    Pivot_kS = new LoggedNetworkNumber("/Tuning/Pivot_kS", Constants.Intake.feedforward.getKs());
   }
 
   /* ---------------- Roller ---------------- */
@@ -158,8 +188,28 @@ public class IntakeSubsystem extends SubsystemBase {
     cfg.Slot0.kD = Constants.Intake.ROLLER_KD;
     cfg.Slot0.kS = Constants.Intake.ROLLER_KS;
     cfg.Slot0.kV = Constants.Intake.ROLLER_KV;
-
+    oldConfig = cfg;
     m_rollerMotor.getConfigurator().apply(cfg);
+  }
+
+  private void updateRollerConfig() {
+    tunableConfig.Slot0.kP = Roller_kP.getAsDouble();
+    tunableConfig.Slot0.kI = Roller_kI.getAsDouble();
+    tunableConfig.Slot0.kD = Roller_kD.getAsDouble();
+    tunableConfig.Slot0.kS = Roller_kS.getAsDouble();
+    tunableConfig.Slot0.kV = Roller_kV.getAsDouble();
+
+    m_rollerMotor.getConfigurator().apply(tunableConfig);
+    oldConfig = tunableConfig;
+  }
+
+  private void updatePivotConfig() {
+    pidController.setP(Pivot_kP.getAsDouble());
+    pidController.setI(Pivot_kI.getAsDouble());
+    pidController.setD(Pivot_kD.getAsDouble());
+    feedforward.setKv(Pivot_kV.getAsDouble());
+    feedforward.setKs(Pivot_kS.getAsDouble());
+
   }
 
   private double rotToDeg(double rot) {
@@ -193,8 +243,21 @@ public class IntakeSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    targetAngleDeg = MathUtil.clamp(targetAngleDeg, 0, 127);
+    // Tuning
+    if (Constants.Intake.TUNING_MODE && !oldConfig.equals(tunableConfig)) {
+      updateRollerConfig();
+    }
 
+    if (Constants.Intake.TUNING_MODE &&
+        (pidController.getP() != Pivot_kP.getAsDouble() ||
+            pidController.getI() != Pivot_kI.getAsDouble() ||
+            pidController.getD() != Pivot_kD.getAsDouble() ||
+            feedforward.getKv() != Pivot_kV.getAsDouble() ||
+            feedforward.getKs() != Pivot_kS.getAsDouble())) {
+      updatePivotConfig();
+    }
+
+    targetAngleDeg = MathUtil.clamp(targetAngleDeg, 0, 127);
     double currentDeg = getIntakeAngle();
 
     double pidOutput = pidController.calculate(currentDeg, targetAngleDeg);
