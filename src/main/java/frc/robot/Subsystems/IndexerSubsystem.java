@@ -101,9 +101,11 @@ public class IndexerSubsystem extends SubsystemBase {
             m_hopperMotor1.setControl(m_hopperRequest.withVelocity(motorRPS));
             m_hopperMotor2.setControl(m_hopperRequest.withVelocity(motorRPS));
         } else {
-            m_hopperMotor1.setControl(m_hopperRequest.withVelocity(Constants.Indexer.EJECT_SPEED));
-            m_hopperMotor2.setControl(m_hopperRequest.withVelocity(Constants.Indexer.EJECT_SPEED));
+            // m_hopperMotor1.setControl(m_hopperRequest.withVelocity(Constants.Indexer.EJECT_SPEED));
+            // m_hopperMotor2.setControl(m_hopperRequest.withVelocity(Constants.Indexer.EJECT_SPEED));
         }
+        m_hopperMotor1.setControl(m_hopperRequest.withVelocity(motorRPS));
+        m_hopperMotor2.setControl(m_hopperRequest.withVelocity(motorRPS));
         m_ballTunnelMotor.setControl(m_indexerRequest.withVelocity(motorRPS2));
     }
 

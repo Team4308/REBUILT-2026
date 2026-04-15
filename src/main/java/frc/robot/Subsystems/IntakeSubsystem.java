@@ -49,8 +49,6 @@ public class IntakeSubsystem extends SubsystemBase {
 
   private boolean enabled;
 
-  private boolean hopperExtended;
-
   public enum HopperStates {
     EMPTY,
     HALF,
@@ -60,7 +58,7 @@ public class IntakeSubsystem extends SubsystemBase {
   private HopperStates hopperState = HopperStates.EMPTY;
 
   public IntakeSubsystem(boolean enabled) {
-    verbosity = SubsystemVerbosity.LOW;
+    verbosity = SubsystemVerbosity.HIGH;
     m_pivotMotor.setPosition(0);
     configureRoller();
     pidController.reset(targetAngleDeg);
@@ -74,8 +72,6 @@ public class IntakeSubsystem extends SubsystemBase {
     m_pivotMotor.getConfigurator().apply(limitConfigs);
 
     this.enabled = enabled;
-
-    hopperExtended = false;
   }
 
   /* ---------------- Roller ---------------- */
@@ -85,12 +81,9 @@ public class IntakeSubsystem extends SubsystemBase {
         (rpm.get() / -60.0) * Constants.Intake.ROLLER_GEAR_RATIO);
     if (!enabled)
       return;
-    if (hopperExtended) {
-      m_rollerMotor.setControl(
-          rollerRequest.withVelocity((rpm.get() / -60.0) * Constants.Intake.ROLLER_GEAR_RATIO));
-    } else {
-      m_rollerMotor.setControl(rollerRequest.withVelocity(1));
-    }
+    m_rollerMotor.setControl(
+        rollerRequest.withVelocity((rpm.get() / -60.0) * Constants.Intake.ROLLER_GEAR_RATIO));
+
   }
 
   public void setHopperState(HopperStates state) {
@@ -204,16 +197,12 @@ public class IntakeSubsystem extends SubsystemBase {
 
     double currentDeg = getIntakeAngle();
 
-    if (currentDeg < 3.0 && !hopperExtended) {
-      hopperExtended = true;
-    }
-
     double pidOutput = pidController.calculate(currentDeg, targetAngleDeg);
     double ffOutput = feedforward.calculate(pidController.getSetpoint().position,
         pidController.getSetpoint().velocity);
     voltage = pidOutput + ffOutput;
-    if (enabled)
-      m_pivotMotor.setVoltage(voltage);
+    // if (enabled)
+    // m_pivotMotor.setVoltage(voltage);
 
     if (verbosity == SubsystemVerbosity.LOW || verbosity == SubsystemVerbosity.HIGH) {
       Logger.recordOutput("Subsystems/Intake/Pivot/Is At Angle?", isAtAngle());

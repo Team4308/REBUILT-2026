@@ -63,7 +63,7 @@ public class TurretSubsystem extends SubsystemBase {
         }
         m_currentDegUnWrapped = Constants.Shooting.Turret.TURRET_START_ANGLE;
 
-        verbosity = SubsystemVerbosity.LOW;
+        verbosity = SubsystemVerbosity.HIGH;
         this.enabled = enabled;
         m_driveMotor.setPosition(0);
 
@@ -194,8 +194,7 @@ public class TurretSubsystem extends SubsystemBase {
         double pidOutput = pidController.calculate(m_currentDegUnWrapped, m_targetDegUnWrapped);
         double ffOutput = feedforward.calculate(
                 pidController.getSetpoint().position,
-                pidController.getSetpoint().velocity,
-                Units.degreesToRadians(Constants.Shooting.Turret.MAX_ACCELERATION));
+                pidController.getSetpoint().velocity);
 
         if (ffOutput == 0 && !isAtTarget()) {
             if (pidOutput < 0) {

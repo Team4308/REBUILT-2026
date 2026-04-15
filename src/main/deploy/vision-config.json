@@ -9,7 +9,7 @@
             "type": "APRILTAG",
             "streamType": "PHOTON",
             "enabled": true,
-            "transform": { "x": 12.089195, "y": -8.686956, "z": 8.539588, "roll": 10.0, "pitch": -20, "yaw": 30.0 },
+            "transform": { "x": -8.686956, "y": 12.089195, "z": 8.539588, "roll": 0.0, "pitch": -20, "yaw": 60.0 },
             "resolution": { "width": 800, "height": 600, "fov": 70.0 }
         },
         {
@@ -17,7 +17,7 @@
             "type": "APRILTAG",
             "streamType": "PHOTON",
             "enabled": true,
-            "transform": { "x": 7.582443, "y": -11.582443, "z": 9.047106, "roll": 0.0, "pitch": -22, "yaw": 135.0 },
+            "transform": { "x": -11.582443, "y": 7.582443, "z": 9.047106, "roll": 0.0, "pitch": -22, "yaw": 135.0 },
             "resolution": { "width": 320, "height": 240, "fov": 70.0 }
         },
         {
@@ -25,16 +25,15 @@
             "type": "APRILTAG",
             "streamType": "PHOTON", 
             "enabled": true,
-            "transform": {
-                "x": -7.564, "y": -11.563804, "z": 9.041382, "roll": 0.0, "pitch": -22, "yaw": -135.0},
+            "transform": { "x": -11.563804, "y": -7.564, "z": 9.041382, "roll": 0.0, "pitch": -22, "yaw": -135.0},
             "resolution": { "width": 800, "height": 600, "fov": 70.0 }
         },
         {
             "name": "TagCam_FrontRight",
             "type": "APRILTAG",
             "streamType": "PHOTON",
-            "enabled": true,
-            "transform": { "x": -12.027180, "y": -8.297590, "z": 8.521274, "roll": 0.0, "pitch": -20, "yaw": -30.0 },
+            "enabled": false,
+            "transform": { "x": -8.297590, "y": -12.027180, "z": 8.521274, "roll": 0.0, "pitch": -20, "yaw": -60.0 },
             "resolution": { "width": 800, "height": 600, "fov": 70.0 }
         },
         {

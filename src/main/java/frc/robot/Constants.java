@@ -96,8 +96,8 @@ public final class Constants {
 
       public final static double GEAR_RATIO_MOTOR = (12.0 / 50.0) * (10.0 / 85.0);
       public final static double STOPPED_VELOCITY = 1.0;
-      public final static double MIN_DEGREES = 230;
-      public final static double MAX_DEGREES = 230 + 360;
+      public final static double MIN_DEGREES = 270;
+      public final static double MAX_DEGREES = 270 + 360;
       public final static double FULL_REVOLUTION_DEG = 360;
       public final static double TURRET_TOLERANCE_DEGREES = 4.0;
       public final static double TURRET_START_ANGLE = 360;
@@ -108,7 +108,7 @@ public final class Constants {
       public final static double MAX_ACCELERATION = 2000.0;
 
       public final static ProfiledPIDController pidController = new ProfiledPIDController(
-          0.02, 0.0, 0.0,
+          0.08, 0.0, 0.0,
           new TrapezoidProfile.Constraints(1500, MAX_ACCELERATION));
     }
 
@@ -241,7 +241,7 @@ public final class Constants {
     public static double BALL_TUNNEL_Ki = 0;
     public static double BALL_TUNNEL_Kd = 0;
 
-    public static double EJECT_CURRENT = 160.0;
+    public static double EJECT_CURRENT = 2000.0;
     public static double EJECT_SECONDS = 0.1;
     public static double EJECT_SPEED = -10.0;
 
