@@ -37,6 +37,8 @@ import frc.robot.Util.Razer2Wrapper;
 import swervelib.SwerveInputStream;
 
 public class RobotContainer {
+        private double speedModifier = 1.0;
+
         // Controllers
         final Razer2Wrapper driver = new Razer2Wrapper(0, 1);
 
@@ -59,9 +61,9 @@ public class RobotContainer {
         private final AimEverything aimEverythingCommand;
 
         SwerveInputStream driveAngularVelocity = SwerveInputStream.of(drivebase.getSwerveDrive(),
-                        () -> driver.getLeftY() * -1,
-                        () -> driver.getLeftX() * -1)
-                        .withControllerRotationAxis(() -> driver.getRightX() * -1)
+                        () -> driver.getLeftY() * -1 * speedModifier,
+                        () -> driver.getLeftX() * -1 * speedModifier)
+                        .withControllerRotationAxis(() -> driver.getRightX() * -1 * speedModifier)
                         .deadband(Constants.OperatorConstants.DEADBAND)
                         .scaleTranslation(1.0)
                         .allianceRelativeControl(true);
@@ -111,17 +113,25 @@ public class RobotContainer {
 
                 driver.RB.whileTrue(new ShootCommand(m_IndexerSubsystem, m_TurretSubsystem, m_HoodSubsystem)
                                 .alongWith(new InstantCommand(() -> aimEverythingCommand.setSide("Right"))));
+                driver.RB.onTrue(new InstantCommand(() -> speedModifier = 0.5));
+                driver.RB.onFalse(new InstantCommand(() -> speedModifier = 1.0));
                 driver.LB.whileTrue(new ShootCommand(m_IndexerSubsystem, m_TurretSubsystem, m_HoodSubsystem)
                                 .alongWith(new InstantCommand(() -> aimEverythingCommand.setSide("Left"))));
+                driver.LB.onTrue(new InstantCommand(() -> speedModifier = 0.5));
+                driver.LB.onFalse(new InstantCommand(() -> speedModifier = 1.0));
 
                 driver.RightTrigger.whileTrue(new ShootAndAgitate254(m_IntakeSubsystem, m_IndexerSubsystem,
                                 m_TurretSubsystem, m_HoodSubsystem,
                                 () -> m_IntakeSubsystem.getHopperState())
                                 .alongWith(new InstantCommand(() -> aimEverythingCommand.setSide("Right"))));
+                driver.RightTrigger.onTrue(new InstantCommand(() -> speedModifier = 0.5));
+                driver.RightTrigger.onFalse(new InstantCommand(() -> speedModifier = 1.0));
                 driver.LeftTrigger.whileTrue(new ShootAndAgitate254(m_IntakeSubsystem, m_IndexerSubsystem,
                                 m_TurretSubsystem, m_HoodSubsystem,
                                 () -> m_IntakeSubsystem.getHopperState())
                                 .alongWith(new InstantCommand(() -> aimEverythingCommand.setSide("Left"))));
+                driver.LeftTrigger.onTrue(new InstantCommand(() -> speedModifier = 0.5));
+                driver.LeftTrigger.onFalse(new InstantCommand(() -> speedModifier = 1.0));
 
                 driver.povUp.onTrue(new InstantCommand(() -> aimEverythingCommand.updatePowerOffset(100)));
                 driver.povDown.onTrue(new InstantCommand(() -> aimEverythingCommand.updatePowerOffset(-100)));

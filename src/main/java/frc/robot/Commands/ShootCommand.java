@@ -33,10 +33,10 @@ public class ShootCommand extends Command {
             hopperVelocity = 0;
         }
 
-        // if (!m_TurretSubsystem.isAtTarget() || !m_HoodSubsystem.isAtPosition()) {
-        // ballTunnelVelocity = 0;
-        // hopperVelocity = 0;
-        // }
+        if (!m_TurretSubsystem.isAtTarget() || !m_HoodSubsystem.isAtPosition()) {
+            ballTunnelVelocity = 0;
+            hopperVelocity = 0;
+        }
 
         m_IndexerSubsystem.setIndexerVelocity(hopperVelocity, ballTunnelVelocity);
 

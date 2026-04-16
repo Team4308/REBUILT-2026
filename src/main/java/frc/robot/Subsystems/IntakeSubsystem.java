@@ -74,7 +74,7 @@ public class IntakeSubsystem extends SubsystemBase {
     FULL
   }
 
-  private HopperStates hopperState = HopperStates.EMPTY;
+  private HopperStates hopperState = HopperStates.FULL;
 
   public IntakeSubsystem(boolean enabled) {
     verbosity = SubsystemVerbosity.HIGH;
@@ -264,8 +264,8 @@ public class IntakeSubsystem extends SubsystemBase {
     double ffOutput = feedforward.calculate(pidController.getSetpoint().position,
         pidController.getSetpoint().velocity);
     voltage = pidOutput + ffOutput;
-    // if (enabled)
-    // m_pivotMotor.setVoltage(voltage);
+    if (enabled)
+      m_pivotMotor.setVoltage(voltage);
 
     if (verbosity == SubsystemVerbosity.LOW || verbosity == SubsystemVerbosity.HIGH) {
       Logger.recordOutput("Subsystems/Intake/Pivot/Is At Angle?", isAtAngle());

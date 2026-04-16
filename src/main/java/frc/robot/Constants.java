@@ -99,7 +99,7 @@ public final class Constants {
       public final static double MIN_DEGREES = 270;
       public final static double MAX_DEGREES = 270 + 360;
       public final static double FULL_REVOLUTION_DEG = 360;
-      public final static double TURRET_TOLERANCE_DEGREES = 4.0;
+      public final static double TURRET_TOLERANCE_DEGREES = 90.0;
       public final static double TURRET_START_ANGLE = 360;
       public final static double TURRET_AIM_SIGN = -1.0; // +1 if turret rotates CCW for positive angles, -1 if opposite
 
@@ -113,7 +113,7 @@ public final class Constants {
     }
 
     public static final class Hood {
-      public static final double TOLERANCE_DEGREES = 2; // Tolerance for position control
+      public static final double TOLERANCE_DEGREES = 20; // Tolerance for position control
       public static final double TOLERANCE_VELOCITY = 0.5;
       public static final double TOTAL_GEAR_RATIO = 120.4;
       public static final double FORWARD_SOFT_LIMIT_ANGLE = 42.5;
@@ -193,7 +193,7 @@ public final class Constants {
     // Roller tuning
 
     public static final boolean TUNING_MODE = true;
-    
+
     public static final double ROLLER_GEAR_RATIO = 15.0 / 21.0;
     public static final double ROLLER_KP = 0.115;
     public static final double ROLLER_KI = 0.0;
@@ -212,7 +212,7 @@ public final class Constants {
 
     // Angles
     public static final double RETRACTED_ANGLE_DEG = 127.0;
-    public static final double INTAKE_ANGLE_DEG = 0.0;
+    public static final double INTAKE_ANGLE_DEG = 3.0;
 
     // Agitate
     public static final double AGITATE_LOW_DEG = 45.0;
@@ -267,7 +267,7 @@ public final class Constants {
   public static final class Leds {
     public static final int LED_PORT = 0;
     public static final int LED_LENGTH = 60;
-    public static final int[] startIndexes = new int[] { 0, 1, 2, 3, 60 }; // Front, Back, Left, Right, UnderGlow
+    public static final int[] startIndexes = new int[] { 0, 29, 58, 50, 70 }; // Front, Back, Left, Right, UnderGlow
     public static final int[] viewAngles = new int[] { 0, 90, 180, 270 }; // Front, Back, Left, Right (in Degrees from
                                                                           // facing the front of the robot)
     public static final double BRIGHTNESS = 0.55;

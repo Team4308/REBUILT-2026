@@ -40,6 +40,7 @@ public class AimEverything extends Command {
             InverseInterpolator.forDouble(), Interpolator.forDouble());
     private static final InterpolatingDoubleTreeMap flywheelSpeedMap = new InterpolatingDoubleTreeMap();
     private static final InterpolatingDoubleTreeMap timeOfFlightMap = new InterpolatingDoubleTreeMap();
+    private static final InterpolatingDoubleTreeMap passingflywheelSpeedMap = new InterpolatingDoubleTreeMap();
 
     private String side = "Left";
     private double powerOffset = 0;
@@ -73,6 +74,23 @@ public class AimEverything extends Command {
         hoodAngleMap.put(15.0, 25.5);
         hoodAngleMap.put(16.0, 26.0);
 
+        passingflywheelSpeedMap.put(1., 1000.);
+        passingflywheelSpeedMap.put(2., 1200.);
+        passingflywheelSpeedMap.put(3., 1400.);
+        passingflywheelSpeedMap.put(4., 1600.);
+        passingflywheelSpeedMap.put(5., 1800.);
+        passingflywheelSpeedMap.put(6., 2000.);
+        passingflywheelSpeedMap.put(7., 2200.);
+        passingflywheelSpeedMap.put(8., 2400.);
+        passingflywheelSpeedMap.put(9., 2600.);
+        passingflywheelSpeedMap.put(10., 2800.);
+        passingflywheelSpeedMap.put(11., 3000.);
+        passingflywheelSpeedMap.put(12., 3200.);
+        passingflywheelSpeedMap.put(13., 3400.);
+        passingflywheelSpeedMap.put(14., 3600.);
+        passingflywheelSpeedMap.put(15., 3800.);
+        passingflywheelSpeedMap.put(16., 4000.);
+
         // Key = distance (meters), Value = shooter speed (RPM)
         flywheelSpeedMap.put(1.3, 1700.0);
         flywheelSpeedMap.put(1.6, 1750.0);
@@ -82,49 +100,26 @@ public class AimEverything extends Command {
         flywheelSpeedMap.put(2.9, 1980.0);
         flywheelSpeedMap.put(3.3, 2080.0);
         flywheelSpeedMap.put(3.6, 2160.0);
-        flywheelSpeedMap.put(3.9, 2200.0);
-        flywheelSpeedMap.put(4.3, 2300.0);
-        flywheelSpeedMap.put(4.6, 2330.0);
-        flywheelSpeedMap.put(4.9, 23800.);
+        flywheelSpeedMap.put(3.9, 2180.0);
+        flywheelSpeedMap.put(4.3, 2240.0);
+        flywheelSpeedMap.put(4.6, 2305.0);
+        flywheelSpeedMap.put(4.9, 2380.);
         flywheelSpeedMap.put(5.2, 2420.);
         flywheelSpeedMap.put(5.5, 2480.);
-        flywheelSpeedMap.put(6.0, 2550.);
-        flywheelSpeedMap.put(7.0, 2650.);
-        flywheelSpeedMap.put(8.0, 2750.);
-        flywheelSpeedMap.put(9.0, 2900.);
-        flywheelSpeedMap.put(10.0, 3000.);
-        flywheelSpeedMap.put(11.0, 3100.);
-        flywheelSpeedMap.put(12.0, 3200.);
-        flywheelSpeedMap.put(13.0, 3300.);
-        flywheelSpeedMap.put(14.0, 3400.);
-        flywheelSpeedMap.put(15.0, 3500.);
-        flywheelSpeedMap.put(16.0, 3600.);
 
-        timeOfFlightMap.put(1.3, 0.8);
-        timeOfFlightMap.put(1.6, 0.9);
-        timeOfFlightMap.put(2.2, 1.);
-        timeOfFlightMap.put(2.5, 1.);
-        timeOfFlightMap.put(2.7, 1.1);
-        timeOfFlightMap.put(3., 1.1);
-        timeOfFlightMap.put(3.3, 1.1);
-        timeOfFlightMap.put(3.6, 1.2);
-        timeOfFlightMap.put(3.9, 1.3);
-        timeOfFlightMap.put(4.2, 1.4);
-        timeOfFlightMap.put(4.5, 1.6);
-        timeOfFlightMap.put(4.8, 1.7);
-        timeOfFlightMap.put(5.2, 2.);
-        timeOfFlightMap.put(5.5, 2.2);
-        timeOfFlightMap.put(6.0, 2.4);
-        timeOfFlightMap.put(7.0, 2.6);
-        timeOfFlightMap.put(8.0, 2.8);
-        timeOfFlightMap.put(9.0, 3.0);
-        timeOfFlightMap.put(10.0, 3.2);
-        timeOfFlightMap.put(11.0, 3.4);
-        timeOfFlightMap.put(12.0, 3.6);
-        timeOfFlightMap.put(13.0, 3.8);
-        timeOfFlightMap.put(14.0, 4.0);
-        timeOfFlightMap.put(15.0, 4.2);
-        timeOfFlightMap.put(16.0, 4.4);
+        timeOfFlightMap.put(1.3, 0.967);
+        timeOfFlightMap.put(1.6, 1.017);
+        timeOfFlightMap.put(1.9, 1.017);
+        timeOfFlightMap.put(2.2, 1.033);
+        timeOfFlightMap.put(2.5, 1.117);
+        timeOfFlightMap.put(2.8, 1.233);
+        timeOfFlightMap.put(3.1, 1.317);
+        timeOfFlightMap.put(3.4, 1.35);
+        timeOfFlightMap.put(3.7, 1.35);
+        timeOfFlightMap.put(4.0, 1.35);
+        timeOfFlightMap.put(4.3, 1.35);
+        timeOfFlightMap.put(4.6, 1.467);
+        timeOfFlightMap.put(4.9, 1.55);
     }
 
     private Translation2d leftTarget = new Translation2d(2, 2);
@@ -178,6 +173,7 @@ public class AimEverything extends Command {
         double dx0 = targetTranslation.getX() - shooterX;
         double dy0 = targetTranslation.getY() - shooterY;
         double staticDistance = Math.hypot(dx0, dy0);
+        Logger.recordOutput("Commands/AimAtPoint/StaticDistance", staticDistance);
 
         // --- Iterative shoot-on-the-move solve ---
         // Each iteration: use current TOF estimate → project shooter forward →
@@ -232,15 +228,94 @@ public class AimEverything extends Command {
         Logger.recordOutput("Commands/AimAtPoint/Power Offset", powerOffset);
     }
 
+    private void aimAtPoint2(Translation2d targetPoint) {
+        Pose2d pose = m_swervePose.get();
+        ChassisSpeeds robotRelativeVelocity = m_swerveVelocity.get();
+        Rotation2d rot = pose.getRotation();
+
+        // Transform shooter offset from robot-relative to field-relative
+        double worldOffsetX = shooterOffset.getX() * rot.getCos() - shooterOffset.getY() * rot.getSin();
+        double worldOffsetY = shooterOffset.getX() * rot.getSin() + shooterOffset.getY() * rot.getCos();
+        double shooterX = pose.getX() + worldOffsetX;
+        double shooterY = pose.getY() + worldOffsetY;
+
+        // Convert robot-relative velocity to field-relative
+        double vxField = robotRelativeVelocity.vxMetersPerSecond * rot.getCos()
+                - robotRelativeVelocity.vyMetersPerSecond * rot.getSin();
+        double vyField = robotRelativeVelocity.vxMetersPerSecond * rot.getSin()
+                + robotRelativeVelocity.vyMetersPerSecond * rot.getCos();
+
+        // Get the hub target (flipped for correct alliance)
+        Translation2d targetTranslation = AllianceFlipUtil.apply(targetPoint);
+
+        // Static distance (no lookahead) — for logging
+        double dx0 = targetTranslation.getX() - shooterX;
+        double dy0 = targetTranslation.getY() - shooterY;
+        double staticDistance = Math.hypot(dx0, dy0);
+        Logger.recordOutput("Commands/AimAtPoint/StaticDistance", staticDistance);
+
+        // --- Iterative shoot-on-the-move solve ---
+        // Each iteration: use current TOF estimate → project shooter forward →
+        // recompute distance → recompute TOF
+        double lookaheadShooterX = shooterX;
+        double lookaheadShooterY = shooterY;
+        double lookaheadDistance = staticDistance;
+        double timeOfFlight = timeOfFlightMap.get(staticDistance);
+
+        for (int i = 0; i < 20; i++) {
+            timeOfFlight = timeOfFlightMap.get(lookaheadDistance);
+            lookaheadShooterX = shooterX + vxField * timeOfFlight;
+            lookaheadShooterY = shooterY + vyField * timeOfFlight;
+            double ldx = targetTranslation.getX() - lookaheadShooterX;
+            double ldy = targetTranslation.getY() - lookaheadShooterY;
+            lookaheadDistance = Math.hypot(ldx, ldy);
+        }
+
+        // Aim from the lookahead position, not the current position
+        double ldx = targetTranslation.getX() - lookaheadShooterX;
+        double ldy = targetTranslation.getY() - lookaheadShooterY;
+        double fieldAngleDeg = Math.toDegrees(Math.atan2(ldy, ldx));
+        double turretAngleDeg = (Rotation2d.fromDegrees(fieldAngleDeg).minus(rot).getDegrees() % 360 + 360) % 360;
+        m_TurretSubsystem.setTarget(turretAngleDeg);
+
+        // Hood and shooter lookup from lookahead distance
+        double hoodAngle = 42.5;
+        double shooterRpm = passingflywheelSpeedMap.get(lookaheadDistance);
+
+        if (m_IndexerSubsystem.getTargetHopperVelocity() != 0.0) {
+            m_HoodSubsystem.setHoodAngle(hoodAngle);
+        } else {
+            m_HoodSubsystem.setHoodAngle(Constants.Shooting.Hood.REVERSE_SOFT_LIMIT_ANGLE);
+        }
+        m_ShooterSubsystem.setTargetSpeed(shooterRpm + powerOffset);
+
+        Logger.recordOutput("Commands/AimAtPoint/Target/Pose", targetPoint);
+        Logger.recordOutput("Commands/AimAtPoint/Robot/Rot", rot.getDegrees());
+        Logger.recordOutput("Commands/AimAtPoint/Robot/X", shooterX);
+        Logger.recordOutput("Commands/AimAtPoint/Robot/Y", shooterY);
+        Logger.recordOutput("Commands/AimAtPoint/Robot/Vx Field", vxField);
+        Logger.recordOutput("Commands/AimAtPoint/Robot/Vy Field", vyField);
+        Logger.recordOutput("Commands/AimAtPoint/Lookahead/X", lookaheadShooterX);
+        Logger.recordOutput("Commands/AimAtPoint/Lookahead/Y", lookaheadShooterY);
+        Logger.recordOutput("Commands/AimAtPoint/Lookahead/Distance", lookaheadDistance);
+        Logger.recordOutput("Commands/AimAtPoint/Lookahead/Time Of Flight", timeOfFlight);
+        Logger.recordOutput("Commands/AimAtPoint/Target/Field Deg", fieldAngleDeg);
+        Logger.recordOutput("Commands/AimAtPoint/Target/Turret Deg", turretAngleDeg);
+        Logger.recordOutput("Commands/AimAtPoint/Target/Static Distance", staticDistance);
+        Logger.recordOutput("Commands/AimAtPoint/Target/Hood Angle", hoodAngle);
+        Logger.recordOutput("Commands/AimAtPoint/Target/Shooter Rpm", shooterRpm);
+        Logger.recordOutput("Commands/AimAtPoint/Power Offset", powerOffset);
+    }
+
     @Override
     public void execute() {
         if (drivebase.getFieldLocation().equals("AllianceZone")) {
             aimAtPoint(FieldConstants.Hub.topCenterPoint.toTranslation2d());
         } else {
             if (side.equals("Left")) {
-                aimAtPoint(leftTarget);
+                aimAtPoint2(leftTarget);
             } else if (side.equals("Right")) {
-                aimAtPoint(rightTarget);
+                aimAtPoint2(rightTarget);
             }
         }
     }
