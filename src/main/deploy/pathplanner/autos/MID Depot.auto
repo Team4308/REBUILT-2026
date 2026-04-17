@@ -54,6 +54,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "Extend Intake"
+          }
+        },
+        {
           "type": "wait",
           "data": {
             "waitTime": 2.0

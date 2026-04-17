@@ -174,7 +174,9 @@ public class RobotContainer {
                                 () -> new Pose2d(3.5, 4, new Rotation2d(Units.degreesToRadians(180)))));
                 NamedCommands.registerCommand("Agitate", new AgitateJ(m_IntakeSubsystem));
                 NamedCommands.registerCommand("Extend Intake", new InstantCommand(
-                                () -> m_IntakeSubsystem.setIntakeAngle(Constants.Intake.INTAKE_ANGLE_DEG)));
+                                () -> m_IntakeSubsystem.setIntakeAngle(Constants.Intake.INTAKE_ANGLE_DEG))
+                                .alongWith(new InstantCommand(() -> m_IntakeSubsystem
+                                                .setRollerSpeed(() -> Constants.Intake.ROLLER_INTAKE_RPM))));
 
                 NamedCommands.registerCommand("Retract Intake", new InstantCommand(
                                 () -> m_IntakeSubsystem.setIntakeAngle(Constants.Intake.RETRACTED_ANGLE_DEG)));
