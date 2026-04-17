@@ -13,7 +13,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": " RIGHT SWIPE"
+            "pathName": "Right Swipe"
           }
         },
         {
@@ -23,7 +23,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 6.0
+                  "waitTime": 4.0
                 }
               },
               {
@@ -44,19 +44,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Right Shoot To HP"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 5.0
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "HP to MID Shoot"
+            "pathName": "Right Swipe 2"
           }
         },
         {
@@ -66,7 +54,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 6.0
+                  "waitTime": 10.0
                 }
               },
               {
