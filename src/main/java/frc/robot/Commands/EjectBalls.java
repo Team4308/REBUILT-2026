@@ -23,6 +23,12 @@ public class EjectBalls extends Command {
     }
 
     @Override
+    public void end(boolean interrupted) {
+        m_IntakeSubsystem.setRollerSpeed(() -> 0.);
+        m_IndexerSubsystem.setIndexerVelocity(0, 0);
+    }
+
+    @Override
     public boolean isFinished() {
         return false;
     }

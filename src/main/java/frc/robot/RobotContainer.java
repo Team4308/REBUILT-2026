@@ -116,10 +116,11 @@ public class RobotContainer {
                                 .alongWith(new InstantCommand(() -> aimEverythingCommand.setSide("Right"))));
                 driver.RB.onTrue(new InstantCommand(() -> speedModifier = 0.5));
                 driver.RB.onFalse(new InstantCommand(() -> speedModifier = 1.0));
-                driver.LB.whileTrue(new ShootCommand(m_IndexerSubsystem, m_TurretSubsystem, m_HoodSubsystem)
-                                .alongWith(new InstantCommand(() -> aimEverythingCommand.setSide("Left"))));
-                driver.LB.onTrue(new InstantCommand(() -> speedModifier = 0.5));
-                driver.LB.onFalse(new InstantCommand(() -> speedModifier = 1.0));
+                // driver.LB.whileTrue(new ShootCommand(m_IndexerSubsystem, m_TurretSubsystem,
+                // m_HoodSubsystem)
+                // .alongWith(new InstantCommand(() -> aimEverythingCommand.setSide("Left"))));
+                // driver.LB.onTrue(new InstantCommand(() -> speedModifier = 0.5));
+                // driver.LB.onFalse(new InstantCommand(() -> speedModifier = 1.0));
 
                 // driver.RightTrigger.whileTrue(new ShootAndAgitate254(m_IntakeSubsystem,
                 // m_IndexerSubsystem,
@@ -148,7 +149,7 @@ public class RobotContainer {
                 // driver.Y.onTrue(new InstantCommand(
                 // () -> m_IntakeSubsystem.setHopperState(IntakeSubsystem.HopperStates.FULL)));
 
-                driver.A.whileTrue(new EjectBalls(m_IntakeSubsystem, m_IndexerSubsystem));
+                driver.LB.whileTrue(new EjectBalls(m_IntakeSubsystem, m_IndexerSubsystem));
 
                 driver.B.whileTrue(new BackupShoot(m_HoodSubsystem, m_TurretSubsystem, m_ShooterSubsystem,
                                 drivebase));
