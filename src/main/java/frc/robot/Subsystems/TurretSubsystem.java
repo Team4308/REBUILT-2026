@@ -62,7 +62,7 @@ public class TurretSubsystem extends SubsystemBase {
         }
         m_currentDegUnWrapped = Constants.Shooting.Turret.TURRET_START_ANGLE;
 
-        verbosity = SubsystemVerbosity.HIGH;
+        verbosity = SubsystemVerbosity.LOW;
         this.enabled = enabled;
         m_driveMotor.setPosition(0);
 

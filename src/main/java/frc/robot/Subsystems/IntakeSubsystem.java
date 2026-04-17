@@ -77,7 +77,7 @@ public class IntakeSubsystem extends SubsystemBase {
   private HopperStates hopperState = HopperStates.FULL;
 
   public IntakeSubsystem(boolean enabled) {
-    verbosity = SubsystemVerbosity.HIGH;
+    verbosity = SubsystemVerbosity.LOW;
     m_pivotMotor.setPosition(0);
     configureRoller();
     pidController.reset(targetAngleDeg);

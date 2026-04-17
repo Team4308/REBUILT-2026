@@ -22,11 +22,9 @@ import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.IdealStartingState;
 import com.pathplanner.lib.path.PathPlannerPath;
-import com.pathplanner.lib.path.PathPoint;
 import com.pathplanner.lib.path.Waypoint;
 import com.pathplanner.lib.trajectory.PathPlannerTrajectoryState;
 
-import ca.team4308.absolutelib.control.RazerWrapper;
 import ca.team4308.absolutelib.math.DoubleUtils;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -35,9 +33,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.Trajectory;
-import edu.wpi.first.networktables.BooleanSubscriber;
-import edu.wpi.first.networktables.DoubleArraySubscriber;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
@@ -86,7 +81,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
   private final SendableChooser<Boolean> diagonalBumpChooser = new SendableChooser<>();
 
-  private RazerWrapper driver = new RazerWrapper(0);
+  private Pose2d curPose;
 
   private double resetTime = Timer.getFPGATimestamp() + 2; // To clear DS field 2 seconds after boot. Why? Idk
 
@@ -99,28 +94,10 @@ public class SwerveSubsystem extends SubsystemBase {
     }).start();
   }
 
-  // Puts the pathing onto DS
-  private final DoubleArraySubscriber pathPointsSub = NetworkTableInstance.getDefault()
-      .getTable("AdvantageKit/LocalADStarAK")
-      .getDoubleArrayTopic("CurrentPathPoints").subscribe(new double[] {});
-
-  private final BooleanSubscriber newPathSub = NetworkTableInstance.getDefault()
-      .getTable("AdvantageKit/LocalADStarAK")
-      .getBooleanTopic("IsNewPathAvailable")
-      .subscribe(false);
-
   private double alignedStartTime = -1; // Tracks how long the bot has been aligned for
 
-  SwerveInputStream driveAngularVelocity = SwerveInputStream.of(getSwerveDrive(),
-      () -> driver.getLeftY() * -1,
-      () -> driver.getLeftX() * -1)
-      .withControllerRotationAxis(() -> driver.getRightX() * -1)
-      .deadband(Constants.OperatorConstants.DEADBAND)
-      .scaleTranslation(1.0)
-      .allianceRelativeControl(true);
-
-  SwerveInputStream driveRobotOriented = driveAngularVelocity.copy().robotRelative(true)
-      .allianceRelativeControl(false);
+  SwerveInputStream driveAngularVelocity;
+  SwerveInputStream driveRobotOriented;
 
   public SwerveSubsystem(File directory) {
     if (Robot.isSimulation()) // Removes Ramp so we can just drive over it in sim
@@ -128,7 +105,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
     // Configure the Telemetry before creating the SwerveDrive to avoid unnecessary
     // objects being created.
-    SwerveDriveTelemetry.verbosity = TelemetryVerbosity.HIGH;
+    SwerveDriveTelemetry.verbosity = TelemetryVerbosity.LOW;
     try {
       swerveDrive = new SwerveParser(directory)
           .createSwerveDrive(
@@ -178,11 +155,12 @@ public class SwerveSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
+    curPose = swerveDrive.getPose();
     if (usingVision && vision != null) {
       swerveDrive.updateOdometry();
 
       // Poll vision for all available pose estimations
-      List<VisionMeasurement> measurements = vision.getVisionMeasurements(swerveDrive.getPose());
+      List<VisionMeasurement> measurements = vision.getVisionMeasurements(curPose);
       for (VisionMeasurement m : measurements) {
         swerveDrive.addVisionMeasurement(
             m.estimation().estimatedPose.toPose2d(),
@@ -197,27 +175,29 @@ public class SwerveSubsystem extends SubsystemBase {
     }
 
     // Puts the pathing onto DS
-    if (newPathSub.get()) {
-      double[] pointArray = pathPointsSub.get();
-      int numPoses = pointArray.length / 2;
-      Pose2d[] poses = new Pose2d[numPoses];
+    /*
+     * if (newPathSub.get()) {
+     * double[] pointArray = pathPointsSub.get();
+     * int numPoses = pointArray.length / 2;
+     * Pose2d[] poses = new Pose2d[numPoses];
+     * 
+     * for (int i = 0; i < numPoses; i++) {
+     * poses[i] = new Pose2d(
+     * pointArray[i * 2],
+     * pointArray[i * 2 + 1],
+     * new Rotation2d());
+     * }
+     * 
+     * Logger.recordOutput("Swerve/Path", poses);
+     * m_driverStationField.getObject("Path").setPoses(poses);
+     * }
+     */
 
-      for (int i = 0; i < numPoses; i++) {
-        poses[i] = new Pose2d(
-            pointArray[i * 2],
-            pointArray[i * 2 + 1],
-            new Rotation2d());
-      }
-
-      Logger.recordOutput("Swerve/Path", poses);
-      m_driverStationField.getObject("Path").setPoses(poses);
-    }
-
-    m_driverStationField.setRobotPose(getPose());
+    m_driverStationField.setRobotPose(curPose);
     SmartDashboard.putData("DriverStationField", m_driverStationField);
 
     Logger.recordOutput("Swerve/Is Aligned?", isAligned());
-    Logger.recordOutput("Swerve/Pose", getPose());
+    Logger.recordOutput("Swerve/Pose", curPose);
     Logger.recordOutput("Swerve/Velocity", getRobotVelocity());
 
     Logger.recordOutput("Swerve/FieldLocation", getFieldLocation());
@@ -227,13 +207,11 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   private boolean getUnderTrench() {
-    Pose2d curPose = swerveDrive.getPose();
     return FieldLayout.Zones.blueLeftTrench.contains(curPose) || FieldLayout.Zones.blueRightTrench.contains(curPose)
         || FieldLayout.Zones.redLeftTrench.contains(curPose) || FieldLayout.Zones.redRightTrench.contains(curPose);
   }
 
   private boolean getOverBump() {
-    Pose2d curPose = swerveDrive.getPose();
     return FieldLayout.Zones.blueLeftBump.contains(curPose) || FieldLayout.Zones.blueRightBump.contains(curPose)
         || FieldLayout.Zones.redLeftBump.contains(curPose) || FieldLayout.Zones.redRightBump.contains(curPose);
   }
@@ -248,7 +226,6 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   public String getFieldLocation() {
-    Pose2d curPose = swerveDrive.getPose();
     if (FieldLayout.Zones.redAllianceZone.contains(curPose)) {
       if (getAlliance() == Alliance.Blue) {
         return "OpponentZone";
@@ -265,8 +242,7 @@ public class SwerveSubsystem extends SubsystemBase {
     return "NeutralZone";
   }
 
-  private String getFieldSide() {
-    Pose2d curPose = swerveDrive.getPose();
+  public String getFieldSide() {
     if (getAlliance() == Alliance.Blue) {
       if (curPose.getY() < FieldLayout.kFieldLength / 2.0) {
         return "Left";
@@ -345,7 +321,7 @@ public class SwerveSubsystem extends SubsystemBase {
   public boolean isTranslationAligned() {
     if (targetPose == null)
       return false;
-    Translation2d currentTranslation2d = getPose().getTranslation();
+    Translation2d currentTranslation2d = curPose.getTranslation();
     Translation2d targetTranslation2d = targetPose.getTranslation();
 
     return currentTranslation2d.getDistance(targetTranslation2d) < Constants.Swerve.Translation.TOLERANCE;
@@ -358,7 +334,7 @@ public class SwerveSubsystem extends SubsystemBase {
   public boolean isHeadingAligned() {
     if (targetPose == null)
       return false;
-    Rotation2d currentHeading = getPose().getRotation();
+    Rotation2d currentHeading = curPose.getRotation();
     Rotation2d targetHeading = targetPose.getRotation();
 
     double angleDelta = Math.abs(currentHeading.minus(targetHeading).getDegrees());
@@ -488,13 +464,13 @@ public class SwerveSubsystem extends SubsystemBase {
     Logger.recordOutput("Swerve/Path Goal", waypoints.get(waypoints.size() - 1));
 
     // Visualize Path on driver station
-    ArrayList<Pose2d> points = new ArrayList<>();
-    for (PathPoint state : path.getAllPathPoints()) {
-      points.add(new Pose2d(state.position, new Rotation2d(0)));
-    }
+    // ArrayList<Pose2d> points = new ArrayList<>();
+    // for (PathPoint state : path.getAllPathPoints()) {
+    // points.add(new Pose2d(state.position, new Rotation2d(0)));
+    // }
 
-    m_driverStationField.getObject("Path").setPoses(points);
-    Logger.recordOutput("Swerve/Path", points.toArray(new Pose2d[0]));
+    // m_driverStationField.getObject("Path").setPoses(points);
+    // Logger.recordOutput("Swerve/Path", points.toArray(new Pose2d[0]));
 
     return AutoBuilder.followPath(path);
   }
@@ -523,18 +499,18 @@ public class SwerveSubsystem extends SubsystemBase {
     goalState.pose = targetPose;
     Logger.recordOutput("Swerve/Path Goal", targetPose);
     Logger.recordOutput(
-        "Swerve/PID output", ALIGN_CONTROLLER.calculateRobotRelativeSpeeds(getPose(), goalState));
+        "Swerve/PID output", ALIGN_CONTROLLER.calculateRobotRelativeSpeeds(curPose, goalState));
 
     // Switches to PID once it is close enough
     return Commands.sequence(
         pathfindingCommand.until(() -> targetPose.getTranslation()
-            .getDistance(getPose().getTranslation()) < Constants.Swerve.PathFinding.PIDTolerance),
+            .getDistance(curPose.getTranslation()) < Constants.Swerve.PathFinding.PIDTolerance),
         run(() -> {
           swerveDrive.drive(
               ALIGN_CONTROLLER.calculateRobotRelativeSpeeds(
-                  getPose(), goalState));
+                  curPose, goalState));
           Logger.recordOutput(
-              "Swerve/PID output", ALIGN_CONTROLLER.calculateRobotRelativeSpeeds(getPose(), goalState));
+              "Swerve/PID output", ALIGN_CONTROLLER.calculateRobotRelativeSpeeds(curPose, goalState));
         }).until(() -> isAligned()))
         .finallyDo(() -> clearDriverField());
   }
@@ -558,7 +534,7 @@ public class SwerveSubsystem extends SubsystemBase {
     // Generates a list of waypoints to follow
     List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(
         new Pose2d(
-            swerveDrive.getPose().getTranslation(),
+            curPose.getTranslation(),
             new Rotation2d()),
         pose);
     PathPlannerPath path = new PathPlannerPath(
@@ -577,25 +553,25 @@ public class SwerveSubsystem extends SubsystemBase {
     Logger.recordOutput("Swerve/Path Goal", pose);
 
     // Visualize Path on driver station
-    ArrayList<Pose2d> points = new ArrayList<>();
-    for (PathPoint state : path.getAllPathPoints()) {
-      points.add(new Pose2d(state.position, new Rotation2d(0)));
-    }
+    // ArrayList<Pose2d> points = new ArrayList<>();
+    // for (PathPoint state : path.getAllPathPoints()) {
+    // points.add(new Pose2d(state.position, new Rotation2d(0)));
+    // }
 
-    m_driverStationField.getObject("Path").setPoses(points);
-    Logger.recordOutput("Swerve/Path", points.toArray(new Pose2d[0]));
+    // m_driverStationField.getObject("Path").setPoses(points);
+    // Logger.recordOutput("Swerve/Path", points.toArray(new Pose2d[0]));
 
     // Runs until ~10 inches to target, then switches to pid
     return AutoBuilder.followPath(path)
         .until(() -> pose.getTranslation()
-            .getDistance(getPose().getTranslation()) < Constants.Swerve.PathFinding.PIDTolerance)
+            .getDistance(curPose.getTranslation()) < Constants.Swerve.PathFinding.PIDTolerance)
         .andThen(
             run(
                 () -> {
                   swerveDrive.drive(
-                      ALIGN_CONTROLLER.calculateRobotRelativeSpeeds(getPose(), goalState));
+                      ALIGN_CONTROLLER.calculateRobotRelativeSpeeds(curPose, goalState));
                   Logger.recordOutput(
-                      "Swerve/PID output", ALIGN_CONTROLLER.calculateRobotRelativeSpeeds(getPose(), goalState));
+                      "Swerve/PID output", ALIGN_CONTROLLER.calculateRobotRelativeSpeeds(curPose, goalState));
                 }))
         .finallyDo(interrupted -> {
           clearDriverField();
@@ -608,7 +584,7 @@ public class SwerveSubsystem extends SubsystemBase {
   public Command driveToDistanceCommand(double distanceInMeters, double speedInMetersPerSecond) {
     return run(() -> drive(new ChassisSpeeds(speedInMetersPerSecond, 0, 0)))
         .until(
-            () -> swerveDrive.getPose().getTranslation().getDistance(new Translation2d(0, 0)) > distanceInMeters);
+            () -> curPose.getTranslation().getDistance(new Translation2d(0, 0)) > distanceInMeters);
   }
 
   /**
@@ -894,7 +870,7 @@ public class SwerveSubsystem extends SubsystemBase {
     if (isRedAlliance()) {
       zeroGyro();
       // Set the pose 180 degrees
-      resetOdometry(new Pose2d(getPose().getTranslation(), Rotation2d.fromDegrees(180)));
+      resetOdometry(new Pose2d(curPose.getTranslation(), Rotation2d.fromDegrees(180)));
     } else {
       zeroGyro();
     }
@@ -905,7 +881,7 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   public Rotation2d getHeading() {
-    return getPose().getRotation();
+    return curPose.getRotation();
   }
 
   /**

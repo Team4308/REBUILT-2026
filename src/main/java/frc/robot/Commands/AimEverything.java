@@ -44,6 +44,7 @@ public class AimEverything extends Command {
 
     private String side = "Left";
     private double powerOffset = 0;
+    private double powerOffsetTOF = -0.4;
 
     static {
         // Key = distance (meters), Value = hood angle (degrees from horizontal)
@@ -149,6 +150,10 @@ public class AimEverything extends Command {
         this.powerOffset += offset;
     }
 
+    public void updatePowerOffsetTOF(double offset) {
+        this.powerOffsetTOF += offset;
+    }
+
     private void aimAtPoint(Translation2d targetPoint) {
         Pose2d pose = m_swervePose.get();
         ChassisSpeeds robotRelativeVelocity = m_swerveVelocity.get();
@@ -181,7 +186,7 @@ public class AimEverything extends Command {
         double lookaheadShooterX = shooterX;
         double lookaheadShooterY = shooterY;
         double lookaheadDistance = staticDistance;
-        double timeOfFlight = timeOfFlightMap.get(staticDistance);
+        double timeOfFlight = timeOfFlightMap.get(staticDistance) + powerOffsetTOF;
 
         for (int i = 0; i < 20; i++) {
             timeOfFlight = timeOfFlightMap.get(lookaheadDistance);
@@ -226,6 +231,7 @@ public class AimEverything extends Command {
         Logger.recordOutput("Commands/AimAtPoint/Target/Hood Angle", hoodAngle);
         Logger.recordOutput("Commands/AimAtPoint/Target/Shooter Rpm", shooterRpm);
         Logger.recordOutput("Commands/AimAtPoint/Power Offset", powerOffset);
+        Logger.recordOutput("Commands/AimAtPoint/Power Offset TOF", powerOffsetTOF);
     }
 
     private void aimAtPoint2(Translation2d targetPoint) {
@@ -305,6 +311,7 @@ public class AimEverything extends Command {
         Logger.recordOutput("Commands/AimAtPoint/Target/Hood Angle", hoodAngle);
         Logger.recordOutput("Commands/AimAtPoint/Target/Shooter Rpm", shooterRpm);
         Logger.recordOutput("Commands/AimAtPoint/Power Offset", powerOffset);
+        Logger.recordOutput("Commands/AimAtPoint/Power Offset TOF", powerOffsetTOF);
     }
 
     @Override
@@ -312,9 +319,9 @@ public class AimEverything extends Command {
         if (drivebase.getFieldLocation().equals("AllianceZone")) {
             aimAtPoint(FieldConstants.Hub.topCenterPoint.toTranslation2d());
         } else {
-            if (side.equals("Left")) {
+            if (drivebase.getFieldSide().equals("Left")) {
                 aimAtPoint2(leftTarget);
-            } else if (side.equals("Right")) {
+            } else if (drivebase.getFieldSide().equals("Right")) {
                 aimAtPoint2(rightTarget);
             }
         }

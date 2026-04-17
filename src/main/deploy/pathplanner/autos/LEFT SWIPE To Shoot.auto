@@ -5,6 +5,12 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "Extend Intake"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "LEFT SWIPE"
@@ -36,15 +42,9 @@
           }
         },
         {
-          "type": "named",
-          "data": {
-            "name": "Extend Intake"
-          }
-        },
-        {
           "type": "path",
           "data": {
-            "pathName": "Copy of LEFT SWIPE"
+            "pathName": "LEFT SWIPE INNER"
           }
         },
         {

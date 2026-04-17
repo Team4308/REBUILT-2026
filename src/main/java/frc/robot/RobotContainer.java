@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.Commands.AimEverything;
 import frc.robot.Commands.BackupShoot;
+import frc.robot.Commands.EjectBalls;
 import frc.robot.Commands.ShootAndAgitate254;
 import frc.robot.Commands.ShootAndAgitateJ;
 import frc.robot.Commands.ShootCommand;
@@ -120,28 +121,34 @@ public class RobotContainer {
                 driver.LB.onTrue(new InstantCommand(() -> speedModifier = 0.5));
                 driver.LB.onFalse(new InstantCommand(() -> speedModifier = 1.0));
 
-                driver.RightTrigger.whileTrue(new ShootAndAgitate254(m_IntakeSubsystem, m_IndexerSubsystem,
-                                m_TurretSubsystem, m_HoodSubsystem,
-                                () -> m_IntakeSubsystem.getHopperState())
-                                .alongWith(new InstantCommand(() -> aimEverythingCommand.setSide("Right"))));
-                driver.RightTrigger.onTrue(new InstantCommand(() -> speedModifier = 0.5));
-                driver.RightTrigger.onFalse(new InstantCommand(() -> speedModifier = 1.0));
-                driver.LeftTrigger.whileTrue(new ShootAndAgitate254(m_IntakeSubsystem, m_IndexerSubsystem,
-                                m_TurretSubsystem, m_HoodSubsystem,
-                                () -> m_IntakeSubsystem.getHopperState())
-                                .alongWith(new InstantCommand(() -> aimEverythingCommand.setSide("Left"))));
-                driver.LeftTrigger.onTrue(new InstantCommand(() -> speedModifier = 0.5));
-                driver.LeftTrigger.onFalse(new InstantCommand(() -> speedModifier = 1.0));
+                // driver.RightTrigger.whileTrue(new ShootAndAgitate254(m_IntakeSubsystem,
+                // m_IndexerSubsystem,
+                // m_TurretSubsystem, m_HoodSubsystem,
+                // () -> m_IntakeSubsystem.getHopperState())
+                // .alongWith(new InstantCommand(() -> aimEverythingCommand.setSide("Right"))));
+                // driver.RightTrigger.onTrue(new InstantCommand(() -> speedModifier = 0.5));
+                // driver.RightTrigger.onFalse(new InstantCommand(() -> speedModifier = 1.0));
+                // driver.LeftTrigger.whileTrue(new ShootAndAgitate254(m_IntakeSubsystem,
+                // m_IndexerSubsystem,
+                // m_TurretSubsystem, m_HoodSubsystem,
+                // () -> m_IntakeSubsystem.getHopperState())
+                // .alongWith(new InstantCommand(() -> aimEverythingCommand.setSide("Left"))));
+                // driver.LeftTrigger.onTrue(new InstantCommand(() -> speedModifier = 0.5));
+                // driver.LeftTrigger.onFalse(new InstantCommand(() -> speedModifier = 1.0));
 
                 driver.povUp.onTrue(new InstantCommand(() -> aimEverythingCommand.updatePowerOffset(100)));
                 driver.povDown.onTrue(new InstantCommand(() -> aimEverythingCommand.updatePowerOffset(-100)));
+                driver.povRight.onTrue(new InstantCommand(() -> aimEverythingCommand.updatePowerOffsetTOF(0.1)));
+                driver.povLeft.onTrue(new InstantCommand(() -> aimEverythingCommand.updatePowerOffsetTOF(-0.1)));
 
-                driver.A.onTrue(new InstantCommand(
-                                () -> m_IntakeSubsystem.setHopperState(IntakeSubsystem.HopperStates.EMPTY)));
-                driver.X.onTrue(new InstantCommand(
-                                () -> m_IntakeSubsystem.setHopperState(IntakeSubsystem.HopperStates.HALF)));
-                driver.Y.onTrue(new InstantCommand(
-                                () -> m_IntakeSubsystem.setHopperState(IntakeSubsystem.HopperStates.FULL)));
+                // driver.A.onTrue(new InstantCommand(
+                // () -> m_IntakeSubsystem.setHopperState(IntakeSubsystem.HopperStates.EMPTY)));
+                // driver.X.onTrue(new InstantCommand(
+                // () -> m_IntakeSubsystem.setHopperState(IntakeSubsystem.HopperStates.HALF)));
+                // driver.Y.onTrue(new InstantCommand(
+                // () -> m_IntakeSubsystem.setHopperState(IntakeSubsystem.HopperStates.FULL)));
+
+                driver.A.whileTrue(new EjectBalls(m_IntakeSubsystem, m_IndexerSubsystem));
 
                 driver.B.whileTrue(new BackupShoot(m_HoodSubsystem, m_TurretSubsystem, m_ShooterSubsystem,
                                 drivebase));
@@ -167,6 +174,12 @@ public class RobotContainer {
                 NamedCommands.registerCommand("Agitate", new AgitateJ(m_IntakeSubsystem));
                 NamedCommands.registerCommand("Extend Intake", new InstantCommand(
                                 () -> m_IntakeSubsystem.setIntakeAngle(Constants.Intake.INTAKE_ANGLE_DEG)));
+
+                NamedCommands.registerCommand("Retract Intake", new InstantCommand(
+                                () -> m_IntakeSubsystem.setIntakeAngle(Constants.Intake.RETRACTED_ANGLE_DEG)));
+
+                NamedCommands.registerCommand("Mid Swipe", drivebase.driveToPoseObjAvoid(
+                                () -> new Pose2d(8.579, 1, new Rotation2d(Units.degreesToRadians(240)))));
         }
 
         public Command getTestCommand() {
