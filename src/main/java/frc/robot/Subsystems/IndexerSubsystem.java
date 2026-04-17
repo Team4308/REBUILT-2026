@@ -50,7 +50,7 @@ public class IndexerSubsystem extends SubsystemBase {
         var limitConfigs = new CurrentLimitsConfigs();
         limitConfigs.StatorCurrentLimit = 160;
         limitConfigs.StatorCurrentLimitEnable = true;
-        limitConfigs.SupplyCurrentLimit = 60;
+        limitConfigs.SupplyCurrentLimit = 80;
         limitConfigs.SupplyCurrentLimitEnable = true;
         m_hopperMotor1.getConfigurator().apply(limitConfigs);
         m_hopperMotor2.getConfigurator().apply(limitConfigs);

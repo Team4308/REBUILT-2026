@@ -97,7 +97,7 @@ public final class Constants {
       public final static double GEAR_RATIO_MOTOR = (12.0 / 50.0) * (10.0 / 85.0);
       public final static double STOPPED_VELOCITY = 1.0;
       public final static double MIN_DEGREES = 270;
-      public final static double MAX_DEGREES = 270 + 360;
+      public final static double MAX_DEGREES = 270 + 400;
       public final static double FULL_REVOLUTION_DEG = 360;
       public final static double TURRET_TOLERANCE_DEGREES = 90.0;
       public final static double TURRET_START_ANGLE = 360;

@@ -64,8 +64,8 @@ public class Simulation extends SubsystemBase {
                 1. / Constants.Shooting.Turret.GEAR_RATIO_MOTOR,
                 0.2, // J (kg·m²) — heaviest of the three
                 0.1, // arm length unused (turret rotates about center, not an arm)
-                Units.degreesToRadians(90),
-                Units.degreesToRadians(500),
+                Units.degreesToRadians(270),
+                Units.degreesToRadians(270 + 400),
                 false, // no gravity
                 5, // static friction (N·m) — large rotating mass, more bearing friction
                 4, // kinetic friction (N·m)
