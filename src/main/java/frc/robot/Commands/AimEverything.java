@@ -45,6 +45,7 @@ public class AimEverything extends Command {
     private String side = "Left";
     private double powerOffset = 0;
     private double powerOffsetTOF = -0.4;
+    private static double passOff = 100;
 
     static {
         // Key = distance (meters), Value = hood angle (degrees from horizontal)
@@ -75,22 +76,22 @@ public class AimEverything extends Command {
         hoodAngleMap.put(15.0, 25.5);
         hoodAngleMap.put(16.0, 26.0);
 
-        passingflywheelSpeedMap.put(1., 1000.);
-        passingflywheelSpeedMap.put(2., 1200.);
-        passingflywheelSpeedMap.put(3., 1400.);
-        passingflywheelSpeedMap.put(4., 1600.);
-        passingflywheelSpeedMap.put(5., 1800.);
-        passingflywheelSpeedMap.put(6., 2000.);
-        passingflywheelSpeedMap.put(7., 2200.);
-        passingflywheelSpeedMap.put(8., 2400.);
-        passingflywheelSpeedMap.put(9., 2600.);
-        passingflywheelSpeedMap.put(10., 2800.);
-        passingflywheelSpeedMap.put(11., 3000.);
-        passingflywheelSpeedMap.put(12., 3200.);
-        passingflywheelSpeedMap.put(13., 3400.);
-        passingflywheelSpeedMap.put(14., 3600.);
-        passingflywheelSpeedMap.put(15., 3800.);
-        passingflywheelSpeedMap.put(16., 4000.);
+        passingflywheelSpeedMap.put(1., 1000. + passOff);
+        passingflywheelSpeedMap.put(2., 1200. + passOff);
+        passingflywheelSpeedMap.put(3., 1400. + passOff);
+        passingflywheelSpeedMap.put(4., 1600. + passOff);
+        passingflywheelSpeedMap.put(5., 1800. + passOff);
+        passingflywheelSpeedMap.put(6., 2000. + passOff);
+        passingflywheelSpeedMap.put(7., 2200. + passOff);
+        passingflywheelSpeedMap.put(8., 2400. + passOff);
+        passingflywheelSpeedMap.put(9., 2600. + passOff);
+        passingflywheelSpeedMap.put(10., 2800. + passOff);
+        passingflywheelSpeedMap.put(11., 3000. + passOff);
+        passingflywheelSpeedMap.put(12., 3200. + passOff);
+        passingflywheelSpeedMap.put(13., 3400. + passOff);
+        passingflywheelSpeedMap.put(14., 3600. + passOff);
+        passingflywheelSpeedMap.put(15., 3800. + passOff);
+        passingflywheelSpeedMap.put(16., 4000. + passOff);
 
         // Key = distance (meters), Value = shooter speed (RPM)
         flywheelSpeedMap.put(1.3, 1700.0);
