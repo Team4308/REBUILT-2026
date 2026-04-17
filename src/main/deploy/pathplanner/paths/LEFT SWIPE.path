@@ -16,15 +16,15 @@
     },
     {
       "anchor": {
-        "x": 8.239079545454544,
+        "x": 8.702886363636363,
         "y": 7.1579659090941
       },
       "prevControl": {
-        "x": 7.321772727272725,
+        "x": 7.785579545454544,
         "y": 7.580545454542429
       },
       "nextControl": {
-        "x": 8.911657721057058,
+        "x": 9.375464539238877,
         "y": 6.848126524832333
       },
       "isLocked": false,
@@ -32,32 +32,32 @@
     },
     {
       "anchor": {
-        "x": 7.898954545454545,
-        "y": 4.890465909090909
+        "x": 8.393681818181818,
+        "y": 4.880159090909092
       },
       "prevControl": {
-        "x": 8.184182881504501,
-        "y": 5.216888691462235
+        "x": 8.678910154231774,
+        "y": 5.206581873280418
       },
       "nextControl": {
-        "x": 7.658872912121373,
-        "y": 4.615710196407648
+        "x": 8.153600184848646,
+        "y": 4.605403378225831
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 6.456000000001643,
-        "y": 5.11721590909091
+        "x": 6.600295454545455,
+        "y": 5.16875
       },
       "prevControl": {
-        "x": 6.690509666511443,
-        "y": 4.808650558420983
+        "x": 6.834805121055255,
+        "y": 4.8601846493300735
       },
       "nextControl": {
-        "x": 5.8685113636363635,
-        "y": 5.890227272727272
+        "x": 6.0128068181801755,
+        "y": 5.941761363636362
       },
       "isLocked": false,
       "linkedName": null
@@ -110,7 +110,21 @@
       "rotationDegrees": 165.57357853592103
     }
   ],
-  "constraintZones": [],
+  "constraintZones": [
+    {
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 1.0861759425493718,
+      "maxWaypointRelativePos": 3.9587073608617596,
+      "constraints": {
+        "maxVelocity": 2.0,
+        "maxAcceleration": 6.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
