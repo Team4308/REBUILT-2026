@@ -190,7 +190,7 @@ public class AimEverything extends Command {
         double timeOfFlight = timeOfFlightMap.get(staticDistance) + powerOffsetTOF;
 
         for (int i = 0; i < 20; i++) {
-            timeOfFlight = timeOfFlightMap.get(lookaheadDistance);
+            timeOfFlight = timeOfFlightMap.get(lookaheadDistance) + powerOffsetTOF;
             lookaheadShooterX = shooterX + vxField * timeOfFlight;
             lookaheadShooterY = shooterY + vyField * timeOfFlight;
             double ldx = targetTranslation.getX() - lookaheadShooterX;
@@ -267,10 +267,10 @@ public class AimEverything extends Command {
         double lookaheadShooterX = shooterX;
         double lookaheadShooterY = shooterY;
         double lookaheadDistance = staticDistance;
-        double timeOfFlight = timeOfFlightMap.get(staticDistance);
+        double timeOfFlight = timeOfFlightMap.get(staticDistance) + powerOffsetTOF;
 
         for (int i = 0; i < 20; i++) {
-            timeOfFlight = timeOfFlightMap.get(lookaheadDistance);
+            timeOfFlight = timeOfFlightMap.get(lookaheadDistance) + powerOffsetTOF;
             lookaheadShooterX = shooterX + vxField * timeOfFlight;
             lookaheadShooterY = shooterY + vyField * timeOfFlight;
             double ldx = targetTranslation.getX() - lookaheadShooterX;
