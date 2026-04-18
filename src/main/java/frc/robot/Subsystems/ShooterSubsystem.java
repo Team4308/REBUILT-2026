@@ -5,6 +5,7 @@ import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.Logger;
 
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -15,6 +16,7 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -24,8 +26,8 @@ import frc.robot.Ports;
 import frc.robot.Util.SubsystemVerbosity;
 
 public class ShooterSubsystem extends SubsystemBase {
-    private final TalonFX m_rightMotor;
-    private final TalonFX m_leftMotor;
+    private final TalonFX m_rightMotor = new TalonFX(Ports.Shooting.Shooter.kShooterMotor1);
+    private final TalonFX m_leftMotor = new TalonFX(Ports.Shooting.Shooter.kShooterMotor2);
 
     private final TalonFXConfiguration m_rightConfiguration;
     private final TalonFXConfiguration m_leftConfiguration;
@@ -42,9 +44,6 @@ public class ShooterSubsystem extends SubsystemBase {
     private boolean enabled;
 
     public ShooterSubsystem(boolean enabled) {
-        m_rightMotor = new TalonFX(Ports.Shooting.Shooter.kShooterMotor1);
-        m_leftMotor = new TalonFX(Ports.Shooting.Shooter.kShooterMotor2);
-
         m_velocityVoltage = new VelocityVoltage(0).withSlot(0);
 
         m_rightConfiguration = new TalonFXConfiguration();
@@ -155,6 +154,11 @@ public class ShooterSubsystem extends SubsystemBase {
             Logger.recordOutput("Subsystems/Shooter/Is At Target Speed?", isAtTargetSpeed());
             Logger.recordOutput("Subsystems/Shooter/Current RPM", getRPM());
             Logger.recordOutput("Subsystems/Shooter/Target RPM", m_targetRPM);
+
+            // Logger.recordOutput("Subsystems/Shooter/Right Current",
+            // m_rightMotor.getSupplyCurrent().getValueAsDouble());
+            // Logger.recordOutput("Subsystems/Shooter/Left Current",
+            // m_leftMotor.getSupplyCurrent().getValueAsDouble());
         }
 
         if (verbosity == SubsystemVerbosity.HIGH) {

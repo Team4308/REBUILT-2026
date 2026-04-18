@@ -13,44 +13,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "MID To Shoot"
-          }
-        },
-        {
-          "type": "deadline",
-          "data": {
-            "commands": [
-              {
-                "type": "wait",
-                "data": {
-                  "waitTime": 2.5
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Shoot"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Agitate"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Extend Intake"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "MID Shoot To HP"
+            "pathName": "Copy of Right Swipe"
           }
         },
         {
@@ -66,13 +29,50 @@
               {
                 "type": "named",
                 "data": {
+                  "name": "Agitate"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
                   "name": "Shoot"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Extend Intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Copy of Right Swipe 2"
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 10.0
                 }
               },
               {
                 "type": "named",
                 "data": {
                   "name": "Agitate"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Shoot"
                 }
               }
             ]
@@ -82,6 +82,6 @@
     }
   },
   "resetOdom": true,
-  "folder": "Starting Mid",
+  "folder": "Starting Right",
   "choreoAuto": false
 }

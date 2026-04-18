@@ -36,9 +36,6 @@ public class IntakeSubsystem extends SubsystemBase {
 
   private double offset = -Constants.Intake.RETRACTED_ANGLE_DEG;
 
-  private StatusSignal<Current> pivotSupplyCurrent = m_pivotMotor.getSupplyCurrent();
-  private StatusSignal<Current> rollerSupplyCurrent = m_rollerMotor.getSupplyCurrent();
-
   private final SubsystemVerbosity verbosity;
 
   public final static ArmFeedforward feedforward = Constants.Intake.feedforward;
@@ -112,7 +109,8 @@ public class IntakeSubsystem extends SubsystemBase {
     if (!enabled)
       return;
     m_rollerMotor.setControl(
-        rollerRequest.withVelocity((rpm.get() / -60.0) * Constants.Intake.ROLLER_GEAR_RATIO));
+        rollerRequest.withVelocity((rpm.get() / -60.0) *
+            Constants.Intake.ROLLER_GEAR_RATIO));
 
   }
 
@@ -136,18 +134,14 @@ public class IntakeSubsystem extends SubsystemBase {
     this.enabled = enabled;
   }
 
-  public double getPivotSupplyCurrent() {
-    return pivotSupplyCurrent.getValueAsDouble();
-  }
-
-  public double getRollerSupplyCurrent() {
-    return rollerSupplyCurrent.getValueAsDouble();
-  }
-
   /* ---------------- Pivot ---------------- */
 
   public void setIntakeAngle(double angleDeg) {
     targetAngleDeg = MathUtil.clamp(angleDeg, 0, 127);
+  }
+
+  public double getPivotSupplyCurrent() {
+    return m_pivotMotor.getSupplyCurrent().getValueAsDouble();
   }
 
   public double getIntakeAngle() {
@@ -257,7 +251,7 @@ public class IntakeSubsystem extends SubsystemBase {
       updatePivotConfig();
     }
 
-    targetAngleDeg = MathUtil.clamp(targetAngleDeg, 0, 127);
+    targetAngleDeg = MathUtil.clamp(targetAngleDeg, 0, 73);
     double currentDeg = getIntakeAngle();
 
     double pidOutput = pidController.calculate(currentDeg, targetAngleDeg);
@@ -274,6 +268,11 @@ public class IntakeSubsystem extends SubsystemBase {
       Logger.recordOutput("Subsystems/Intake/Hopper Pose", getHopperPose());
       Logger.recordOutput("Subsystems/Intake/Pivot Pose", getPivotPose());
       Logger.recordOutput("Subsystems/Intake/Hopper State", hopperState.toString());
+
+      // Logger.recordOutput("Subsystems/Intake/Pivot Current",
+      // m_pivotMotor.getSupplyCurrent().getValueAsDouble());
+      // Logger.recordOutput("Subsystems/Intake/Roller Current",
+      // m_rollerMotor.getSupplyCurrent().getValueAsDouble());
     }
 
     if (verbosity == SubsystemVerbosity.HIGH) {

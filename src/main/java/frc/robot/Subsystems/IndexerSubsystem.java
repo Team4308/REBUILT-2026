@@ -1,5 +1,6 @@
 package frc.robot.Subsystems;
 
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -8,6 +9,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -145,6 +147,13 @@ public class IndexerSubsystem extends SubsystemBase {
             Logger.recordOutput("Subsystems/Indexer/Hopper/Velocity",
                     m_hopperMotor1.getVelocity().getValueAsDouble() / Constants.Indexer.HOPPER_GEAR_RATIO * 60.0);
             Logger.recordOutput("Subsystems/Indexer/Hopper/Target Velocity", targetHopperVelocity);
+
+            // Logger.recordOutput("Subsystems/Indexer/BallTunnel/Current",
+            // m_ballTunnelMotor.getSupplyCurrent().getValueAsDouble());
+            // Logger.recordOutput("Subsystems/Indexer/Hopper/Current 1",
+            // m_hopperMotor1.getSupplyCurrent().getValueAsDouble());
+            // Logger.recordOutput("Subsystems/Indexer/Hopper/Current 2",
+            // m_hopperMotor2.getSupplyCurrent().getValueAsDouble());
         }
 
         if (verbosity == SubsystemVerbosity.HIGH) {

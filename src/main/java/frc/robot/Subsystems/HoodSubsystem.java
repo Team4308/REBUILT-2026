@@ -36,8 +36,6 @@ public class HoodSubsystem extends SubsystemBase {
     private Supplier<Double> simSupplier;
     private double voltage;
 
-    private StatusSignal<Current> hoodSupplyCurrent = m_hoodMotor.getSupplyCurrent();
-
     private ProfiledPIDController pidController = Constants.Shooting.Hood.pidController;
 
     private boolean enabled;
@@ -85,6 +83,10 @@ public class HoodSubsystem extends SubsystemBase {
                 - angleOffset;
     }
 
+    public double getSupplyCurrent() {
+        return m_hoodMotor.getSupplyCurrent().getValueAsDouble();
+    }
+
     public void setHoodAngle(double angle) {
         targetAngle = MathUtil.clamp(
                 angle,
@@ -101,10 +103,6 @@ public class HoodSubsystem extends SubsystemBase {
     public boolean isAtPosition() {
         // Uses a tolerance value from Constants
         return Math.abs(getHoodAngle() - targetAngle) < Constants.Shooting.Hood.TOLERANCE_DEGREES;
-    }
-
-    public double getSupplyCurrent() {
-        return hoodSupplyCurrent.getValueAsDouble();
     }
 
     public void setEnabled(boolean enabled) {
@@ -186,6 +184,8 @@ public class HoodSubsystem extends SubsystemBase {
             Logger.recordOutput("Subsystems/Hood/Is At Target?", isAtPosition());
             Logger.recordOutput("Subsystems/Hood/Angle", currentAngle);
             Logger.recordOutput("Subsystems/Hood/Target Angle", targetAngle);
+            // Logger.recordOutput("Subsystems/Hood/Current",
+            // m_hoodMotor.getSupplyCurrent().getValueAsDouble());
 
             Logger.recordOutput("Subsystems/Hood/Pose", getHoodPose());
         }
@@ -197,7 +197,6 @@ public class HoodSubsystem extends SubsystemBase {
                     m_hoodMotor.getMotorVoltage().getValueAsDouble());
             Logger.recordOutput("Subsystems/Hood/Motor Temperature",
                     m_hoodMotor.getDeviceTemp().getValueAsDouble());
-            Logger.recordOutput("Subsystems/Hood/Current", m_hoodMotor.getSupplyCurrent().getValueAsDouble());
             Logger.recordOutput("Subsystems/Hood/Error",
                     Constants.Shooting.Hood.pidController.getPositionError());
             Logger.recordOutput("Subsystems/Hood/Velocity", m_hoodMotor.getVelocity().getValueAsDouble());

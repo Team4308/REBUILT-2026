@@ -43,8 +43,8 @@ public class AimEverything extends Command {
     private static final InterpolatingDoubleTreeMap passingflywheelSpeedMap = new InterpolatingDoubleTreeMap();
 
     private String side = "Left";
-    private double powerOffset = 0;
-    private double powerOffsetTOF = -0.4;
+    private double powerOffset = 500;
+    private double powerOffsetTOF = -0.2;
     private static double passOff = 100;
 
     static {
@@ -209,11 +209,7 @@ public class AimEverything extends Command {
         double hoodAngle = hoodAngleMap.get(lookaheadDistance);
         double shooterRpm = flywheelSpeedMap.get(lookaheadDistance);
 
-        if (m_IndexerSubsystem.getTargetHopperVelocity() != 0.0) {
-            m_HoodSubsystem.setHoodAngle(hoodAngle);
-        } else {
-            m_HoodSubsystem.setHoodAngle(Constants.Shooting.Hood.REVERSE_SOFT_LIMIT_ANGLE);
-        }
+        m_HoodSubsystem.setHoodAngle(hoodAngle);
         m_ShooterSubsystem.setTargetSpeed(shooterRpm + powerOffset);
 
         Logger.recordOutput("Commands/AimAtPoint/Target/Pose", targetPoint);
@@ -289,11 +285,7 @@ public class AimEverything extends Command {
         double hoodAngle = 42.5;
         double shooterRpm = passingflywheelSpeedMap.get(lookaheadDistance);
 
-        if (m_IndexerSubsystem.getTargetHopperVelocity() != 0.0) {
-            m_HoodSubsystem.setHoodAngle(hoodAngle);
-        } else {
-            m_HoodSubsystem.setHoodAngle(Constants.Shooting.Hood.REVERSE_SOFT_LIMIT_ANGLE);
-        }
+        m_HoodSubsystem.setHoodAngle(hoodAngle);
         m_ShooterSubsystem.setTargetSpeed(shooterRpm + powerOffset);
 
         Logger.recordOutput("Commands/AimAtPoint/Target/Pose", targetPoint);

@@ -4,6 +4,7 @@ import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.Logger;
 
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -15,6 +16,7 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -23,7 +25,7 @@ import frc.robot.Robot;
 import frc.robot.Util.SubsystemVerbosity;
 
 public class TurretSubsystem extends SubsystemBase {
-    private final TalonFX m_driveMotor;
+    private final TalonFX m_driveMotor = new TalonFX(Ports.Shooting.Turret.kTurretMotorId);
 
     private double m_targetDegWrapped = 0.0;
     private double m_targetDegUnWrapped = Constants.Shooting.Turret.TURRET_START_ANGLE;
@@ -42,8 +44,6 @@ public class TurretSubsystem extends SubsystemBase {
     private final SubsystemVerbosity verbosity;
 
     public TurretSubsystem(boolean enabled) {
-        m_driveMotor = new TalonFX(Ports.Shooting.Turret.kTurretMotorId);
-
         TalonFXConfiguration driveConfig = new TalonFXConfiguration();
         driveConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
         driveConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
@@ -217,6 +217,9 @@ public class TurretSubsystem extends SubsystemBase {
             Logger.recordOutput("Subsystems/Turret/Degree Error",
                     Math.abs(getWrappedError(m_currentDegWrapped, m_targetDegWrapped)));
             Logger.recordOutput("Subsystems/Turret/Pose", getTurretPose());
+
+            // Logger.recordOutput("Subsystems/Turret/Current",
+            // m_driveMotor.getSupplyCurrent().getValueAsDouble());
         }
 
         if (verbosity == SubsystemVerbosity.HIGH) {
