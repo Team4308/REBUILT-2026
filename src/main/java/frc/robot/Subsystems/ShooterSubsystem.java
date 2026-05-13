@@ -16,6 +16,7 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import ca.team4308.absolutelib.wrapper.EncoderWrapper.TalonFXIntegratedImpl;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -122,6 +123,10 @@ public class ShooterSubsystem extends SubsystemBase {
         m_velocityVoltage.Slot = i;
     }
 
+    public TalonFX getMotor() {
+        return m_rightMotor;
+    }
+
     public double getTargetRPM() {
         return m_targetRPM;
     }
@@ -147,6 +152,7 @@ public class ShooterSubsystem extends SubsystemBase {
     public Command setShooterSpeedHubCommand() {
         return Commands.run(() -> setShooterSpeedHub(), this);
     }
+
 
     @Override
     public void periodic() {

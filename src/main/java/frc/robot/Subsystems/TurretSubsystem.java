@@ -147,6 +147,10 @@ public class TurretSubsystem extends SubsystemBase {
                 Constants.Shooting.Turret.FULL_REVOLUTION_DEG);
     }
 
+    public TalonFX getLeader() {
+        return m_driveMotor;
+    }
+
     public boolean isAtTargetAtRest() {
         double wrappedError = getWrappedError(m_currentDegWrapped, m_targetDegWrapped);
         return Math.abs(wrappedError) <= Constants.Shooting.Turret.TURRET_TOLERANCE_DEGREES

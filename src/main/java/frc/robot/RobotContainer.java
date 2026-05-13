@@ -1,6 +1,7 @@
 package frc.robot;
 
 import java.io.File;
+import java.util.function.Supplier;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
@@ -35,6 +36,7 @@ import frc.robot.Subsystems.TurretSubsystem;
 import frc.robot.Subsystems.Swerve.SwerveSubsystem;
 import frc.robot.Subsystems.Vision.Vision;
 import frc.robot.Util.Razer2Wrapper;
+import frc.robot.Util.TrajectoryCalculations;
 import swervelib.SwerveInputStream;
 
 public class RobotContainer {
@@ -53,6 +55,8 @@ public class RobotContainer {
         private final TurretSubsystem m_TurretSubsystem;
         private final IndexerSubsystem m_IndexerSubsystem;
         private final ShooterSubsystem m_ShooterSubsystem;
+        private final TrajectoryCalculations trajectoryCalculations;
+
         @SuppressWarnings("unused")
         private Simulation m_Simulation = null;
 
@@ -81,6 +85,7 @@ public class RobotContainer {
                 m_TurretSubsystem = new TurretSubsystem(true);
                 m_ShooterSubsystem = new ShooterSubsystem(true);
                 m_IntakeSubsystem = new IntakeSubsystem(true);
+                trajectoryCalculations = new TrajectoryCalculations(m_ShooterSubsystem.getMotor());
 
                 if (Robot.isSimulation())
                         m_Simulation = new Simulation(m_HoodSubsystem, m_IndexerSubsystem, m_IntakeSubsystem,
@@ -95,7 +100,7 @@ public class RobotContainer {
                 aimEverythingCommand = new AimEverything(m_IndexerSubsystem, m_HoodSubsystem, m_ShooterSubsystem,
                                 m_TurretSubsystem,
                                 () -> drivebase.getPose(), () -> drivebase.getRobotVelocity(),
-                                drivebase);
+                                drivebase, trajectoryCalculations);
                 m_TurretSubsystem.setDefaultCommand(
                                 aimEverythingCommand);
 
@@ -105,9 +110,12 @@ public class RobotContainer {
                 DriverStation.silenceJoystickConnectionWarning(true);
                 autoChooser = AutoBuilder.buildAutoChooser();
                 SmartDashboard.putData("Auto Chooser", autoChooser);
+                trajectoryCalculations.setChassisSpeedsSupplier(driveAngularVelocity);
+                trajectoryCalculations.setCurrentRpmSupplier(() -> m_ShooterSubsystem.getRPM());
+                trajectoryCalculations.setPoseSupplier(() -> drivebase.getPose());
         }
 
-        private void configureBindings() {
+ private void configureBindings() {
                 Command driveFieldOrientedAnglularVelocity = drivebase.driveFieldOriented(driveAngularVelocity);
 
                 drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
@@ -161,7 +169,10 @@ public class RobotContainer {
                 driver.M2.onTrue(new ResetIntake(m_IntakeSubsystem));
         }
 
+
         public void configureNamedCommands() {
+
+                
                 NamedCommands.registerCommand("Shoot",
                                 new ShootCommand(m_IndexerSubsystem, m_TurretSubsystem, m_HoodSubsystem));
                 NamedCommands.registerCommand("Shoot Agitate J",
@@ -184,6 +195,8 @@ public class RobotContainer {
                 NamedCommands.registerCommand("Mid Swipe", drivebase.driveToPoseObjAvoid(
                                 () -> new Pose2d(8.579, 1, new Rotation2d(Units.degreesToRadians(240)))));
         }
+
+
 
         public Command getTestCommand() {
                 return new SystemCheck(m_HoodSubsystem, m_IndexerSubsystem, m_IntakeSubsystem, drivebase,

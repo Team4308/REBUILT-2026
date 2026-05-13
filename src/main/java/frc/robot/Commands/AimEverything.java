@@ -21,14 +21,14 @@ import frc.robot.Subsystems.TurretSubsystem;
 import frc.robot.Subsystems.Swerve.SwerveSubsystem;
 import frc.robot.Util.AllianceFlipUtil;
 import frc.robot.Util.FieldConstants;
-
+import frc.robot.Util.TrajectoryCalculations;
 public class AimEverything extends Command {
     private final IndexerSubsystem m_IndexerSubsystem;
     private final HoodSubsystem m_HoodSubsystem;
     private final ShooterSubsystem m_ShooterSubsystem;
     private final TurretSubsystem m_TurretSubsystem;
     private final SwerveSubsystem drivebase;
-
+    private final TrajectoryCalculations m_trajectoryCalculations;
     private final Supplier<Pose2d> m_swervePose;
     private final Supplier<ChassisSpeeds> m_swerveVelocity;
 
@@ -132,7 +132,7 @@ public class AimEverything extends Command {
             HoodSubsystem m_HoodSubsystem,
             ShooterSubsystem m_ShooterSubsystem,
             TurretSubsystem m_TurretSubsystem, Supplier<Pose2d> swervePose, Supplier<ChassisSpeeds> swerveVelocity,
-            SwerveSubsystem m_s) {
+            SwerveSubsystem m_s, TrajectoryCalculations m_trajectoryCalculations) {
         this.m_IndexerSubsystem = m_IndexerSubsystem;
         this.m_HoodSubsystem = m_HoodSubsystem;
         this.m_ShooterSubsystem = m_ShooterSubsystem;
@@ -140,6 +140,7 @@ public class AimEverything extends Command {
         this.m_swervePose = swervePose;
         this.m_swerveVelocity = swerveVelocity;
         this.drivebase = m_s;
+        this.m_trajectoryCalculations = m_trajectoryCalculations;
         addRequirements(m_HoodSubsystem, m_ShooterSubsystem, m_TurretSubsystem);
     }
 
@@ -209,8 +210,8 @@ public class AimEverything extends Command {
         double hoodAngle = hoodAngleMap.get(lookaheadDistance);
         double shooterRpm = flywheelSpeedMap.get(lookaheadDistance);
 
-        m_HoodSubsystem.setHoodAngle(hoodAngle);
-        m_ShooterSubsystem.setTargetSpeed(shooterRpm + powerOffset);
+        m_HoodSubsystem.setHoodAngle(m_trajectoryCalculations.getTargetPitchDegrees());
+        m_ShooterSubsystem.setTargetSpeed(m_trajectoryCalculations.getTargetRpm() + powerOffset);
 
         Logger.recordOutput("Commands/AimAtPoint/Target/Pose", targetPoint);
         Logger.recordOutput("Commands/AimAtPoint/Robot/Rot", rot.getDegrees());
