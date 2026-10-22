@@ -24,8 +24,7 @@ import org.littletonrobotics.junction.Logger;
 public class IndexerSubsystem extends SubsystemBase {
 
     private final TalonFX m_ballTunnelMotor = new TalonFX(Ports.Indexer.kBallTunnelMotorId);
-    private final TalonFX m_hopperMotor1 = new TalonFX(Ports.Indexer.kHopperMotor2Id);
-    private final TalonFX m_hopperMotor2 = new TalonFX(Ports.Indexer.kHopperMotor1Id);
+    private final TalonFX m_hopperMotor1 = new TalonFX(Ports.Indexer.kHopperMotor1Id);
 
     private final DigitalInput m_beambreak = new DigitalInput(Ports.Indexer.kBeamBreakId);
 
@@ -55,19 +54,14 @@ public class IndexerSubsystem extends SubsystemBase {
         limitConfigs.SupplyCurrentLimit = 80;
         limitConfigs.SupplyCurrentLimitEnable = true;
         m_hopperMotor1.getConfigurator().apply(limitConfigs);
-        m_hopperMotor2.getConfigurator().apply(limitConfigs);
         m_ballTunnelMotor.getConfigurator().apply(limitConfigs);
 
         m_hopperMotor1.getConfigurator().apply(slot0Configs);
-        m_hopperMotor2.getConfigurator().apply(slot0Configs);
 
         var motorConfigs = new MotorOutputConfigs();
         motorConfigs.Inverted = InvertedValue.CounterClockwise_Positive;
         motorConfigs.NeutralMode = NeutralModeValue.Coast;
         m_hopperMotor1.getConfigurator().apply(motorConfigs);
-
-        // m_hopperMotor2.setControl(new Follower(m_hopperMotor1.getDeviceID(),
-        // MotorAlignmentValue.Opposed));
 
         var slot1Configs = new Slot0Configs();
         slot1Configs.kS = Constants.Indexer.BALL_TUNNEL_Ks;
@@ -81,7 +75,6 @@ public class IndexerSubsystem extends SubsystemBase {
         motorConfigs2.Inverted = InvertedValue.Clockwise_Positive;
         motorConfigs2.NeutralMode = NeutralModeValue.Coast;
         m_ballTunnelMotor.getConfigurator().apply(motorConfigs2);
-        m_hopperMotor2.getConfigurator().apply(motorConfigs2);
 
         verbosity = SubsystemVerbosity.LOW;
 
@@ -101,13 +94,10 @@ public class IndexerSubsystem extends SubsystemBase {
         }
         if (Timer.getFPGATimestamp() - timeout > Constants.Indexer.EJECT_SECONDS || Robot.isSimulation()) {
             m_hopperMotor1.setControl(m_hopperRequest.withVelocity(motorRPS));
-            m_hopperMotor2.setControl(m_hopperRequest.withVelocity(motorRPS));
         } else {
             // m_hopperMotor1.setControl(m_hopperRequest.withVelocity(Constants.Indexer.EJECT_SPEED));
-            // m_hopperMotor2.setControl(m_hopperRequest.withVelocity(Constants.Indexer.EJECT_SPEED));
         }
         m_hopperMotor1.setControl(m_hopperRequest.withVelocity(motorRPS));
-        m_hopperMotor2.setControl(m_hopperRequest.withVelocity(motorRPS));
         m_ballTunnelMotor.setControl(m_indexerRequest.withVelocity(motorRPS2));
     }
 
@@ -116,7 +106,6 @@ public class IndexerSubsystem extends SubsystemBase {
         targetBallTunnelVelocity = 0;
         m_ballTunnelMotor.stopMotor();
         m_hopperMotor1.stopMotor();
-        m_hopperMotor2.stopMotor();
     }
 
     public double getTargetBallTunnelVelocity() {
@@ -152,8 +141,6 @@ public class IndexerSubsystem extends SubsystemBase {
             // m_ballTunnelMotor.getSupplyCurrent().getValueAsDouble());
             // Logger.recordOutput("Subsystems/Indexer/Hopper/Current 1",
             // m_hopperMotor1.getSupplyCurrent().getValueAsDouble());
-            // Logger.recordOutput("Subsystems/Indexer/Hopper/Current 2",
-            // m_hopperMotor2.getSupplyCurrent().getValueAsDouble());
         }
 
         if (verbosity == SubsystemVerbosity.HIGH) {
