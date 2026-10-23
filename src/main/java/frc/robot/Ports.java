@@ -18,7 +18,7 @@ public class Ports {
 
     public static class Indexer {
         public static final int kBallTunnelMotorId = 30;
-        public static final int kHopperMotor1Id = 32;
+        public static final int kHopperMotorId = 32;
         public static final int kBeamBreakId = 9;
     }
 

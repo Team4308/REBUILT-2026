@@ -1,15 +1,11 @@
 package frc.robot.Subsystems;
 
-import com.ctre.phoenix6.StatusSignal;
-import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
-import com.ctre.phoenix6.configs.MotorOutputConfigs;
-import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -24,7 +20,7 @@ import org.littletonrobotics.junction.Logger;
 public class IndexerSubsystem extends SubsystemBase {
 
     private final TalonFX m_ballTunnelMotor = new TalonFX(Ports.Indexer.kBallTunnelMotorId);
-    private final TalonFX m_hopperMotor1 = new TalonFX(Ports.Indexer.kHopperMotor1Id);
+    private final TalonFX m_hopperMotor = new TalonFX(Ports.Indexer.kHopperMotorId);
 
     private final DigitalInput m_beambreak = new DigitalInput(Ports.Indexer.kBeamBreakId);
 
@@ -32,80 +28,86 @@ public class IndexerSubsystem extends SubsystemBase {
     private double targetBallTunnelVelocity = 0;
 
     private final VelocityVoltage m_hopperRequest = new VelocityVoltage(0).withSlot(0);
-    private final VelocityVoltage m_indexerRequest = new VelocityVoltage(0).withSlot(0);
+    private final VelocityVoltage m_ballTunnelRequest = new VelocityVoltage(0).withSlot(0);
 
     private SubsystemVerbosity verbosity;
 
-    private boolean enabled;
+    private final boolean enabled;
 
-    private double timeout = 0;
+    /** FPGA timestamp of the most recent hopper jam detection. */
+    private double lastJamTimestamp = Double.NEGATIVE_INFINITY;
 
     public IndexerSubsystem(boolean enabled) {
-        var slot0Configs = new Slot0Configs();
-        slot0Configs.kS = Constants.Indexer.HOPPER_Ks;
-        slot0Configs.kV = Constants.Indexer.HOPPER_Kv;
-        slot0Configs.kP = Constants.Indexer.HOPPER_Kp;
-        slot0Configs.kI = Constants.Indexer.HOPPER_Ki;
-        slot0Configs.kD = Constants.Indexer.HOPPER_Kd;
+        // Hopper (single motor)
+        var hopperConfig = new TalonFXConfiguration();
+        hopperConfig.Slot0.kS = Constants.Indexer.HOPPER_Ks;
+        hopperConfig.Slot0.kV = Constants.Indexer.HOPPER_Kv;
+        hopperConfig.Slot0.kP = Constants.Indexer.HOPPER_Kp;
+        hopperConfig.Slot0.kI = Constants.Indexer.HOPPER_Ki;
+        hopperConfig.Slot0.kD = Constants.Indexer.HOPPER_Kd;
+        applyCurrentLimits(hopperConfig);
+        hopperConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+        hopperConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+        m_hopperMotor.getConfigurator().apply(hopperConfig);
 
-        var limitConfigs = new CurrentLimitsConfigs();
-        limitConfigs.StatorCurrentLimit = 160;
-        limitConfigs.StatorCurrentLimitEnable = true;
-        limitConfigs.SupplyCurrentLimit = 80;
-        limitConfigs.SupplyCurrentLimitEnable = true;
-        m_hopperMotor1.getConfigurator().apply(limitConfigs);
-        m_ballTunnelMotor.getConfigurator().apply(limitConfigs);
-
-        m_hopperMotor1.getConfigurator().apply(slot0Configs);
-
-        var motorConfigs = new MotorOutputConfigs();
-        motorConfigs.Inverted = InvertedValue.CounterClockwise_Positive;
-        motorConfigs.NeutralMode = NeutralModeValue.Coast;
-        m_hopperMotor1.getConfigurator().apply(motorConfigs);
-
-        var slot1Configs = new Slot0Configs();
-        slot1Configs.kS = Constants.Indexer.BALL_TUNNEL_Ks;
-        slot1Configs.kV = Constants.Indexer.BALL_TUNNEL_Kv;
-        slot1Configs.kP = Constants.Indexer.BALL_TUNNEL_Kp;
-        slot1Configs.kI = Constants.Indexer.BALL_TUNNEL_Ki;
-        slot1Configs.kD = Constants.Indexer.BALL_TUNNEL_Kd;
-        m_ballTunnelMotor.getConfigurator().apply(slot1Configs);
-
-        var motorConfigs2 = new MotorOutputConfigs();
-        motorConfigs2.Inverted = InvertedValue.Clockwise_Positive;
-        motorConfigs2.NeutralMode = NeutralModeValue.Coast;
-        m_ballTunnelMotor.getConfigurator().apply(motorConfigs2);
+        // Ball tunnel
+        var ballTunnelConfig = new TalonFXConfiguration();
+        ballTunnelConfig.Slot0.kS = Constants.Indexer.BALL_TUNNEL_Ks;
+        ballTunnelConfig.Slot0.kV = Constants.Indexer.BALL_TUNNEL_Kv;
+        ballTunnelConfig.Slot0.kP = Constants.Indexer.BALL_TUNNEL_Kp;
+        ballTunnelConfig.Slot0.kI = Constants.Indexer.BALL_TUNNEL_Ki;
+        ballTunnelConfig.Slot0.kD = Constants.Indexer.BALL_TUNNEL_Kd;
+        applyCurrentLimits(ballTunnelConfig);
+        ballTunnelConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+        ballTunnelConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+        m_ballTunnelMotor.getConfigurator().apply(ballTunnelConfig);
 
         verbosity = SubsystemVerbosity.LOW;
 
         this.enabled = enabled;
     }
 
+    private static void applyCurrentLimits(TalonFXConfiguration config) {
+        config.CurrentLimits.StatorCurrentLimit = 160;
+        config.CurrentLimits.StatorCurrentLimitEnable = true;
+        config.CurrentLimits.SupplyCurrentLimit = 80;
+        config.CurrentLimits.SupplyCurrentLimitEnable = true;
+    }
+
+    /**
+     * Sets hopper and ball tunnel velocities (mechanism RPM). If the hopper is
+     * being driven forward and a jam is detected (torque current above
+     * {@link Constants.Indexer#EJECT_CURRENT}), the hopper briefly reverses at
+     * {@link Constants.Indexer#EJECT_SPEED} for
+     * {@link Constants.Indexer#EJECT_SECONDS} to clear it.
+     */
     public void setIndexerVelocity(double rpmHopper, double rpmTunnel) {
         targetHopperVelocity = rpmHopper;
         targetBallTunnelVelocity = rpmTunnel;
         if (!enabled) {
             return;
         }
-        double motorRPS = (rpmHopper * Constants.Indexer.HOPPER_GEAR_RATIO) / 60.0;
-        double motorRPS2 = (rpmTunnel * Constants.Indexer.BALL_TUNNEL_GEAR_RATIO) / 60.0;
-        if (m_hopperMotor1.getTorqueCurrent().getValueAsDouble() > Constants.Indexer.EJECT_CURRENT) {
-            timeout = Timer.getFPGATimestamp();
+
+        double now = Timer.getFPGATimestamp();
+        boolean feedingForward = rpmHopper > 0;
+        if (feedingForward && !Robot.isSimulation()
+                && Math.abs(m_hopperMotor.getTorqueCurrent().getValueAsDouble()) > Constants.Indexer.EJECT_CURRENT) {
+            lastJamTimestamp = now;
         }
-        if (Timer.getFPGATimestamp() - timeout > Constants.Indexer.EJECT_SECONDS || Robot.isSimulation()) {
-            m_hopperMotor1.setControl(m_hopperRequest.withVelocity(motorRPS));
-        } else {
-            // m_hopperMotor1.setControl(m_hopperRequest.withVelocity(Constants.Indexer.EJECT_SPEED));
-        }
-        m_hopperMotor1.setControl(m_hopperRequest.withVelocity(motorRPS));
-        m_ballTunnelMotor.setControl(m_indexerRequest.withVelocity(motorRPS2));
+
+        boolean unjamming = feedingForward && (now - lastJamTimestamp) < Constants.Indexer.EJECT_SECONDS;
+        double hopperRpm = unjamming ? Constants.Indexer.EJECT_SPEED : rpmHopper;
+
+        m_hopperMotor.setControl(m_hopperRequest.withVelocity(hopperRpmToMotorRps(hopperRpm)));
+        m_ballTunnelMotor.setControl(m_ballTunnelRequest.withVelocity(
+                (rpmTunnel * Constants.Indexer.BALL_TUNNEL_GEAR_RATIO) / 60.0));
     }
 
     public void stopMotors() {
         targetHopperVelocity = 0;
         targetBallTunnelVelocity = 0;
         m_ballTunnelMotor.stopMotor();
-        m_hopperMotor1.stopMotor();
+        m_hopperMotor.stopMotor();
     }
 
     public double getTargetBallTunnelVelocity() {
@@ -121,46 +123,49 @@ public class IndexerSubsystem extends SubsystemBase {
                 / Constants.Indexer.BALL_TUNNEL_GEAR_RATIO * 60.0;
     }
 
+    public double getHopperVelocity() {
+        return m_hopperMotor.getVelocity().getValueAsDouble()
+                / Constants.Indexer.HOPPER_GEAR_RATIO * 60.0;
+    }
+
+    public boolean isUnjamming() {
+        return targetHopperVelocity > 0
+                && (Timer.getFPGATimestamp() - lastJamTimestamp) < Constants.Indexer.EJECT_SECONDS;
+    }
+
     public boolean getBeambreak() {
         return m_beambreak.get();
+    }
+
+    private static double hopperRpmToMotorRps(double rpm) {
+        return (rpm * Constants.Indexer.HOPPER_GEAR_RATIO) / 60.0;
     }
 
     @Override
     public void periodic() {
         if (verbosity == SubsystemVerbosity.LOW || verbosity == SubsystemVerbosity.HIGH) {
-            Logger.recordOutput("Subsystems/Indexer/BallTunnel/Velocity",
-                    m_ballTunnelMotor.getVelocity().getValueAsDouble()
-                            / Constants.Indexer.BALL_TUNNEL_GEAR_RATIO * 60.0);
+            Logger.recordOutput("Subsystems/Indexer/BallTunnel/Velocity", getBallTunnelVelocity());
             Logger.recordOutput("Subsystems/Indexer/BallTunnel/Target Velocity", targetBallTunnelVelocity);
 
-            Logger.recordOutput("Subsystems/Indexer/Hopper/Velocity",
-                    m_hopperMotor1.getVelocity().getValueAsDouble() / Constants.Indexer.HOPPER_GEAR_RATIO * 60.0);
+            Logger.recordOutput("Subsystems/Indexer/Hopper/Velocity", getHopperVelocity());
             Logger.recordOutput("Subsystems/Indexer/Hopper/Target Velocity", targetHopperVelocity);
-
-            // Logger.recordOutput("Subsystems/Indexer/BallTunnel/Current",
-            // m_ballTunnelMotor.getSupplyCurrent().getValueAsDouble());
-            // Logger.recordOutput("Subsystems/Indexer/Hopper/Current 1",
-            // m_hopperMotor1.getSupplyCurrent().getValueAsDouble());
+            Logger.recordOutput("Subsystems/Indexer/Hopper/Unjamming", isUnjamming());
         }
 
         if (verbosity == SubsystemVerbosity.HIGH) {
-            double ballTunnelVelocity = m_ballTunnelMotor.getVelocity().getValueAsDouble()
-                    / Constants.Indexer.BALL_TUNNEL_GEAR_RATIO * 60.0;
-            double ballTunnelError = targetBallTunnelVelocity - ballTunnelVelocity;
-            Logger.recordOutput("Subsystems/Indexer/BallTunnel/Error", ballTunnelError);
+            Logger.recordOutput("Subsystems/Indexer/BallTunnel/Error",
+                    targetBallTunnelVelocity - getBallTunnelVelocity());
             Logger.recordOutput("Subsystems/Indexer/BallTunnel/Voltage",
                     m_ballTunnelMotor.getMotorVoltage().getValueAsDouble());
             Logger.recordOutput("Subsystems/Indexer/BallTunnel/Current",
                     m_ballTunnelMotor.getTorqueCurrent().getValueAsDouble());
 
-            double hopperVelocity = m_hopperMotor1.getVelocity().getValueAsDouble()
-                    / Constants.Indexer.HOPPER_GEAR_RATIO * 60.0;
-            double hopperError = targetHopperVelocity - hopperVelocity;
-            Logger.recordOutput("Subsystems/Indexer/Hopper/Error", hopperError);
+            Logger.recordOutput("Subsystems/Indexer/Hopper/Error",
+                    targetHopperVelocity - getHopperVelocity());
             Logger.recordOutput("Subsystems/Indexer/Hopper/Voltage",
-                    m_hopperMotor1.getMotorVoltage().getValueAsDouble());
+                    m_hopperMotor.getMotorVoltage().getValueAsDouble());
             Logger.recordOutput("Subsystems/Indexer/Hopper/Current",
-                    m_hopperMotor1.getTorqueCurrent().getValueAsDouble());
+                    m_hopperMotor.getTorqueCurrent().getValueAsDouble());
         }
     }
 }

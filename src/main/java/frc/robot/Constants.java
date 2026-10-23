@@ -28,6 +28,7 @@ public final class Constants {
 
   public static final double BOT_WIDTH = Units.inchesToMeters(35);
   public static final double BUMPER_HEIGHT = Units.inchesToMeters(6);
+  public static final boolean TUNING_ENABLED = true;
 
   public static final class VisionConstants {
     // GLOBAL CONFIG
@@ -232,11 +233,11 @@ public final class Constants {
     public static double BALL_TUNNEL_GEAR_RATIO = 3.0 / 5.0;
     public static double HOPPER_GEAR_RATIO = 1.0;
 
-    public static double HOPPER_Ks = 0.36;
-    public static double HOPPER_Kv = 0.12;
-    public static double HOPPER_Kp = 0.62;
-    public static double HOPPER_Ki = 0;
-    public static double HOPPER_Kd = 0;
+    public static double HOPPER_Ks = 0.20;
+    public static double HOPPER_Kv = 0.225;
+    public static double HOPPER_Kp = 0.10;
+    public static double HOPPER_Ki = 0.00;
+    public static double HOPPER_Kd = 0.00;
 
     public static double BALL_TUNNEL_Ks = 0.24;
     public static double BALL_TUNNEL_Kv = 0.12;
@@ -244,9 +245,11 @@ public final class Constants {
     public static double BALL_TUNNEL_Ki = 0;
     public static double BALL_TUNNEL_Kd = 0;
 
-    public static double EJECT_CURRENT = 2000.0;
+    // NOTE: 2000 A is above the 160 A stator limit, so auto-unjam is effectively
+    // disabled. Lower this (e.g. ~60-100 A) after measuring jam current on the robot.
+    public static double EJECT_CURRENT = 2000.0; // torque current (A) that counts as a hopper jam
     public static double EJECT_SECONDS = 0.1;
-    public static double EJECT_SPEED = -10.0;
+    public static double EJECT_SPEED = -600.0; // hopper RPM while unjamming (was -10 motor RPS)
 
     public static double PASSIVE_INDEXER_VELOCITY = 3000;
     public static double PASSIVE_HOPPER_VELOCITY = 6000;
