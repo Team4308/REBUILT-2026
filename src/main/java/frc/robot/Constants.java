@@ -28,7 +28,6 @@ public final class Constants {
 
   public static final double BOT_WIDTH = Units.inchesToMeters(35);
   public static final double BUMPER_HEIGHT = Units.inchesToMeters(6);
-  public static final boolean TUNING_ENABLED = true;
 
   public static final class VisionConstants {
     // GLOBAL CONFIG
@@ -193,7 +192,7 @@ public final class Constants {
   public static final class Intake {
     // Roller tuning
 
-    public static final boolean TUNING_MODE = true;
+    public static final boolean TUNING_MODE = false;
 
     public static final double ROLLER_GEAR_RATIO = 15.0 / 21.0;
     public static final double ROLLER_KP = 0.115;
@@ -233,8 +232,8 @@ public final class Constants {
     public static double BALL_TUNNEL_GEAR_RATIO = 3.0 / 5.0;
     public static double HOPPER_GEAR_RATIO = 1.0;
 
-    public static double HOPPER_Ks = 0.20;
-    public static double HOPPER_Kv = 0.225;
+    public static double HOPPER_Ks = 0.18;
+    public static double HOPPER_Kv = 0.22;
     public static double HOPPER_Kp = 0.10;
     public static double HOPPER_Ki = 0.00;
     public static double HOPPER_Kd = 0.00;
