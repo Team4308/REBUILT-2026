@@ -43,7 +43,7 @@ public class AimEverything extends Command {
     private static final InterpolatingDoubleTreeMap passingflywheelSpeedMap = new InterpolatingDoubleTreeMap();
 
     private String side = "Left";
-    private double powerOffset = 500;
+    private double powerOffset = 0;
     private double powerOffsetTOF = -0.2;
     private static double passOff = 100;
 
