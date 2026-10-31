@@ -19,6 +19,7 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Ports;
@@ -73,11 +74,12 @@ public class IntakeSubsystem extends SubsystemBase {
 
   private HopperStates hopperState = HopperStates.FULL;
 
+  private boolean firstBoot = true;
+
   public IntakeSubsystem(boolean enabled) {
     verbosity = SubsystemVerbosity.LOW;
-    m_pivotMotor.setPosition(0);
+
     configureRoller();
-    pidController.reset(targetAngleDeg);
 
     var limitConfigs = new CurrentLimitsConfigs();
     limitConfigs.StatorCurrentLimit = 80;
@@ -237,18 +239,11 @@ public class IntakeSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // Tuning
-    if (Constants.Intake.TUNING_MODE && !oldConfig.equals(tunableConfig)) {
-      updateRollerConfig();
-    }
-
-    if (Constants.Intake.TUNING_MODE &&
-        (pidController.getP() != Pivot_kP.getAsDouble() ||
-            pidController.getI() != Pivot_kI.getAsDouble() ||
-            pidController.getD() != Pivot_kD.getAsDouble() ||
-            feedforward.getKv() != Pivot_kV.getAsDouble() ||
-            feedforward.getKs() != Pivot_kS.getAsDouble())) {
-      updatePivotConfig();
+    if (firstBoot && DriverStation.isEnabled()) {
+      firstBoot = false;
+      targetAngleDeg = Constants.Intake.INTAKE_ANGLE_DEG;
+      m_pivotMotor.setPosition(targetAngleDeg);
+      pidController.reset(targetAngleDeg);
     }
 
     targetAngleDeg = MathUtil.clamp(targetAngleDeg, 0, 73);

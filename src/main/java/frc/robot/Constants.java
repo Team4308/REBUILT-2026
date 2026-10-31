@@ -227,10 +227,10 @@ public final class Constants {
 
   public static class Indexer {
     public static double DEFAULT_INDEXER_VELOCITY = 2800;
-    public static double DEFAULT_HOPPER_VELOCITY = 1800;
+    public static double DEFAULT_HOPPER_VELOCITY = 4500;
 
     public static double BALL_TUNNEL_GEAR_RATIO = 3.0 / 5.0;
-    public static double HOPPER_GEAR_RATIO = 1.0;
+    public static double HOPPER_GEAR_RATIO = 1;
 
     public static double HOPPER_Ks = 0.18;
     public static double HOPPER_Kv = 0.22;
@@ -245,7 +245,8 @@ public final class Constants {
     public static double BALL_TUNNEL_Kd = 0;
 
     // NOTE: 2000 A is above the 160 A stator limit, so auto-unjam is effectively
-    // disabled. Lower this (e.g. ~60-100 A) after measuring jam current on the robot.
+    // disabled. Lower this (e.g. ~60-100 A) after measuring jam current on the
+    // robot.
     public static double EJECT_CURRENT = 2000.0; // torque current (A) that counts as a hopper jam
     public static double EJECT_SECONDS = 0.1;
     public static double EJECT_SPEED = -600.0; // hopper RPM while unjamming (was -10 motor RPS)
