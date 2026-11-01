@@ -36,12 +36,13 @@ import frc.robot.Subsystems.Swerve.SwerveSubsystem;
 import frc.robot.Subsystems.Vision.Vision;
 import frc.robot.Util.Razer2Wrapper;
 import swervelib.SwerveInputStream;
+import ca.team4308.absolutelib.control.RazerWrapper;
 
 public class RobotContainer {
         private double speedModifier = 1.0;
 
         // Controllers
-        final Razer2Wrapper driver = new Razer2Wrapper(0, 1);
+        final RazerWrapper driver = new RazerWrapper(0);
 
         // Subsystems
         private final Vision vision = new Vision();

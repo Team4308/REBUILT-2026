@@ -29,7 +29,7 @@ public class Robot extends LoggedRobot {
 
     Logger.recordMetadata("REBUILT-2026", "FRC-4308"); // Set a metadata value
 
-    Logger.addDataReceiver(new WPILOGWriter()); // Log to a USB stick ("/U/logs")
+    // Logger.addDataReceiver(new WPILOGWriter()); // Log to a USB stick ("/U/logs")
     Logger.addDataReceiver(new NT4Publisher()); // Publish data to NetworkTables
 
     Logger.start(); // Start logging! No more data receivers, replay sources, or metadata values may
@@ -42,7 +42,7 @@ public class Robot extends LoggedRobot {
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
 
-    SmartDashboard.putData("Command Scheduler", CommandScheduler.getInstance());
+    // SmartDashboard.putData("Command Scheduler", CommandScheduler.getInstance());
     Logger.recordOutput("Match Timer", DriverStation.getMatchTime());
     Logger.recordOutput("Ally Hub Active", GameData.isHubActive(false));
     Logger.recordOutput("Opposing Hub Active", GameData.isHubActive(true));

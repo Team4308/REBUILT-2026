@@ -77,7 +77,7 @@ public class IntakeSubsystem extends SubsystemBase {
   private boolean firstBoot = true;
 
   public IntakeSubsystem(boolean enabled) {
-    verbosity = SubsystemVerbosity.LOW;
+    verbosity = SubsystemVerbosity.HIGH;
 
     configureRoller();
 
@@ -241,12 +241,11 @@ public class IntakeSubsystem extends SubsystemBase {
   public void periodic() {
     if (firstBoot && DriverStation.isEnabled()) {
       firstBoot = false;
+      pidController.reset(Constants.Intake.RETRACTED_ANGLE_DEG);
       targetAngleDeg = Constants.Intake.INTAKE_ANGLE_DEG;
-      m_pivotMotor.setPosition(targetAngleDeg);
-      pidController.reset(targetAngleDeg);
     }
 
-    targetAngleDeg = MathUtil.clamp(targetAngleDeg, 0, 73);
+    targetAngleDeg = MathUtil.clamp(targetAngleDeg, 0, 127);
     double currentDeg = getIntakeAngle();
 
     double pidOutput = pidController.calculate(currentDeg, targetAngleDeg);
